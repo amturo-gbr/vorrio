@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Replaced the receipt-shaped product mark with the final Vorrio identity in
+  the PWA header, desktop navigation and first-run guide, including transparent
+  light/dark assets plus the new maskable app icon and browser favicon.
+
 ## 0.8.21 – 2026-08-12
 
 - Made `make check` install locked frontend dependencies with `npm ci`, so CI

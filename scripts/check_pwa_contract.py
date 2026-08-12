@@ -26,6 +26,8 @@ def main() -> None:
         ("frontend/index.html", 'name="mobile-web-app-capable" content="yes"', "mobile install metadata"),
         ("frontend/index.html", 'name="apple-mobile-web-app-capable" content="yes"', "iOS install metadata"),
         ("frontend/index.html", 'name="apple-mobile-web-app-title" content="Vorrio"', "iOS app title"),
+        ("frontend/index.html", 'rel="icon" type="image/png" sizes="1024x1024" href="/pwa-icon.png"', "browser favicon"),
+        ("frontend/index.html", 'rel="apple-touch-icon" sizes="1024x1024" href="/pwa-icon.png"', "iOS home-screen icon"),
         ("frontend/vite.config.ts", "id: '/'", "stable manifest identity"),
         ("frontend/vite.config.ts", "display: 'standalone'", "standalone display mode"),
         ("frontend/vite.config.ts", "scope: '/'", "manifest scope"),
@@ -34,6 +36,7 @@ def main() -> None:
         ("frontend/src/main.tsx", "registerSW({ immediate: true })", "service-worker registration"),
         ("frontend/public/push-worker.js", "self.addEventListener('push'", "visible Web Push handler"),
         ("frontend/public/push-worker.js", "self.addEventListener('notificationclick'", "notification click handler"),
+        ("frontend/src/App.tsx", 'src="/brand/vorrio-mark.png"', "visible product brand mark"),
         ("frontend/src/styles.css", "min-height: 100dvh", "dynamic mobile viewport"),
         ("frontend/src/styles.css", "env(safe-area-inset-bottom", "safe-area navigation padding"),
         ("frontend/src/styles.css", "overflow-x: clip", "horizontal overflow guard"),
@@ -51,11 +54,25 @@ def main() -> None:
     if width != height or width < 512:
         raise SystemExit("PWA check failed: install icon must be square and at least 512px")
 
+    for asset in ("vorrio-mark.png", "vorrio-mark-white.png"):
+        mark_width, mark_height = png_size(ROOT / "frontend/public/brand" / asset)
+        if mark_width != mark_height or mark_width < 512:
+            raise SystemExit(
+                f"PWA check failed: brand/{asset} must be square and at least 512px"
+            )
+
     service_worker = ROOT / "frontend/dist/sw.js"
     if not service_worker.exists():
         raise SystemExit("PWA check failed: production service worker was not built")
     service_worker_content = service_worker.read_text(encoding="utf-8")
-    for asset in ("index.html", "pwa-icon.png", "push-worker.js", "assets/receipt-folded.png"):
+    for asset in (
+        "index.html",
+        "pwa-icon.png",
+        "push-worker.js",
+        "assets/receipt-folded.png",
+        "brand/vorrio-mark.png",
+        "brand/vorrio-mark-white.png",
+    ):
         if service_worker_content.count(f'url:"{asset}"') != 1:
             raise SystemExit(f"PWA check failed: {asset} must occur exactly once in the precache")
 

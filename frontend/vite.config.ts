@@ -29,7 +29,11 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,svg,woff2}', 'assets/**/*.{png,jpg,jpeg,webp}'],
+        globPatterns: [
+          '**/*.{js,css,html,svg,woff2}',
+          'assets/**/*.{png,jpg,jpeg,webp}',
+          'brand/**/*.{png,jpg,jpeg,webp}',
+        ],
         importScripts: ['/push-worker.js'],
       },
     }),

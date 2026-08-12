@@ -139,12 +139,11 @@ select:focus-visible {
   color: var(--ink);
 }
 
-.brand-lockup svg {
+.brand-lockup .brand-mark {
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
-  color: var(--green);
-  stroke-width: 1.8;
+  object-fit: contain;
 }
 
 .brand-lockup strong {
@@ -1450,10 +1449,10 @@ select:focus-visible {
     cursor: pointer;
   }
 
-  .desktop-brand svg {
+  .desktop-brand .brand-mark {
     width: 29px;
     height: 29px;
-    stroke-width: 1.8;
+    object-fit: contain;
   }
 
   .desktop-nav nav {
@@ -5278,10 +5277,10 @@ select:focus-visible {
   gap: 8px;
 }
 
-.experience-brand svg {
+.experience-brand .brand-mark {
   width: 20px;
   height: 20px;
-  color: var(--green);
+  object-fit: contain;
 }
 
 .experience-step {

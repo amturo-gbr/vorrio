@@ -625,7 +625,7 @@ function HomeScreen({
     <div className="screen home-screen">
       <header className="brand-header">
         <div className="brand-lockup">
-          <ReceiptText aria-hidden="true" />
+          <img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" />
           <strong>Vorrio</strong>
         </div>
         <div className={`connection-state ${connected ? 'connected' : 'disconnected'}`}>
@@ -2125,7 +2125,7 @@ function visibleNavigation(role: AuthenticatedUser['role']) {
 function DesktopNav({ selected, onSelect, status, role }: { selected: Screen; onSelect: (screen: Screen) => void; status: AppStatus | null; role: AuthenticatedUser['role'] }) {
   return (
     <aside className="desktop-nav">
-      <button className="desktop-brand" onClick={() => onSelect('home')}><ReceiptText /><strong>Vorrio</strong></button>
+      <button className="desktop-brand" onClick={() => onSelect('home')}><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>Vorrio</strong></button>
       <nav aria-label="Hauptnavigation">
         {visibleNavigation(role).map(({ id, label, icon: Icon }) => (
           <button key={id} className={selected === id ? 'selected' : ''} onClick={() => onSelect(id)}><Icon /><span>{label}</span></button>
@@ -2169,7 +2169,7 @@ function OnboardingGuide({
   return <div className="experience-backdrop" role="presentation">
     <section className="experience-dialog onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       <header className="experience-header">
-        <span className="experience-brand"><ReceiptText /><strong>Vorrio</strong></span>
+        <span className="experience-brand"><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>Vorrio</strong></span>
         <span className="experience-step">Schritt {step + 1} von 3</span>
         <button type="button" className="icon-button" onClick={onDismiss} aria-label="Einführung später fortsetzen"><X /></button>
       </header>
