@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Run contract, backend, frontend and launch tests
+        run: make check CHECK_IMAGE=vorrio:ci
+
+      - name: Scan the built image
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7, pinned 2026-08-12
+        with:
+          image: vorrio:ci
+          fail-build: true
+          severity-cutoff: high
+          only-fixed: true
+          vex: security/vex.openvex.json
+          output-format: table
+
+      - name: Generate CycloneDX SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: vorrio:ci
+          format: cyclonedx-json
+          output-file: vorrio-sbom.cdx.json
+          artifact-name: vorrio-sbom.cdx.json
+          upload-release-assets: false

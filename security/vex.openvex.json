@@ -1,0 +1,29 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/amturo/vorrio/security/vex/0.8.17-1",
+  "author": "Amturo UG",
+  "role": "Project Maintainer",
+  "timestamp": "2026-08-12T08:08:13Z",
+  "version": 1,
+  "statements": [
+    {
+      "vulnerability": {
+        "@id": "https://nvd.nist.gov/vuln/detail/CVE-2026-15308",
+        "name": "CVE-2026-15308",
+        "description": "CPU denial of service in CPython html.parser.HTMLParser for attacker-controlled HTML"
+      },
+      "products": [
+        {"@id": "vorrio:ci"},
+        {"@id": "vorrio:release"},
+        {"@id": "vorrio:release-candidate"},
+        {"@id": "vorrio:security-fix"},
+        {"@id": "grocy-receipt-ai:0.8.17"},
+        {"@id": "ghcr.io/amturo/vorrio:0.8.17"}
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "impact_statement": "Vorrio does not import or invoke html.parser.HTMLParser. Untrusted receipt inputs are validated and processed only as bounded image or PDF data, so the affected incremental HTML parser is not reachable through the application.",
+      "timestamp": "2026-08-12T08:08:13Z"
+    }
+  ]
+}

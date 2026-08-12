@@ -1,0 +1,130 @@
+name: Signed container release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Verify tag matches the application version
+        shell: bash
+        run: |
+          expected="${GITHUB_REF_NAME#v}"
+          actual="$(node -p "require('./frontend/package.json').version")"
+          test "$expected" = "$actual"
+
+      - name: Run complete release gate
+        run: make check CHECK_IMAGE=vorrio:release
+
+      - name: Scan release candidate before publication
+        uses: anchore/scan-action@e1165082ffb1fe366ebaf02d8526e7c4989ea9d2 # v7, pinned 2026-08-12
+        with:
+          image: vorrio:release
+          fail-build: true
+          severity-cutoff: high
+          only-fixed: true
+          vex: security/vex.openvex.json
+          output-format: table
+
+      - name: Prepare image names
+        id: image
+        shell: bash
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          echo "name=$image" >> "$GITHUB_OUTPUT"
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4, pinned 2026-08-12
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable multi-architecture emulation
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4, pinned 2026-08-12
+
+      - name: Configure Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4, pinned 2026-08-12
+
+      - name: Build and publish multi-architecture image
+        id: build
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ steps.image.outputs.version }}
+            ${{ steps.image.outputs.name }}:latest
+          labels: |
+            org.opencontainers.image.title=Vorrio
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.image.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=AGPL-3.0-or-later
+          provenance: mode=max
+          sbom: true
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+
+      - name: Sign the immutable image digest
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: cosign sign --yes "${IMAGE}@${DIGEST}"
+
+      - name: Generate release SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ${{ steps.image.outputs.name }}@${{ steps.build.outputs.digest }}
+          format: cyclonedx-json
+          output-file: vorrio-${{ steps.image.outputs.version }}.cdx.json
+          artifact-name: vorrio-${{ steps.image.outputs.version }}.cdx.json
+          upload-release-assets: false
+
+      - name: Record immutable image digest
+        env:
+          IMAGE: ${{ steps.image.outputs.name }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+          VERSION: ${{ steps.image.outputs.version }}
+        run: printf '%s@%s\n' "$IMAGE" "$DIGEST" > "vorrio-${VERSION}.digest.txt"
+
+      - name: Create GitHub release and attach verification material
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.image.outputs.version }}
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" \
+              "vorrio-${VERSION}.cdx.json" \
+              "vorrio-${VERSION}.digest.txt" \
+              --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              "vorrio-${VERSION}.cdx.json" \
+              "vorrio-${VERSION}.digest.txt" \
+              --verify-tag \
+              --generate-notes \
+              --title "Vorrio ${VERSION}"
+          fi

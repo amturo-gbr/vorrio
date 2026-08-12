@@ -1,0 +1,32 @@
+name: Feature request
+description: Suggest a focused improvement to the self-hosted household workflow.
+title: "[Feature]: "
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Household problem
+      description: What is difficult today, and for whom?
+    validations:
+      required: true
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Desired workflow
+      description: Explain the smallest useful outcome, including review or undo expectations.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: principles
+    attributes:
+      label: Project fit
+      options:
+        - label: The proposal keeps stock/master-data changes explicit and reviewable.
+          required: true
+        - label: The proposal can work for a self-hosted local installation.
+          required: true

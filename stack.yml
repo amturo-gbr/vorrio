@@ -1,0 +1,36 @@
+name: vorrio
+
+services:
+  app:
+    image: ${VORRIO_IMAGE:-ghcr.io/amturo/vorrio:0.8.17}
+    container_name: vorrio
+    environment:
+      APP_PASSWORD: ${APP_PASSWORD:-}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:?Set APP_SECRET_KEY to the output of openssl rand -hex 32}
+      DEPLOYMENT_PROFILE: ${DEPLOYMENT_PROFILE:-lan}
+      PUBLIC_URL: ${PUBLIC_URL:-}
+      TRUSTED_HOSTS: ${TRUSTED_HOSTS:-*}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      FORWARDED_ALLOW_IPS: ${FORWARDED_ALLOW_IPS:-127.0.0.1}
+      SESSION_HTTPS_ONLY: ${SESSION_HTTPS_ONLY:-false}
+      PUBLIC_EXPOSURE_ACKNOWLEDGED: ${PUBLIC_EXPOSURE_ACKNOWLEDGED:-false}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-12}
+      MAX_REQUEST_MB: ${MAX_REQUEST_MB:-13}
+      MAX_IMAGE_MEGAPIXELS: ${MAX_IMAGE_MEGAPIXELS:-40}
+      RECEIPT_RETENTION_DAYS: ${RECEIPT_RETENTION_DAYS:-7}
+      LOGIN_MAX_FAILURES: ${LOGIN_MAX_FAILURES:-5}
+      LOGIN_WINDOW_SECONDS: ${LOGIN_WINDOW_SECONDS:-900}
+      WEB_PUSH_SUBJECT: ${WEB_PUSH_SUBJECT:-mailto:admin@vorrio.local}
+      NOTIFICATION_CHECK_SECONDS: ${NOTIFICATION_CHECK_SECONDS:-900}
+      TZ: ${TZ:-Europe/Berlin}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "${PUBLISHED_ADDRESS:-0.0.0.0}:9380:8080"
+    volumes:
+      - vorrio_data:/data
+    restart: unless-stopped
+
+volumes:
+  vorrio_data:
+    name: ${VORRIO_DATA_VOLUME:-vorrio_data}
