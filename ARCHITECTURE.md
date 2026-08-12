@@ -329,7 +329,8 @@ service-worker registration and the install icon during `make check`.
 ## Release boundary
 
 `make check` runs the application contract, unit/regression tests, PWA rules,
-OpenAPI drift check, guarded public-HTTPS smoke and a synthetic launch journey
+OpenAPI drift check, guarded public-HTTPS smoke, a synthetic household launch
+journey and a separate family/security acceptance journey
 against temporary data.
 The production container uses digest-pinned bases. CI scans it with Grype and
 generates a CycloneDX SBOM. Tag releases are prepared to publish an OCI-labeled,

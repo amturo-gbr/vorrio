@@ -6,11 +6,14 @@ Every change that affects behavior must update the request/response models,
 checked-in OpenAPI contract, user/operator documentation and changelog in the
 same pull request. `make check` is the mandatory local and CI gate. It runs the
 backend suite, frontend build/tests, PWA contract, OpenAPI drift check, guarded
-public-HTTPS contract and the isolated launch journey:
+public-HTTPS contract and both isolated acceptance journeys:
 
 ```text
 first Owner -> catalog/barcode -> synthetic receipt -> local stock
 -> budget -> portable export -> operations overview
+
+first login -> onboarding/update note -> invitation -> roles/account block
+-> passkey -> TOTP -> recovery code -> password rotation
 ```
 
 The journey uses a temporary database and synthetic data. It never connects to
@@ -49,11 +52,11 @@ tag.
 Replace the example owner/repository and version with the published values:
 
 ```bash
-docker pull ghcr.io/amturo/vorrio:0.8.19
+docker pull ghcr.io/amturo/vorrio:0.8.20
 cosign verify \
   --certificate-identity-regexp '^https://github.com/amturo/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo/vorrio:0.8.19
+  ghcr.io/amturo/vorrio:0.8.20
 ```
 
 Pin production deployments to a version or digest. `latest` is convenient for

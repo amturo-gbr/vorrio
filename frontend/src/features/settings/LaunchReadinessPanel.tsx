@@ -102,7 +102,7 @@ export function LaunchReadinessPanel({ recentAuthentication }: { recentAuthentic
       {!overview ? <p className="operations-loading"><LoaderCircle className="spin" /> Betriebsdaten werden geladen</p> : <>
         <div className="operations-metrics">
           <article><Database /><span><strong>{overview.database_integrity === 'ok' ? 'In Ordnung' : overview.database_integrity}</strong><small>Datenbank · {bytes(overview.database_bytes)}</small></span></article>
-          <article><ShieldAlert /><span><strong>{overview.counts.failures_24h}</strong><small>Fehler in 24 Stunden</small></span></article>
+          <article title="Abgelehnte Eingaben und durch Sicherheitsregeln blockierte Aktionen"><ShieldAlert /><span><strong>{overview.counts.failures_24h}</strong><small>Abgewiesen in 24 Stunden</small></span></article>
           <article><Activity /><span><strong>{overview.counts.active_sessions}</strong><small>Aktive Sitzungen</small></span></article>
           <article><HardDrive /><span><strong>{overview.retention.retained_file_count}</strong><small>Gespeicherte Bondateien</small></span></article>
         </div>

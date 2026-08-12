@@ -57,7 +57,7 @@ docker run --rm \
   --env APP_SECRET_KEY \
   --env APP_SECRET_KEY_NEW \
   --entrypoint python \
-  vorrio:0.8.19 /app/scripts/rotate_secret.py
+  vorrio:0.8.20 /app/scripts/rotate_secret.py
 ```
 
 4. update the normal deployment's `APP_SECRET_KEY` to the new value;
@@ -73,7 +73,7 @@ the complete backup; never delete the only working old key.
 
 ## Release verification
 
-For 0.8.19 the maintainers test a fresh empty volume, first-run setup, family
+For 0.8.20 the maintainers test a fresh empty volume, first-run setup, family
 invitation and role state, passkey/TOTP/recovery schema, recent-auth state,
 API-token creation/scope/revocation state, complete stopped-volume archive,
 restore into a second empty volume, SQLite

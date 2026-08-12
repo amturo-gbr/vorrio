@@ -335,6 +335,10 @@ function App() {
             onLogout={async () => {
               await api.logout()
               rememberAuthenticatedDevice(false)
+              setMessage(null)
+              setExperience(null)
+              setGuideOpen(false)
+              setReleaseNotesOpen(false)
               setAuthenticated(false)
               setCurrentUser(null)
             }}
@@ -1758,6 +1762,7 @@ function SettingsScreen({
       const auth = await api.updateOwnerProfile(displayName.trim(), email.trim() || null)
       setIdentity(auth.user)
       onIdentityChange(auth.user)
+      await refreshFamily()
       onSaved('Owner-Profil wurde lokal gespeichert.')
     } catch (nextError) {
       setError((nextError as Error).message)

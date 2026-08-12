@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.8.20 – 2026-08-12
+
+- Renamed the 24-hour operations metric from errors to rejected actions so
+  successful validation and recent-auth security blocks are not presented as
+  server failures.
+- Added a deterministic family/security acceptance journey for onboarding,
+  release acknowledgement, invitations, role changes, account blocking,
+  passkeys, TOTP, recovery codes and password rotation.
+- Refresh the family member summary immediately after the Owner changes their
+  name or login email, avoiding stale "no login email" guidance.
+- Clear stale success/error notices and experience dialogs on logout so a new
+  login never inherits feedback from the previous session.
+
 ## 0.8.19 – 2026-08-12
 
 - Added a responsive three-step first-login guide covering receipts, product

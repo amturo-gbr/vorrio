@@ -33,6 +33,11 @@ acceptance-test: image
 		-v "$(CURDIR)/backend:/workspace/backend:ro" \
 		-v "$(CURDIR)/scripts:/workspace/scripts:ro" \
 		-w /workspace $(CHECK_IMAGE) scripts/release_smoke.py
+	docker run --rm --entrypoint python \
+		-e PYTHONPATH=/workspace/backend \
+		-v "$(CURDIR)/backend:/workspace/backend:ro" \
+		-v "$(CURDIR)/scripts:/workspace/scripts:ro" \
+		-w /workspace $(CHECK_IMAGE) scripts/family_security_smoke.py
 
 external-path-test: image
 	docker run --rm --entrypoint python \

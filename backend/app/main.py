@@ -273,7 +273,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.19",
+    version="0.8.20",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -399,13 +399,13 @@ API_TOKEN_SCOPES = {
 }
 
 CURRENT_RELEASE = {
-    "version": "0.8.19",
-    "title": "Einfach ankommen und sicher aktualisieren",
-    "summary": "Vorrio erklärt den roten Faden beim ersten Einstieg und zeigt neue Funktionen nach einem Update genau einmal.",
+    "version": "0.8.20",
+    "title": "Verständlicher Betrieb, vollständig geprüft",
+    "summary": "Vorrio unterscheidet erwartete Sicherheits- und Validierungsstopps klar von echten Fehlern und prüft Familienkonten als zusammenhängende Release-Reise.",
     "highlights": [
-        "Kurze Einführung in Bon, Scanner, Vorrat und Einkaufsliste",
-        "Persönliche Versionshinweise nach einem echten Update",
-        "Einführung und Neuigkeiten jederzeit in den Einstellungen öffnen",
+        "Abgewiesene Eingaben werden nicht mehr als Serverfehler bezeichnet",
+        "Familienrollen, Passkey, TOTP und Recovery gehören jetzt zum Release-Gate",
+        "Owner-E-Mail und Meldungen bleiben nach Speichern und Login sofort aktuell",
     ],
 }
 

@@ -228,6 +228,16 @@ public release.
 - permanently accessible **Hilfe & Version** controls in Settings;
 - export, erasure, audit, API and upgrade documentation for experience state.
 
+## Shipped in 0.8.20
+
+- an operations metric that accurately describes validation and security
+  rejections without implying application failure;
+- a deterministic family/security acceptance journey in the normal release
+  gate, complementing the catalog/receipt/stock journey;
+- immediate Owner-profile propagation into the family overview;
+- clean logout/login state without stale toasts or dialogs;
+- repeated desktop and narrow-mobile browser verification.
+
 ## P1 – identity hardening and automation
 
 - optional OIDC for installations that deliberately choose an external IdP;

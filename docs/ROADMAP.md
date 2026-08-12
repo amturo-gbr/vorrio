@@ -203,6 +203,16 @@
 - manual **Hilfe & Version** entry for reopening both surfaces;
 - portable export, erasure, audit, REST/OpenAPI and regression coverage.
 
+## 0.8.20 – acceptance and operational clarity
+
+- distinguish rejected validation/security actions from server failures in the
+  Owner operations view;
+- deterministic family/security release journey across onboarding, invitations,
+  roles, account blocking, passkeys, TOTP, recovery and password rotation;
+- immediate family-summary refresh after Owner profile changes;
+- clear transient UI feedback on logout and subsequent login;
+- repeated desktop/mobile browser UAT and full release-gate verification.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.
