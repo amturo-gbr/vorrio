@@ -1,7 +1,7 @@
 # External-access security review
 
 Review date: 2026-08-12
-Release: 0.8.17
+Release: 0.8.18
 Scope: Browser/PWA -> TLS reverse proxy or tunnel -> Uvicorn -> Vorrio REST API
 
 ## Outcome

@@ -118,7 +118,7 @@ export function LaunchReadinessPanel({ recentAuthentication }: { recentAuthentic
 
     <section className="settings-section portability-section">
       <div className="section-heading"><Download /><div><h2>Daten mitnehmen</h2><p>Lesbarer ZIP-Export ohne Passwörter, Tokens oder API-Schlüssel.</p></div></div>
-      {exportPreview && <div className="export-summary"><strong>{exportPreview.counts.products} Produkte · {exportPreview.counts.receipts} Bons</strong><small>{exportPreview.receipt_file_count} Quelldateien · {bytes(exportPreview.receipt_file_bytes)}</small></div>}
+      {exportPreview && <div className="export-summary"><strong>{exportPreview.counts.products} Produkte · {exportPreview.counts.receipts} Bons</strong><small>{exportPreview.product_image_file_count} eigene Produktbilder immer enthalten · {exportPreview.receipt_file_count} Bondateien optional</small></div>}
       <label className="toggle-row"><span><strong>Bondateien einschließen</strong><small>Ohne Auswahl enthält das ZIP weiterhin alle erkannten Daten.</small></span><input type="checkbox" checked={includeFiles} onChange={(event) => setIncludeFiles(event.target.checked)} /></label>
       <button type="button" className="button tertiary" onClick={downloadExport} disabled={busy !== null || !recentAuthentication}>{busy === 'export' ? <LoaderCircle className="spin" /> : <Download />} Export herunterladen</button>
       {!recentAuthentication && <p className="safety-hint">Bestätige oben zuerst noch einmal deine Identität.</p>}

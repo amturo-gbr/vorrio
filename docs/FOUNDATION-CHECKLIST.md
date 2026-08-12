@@ -213,6 +213,13 @@ public release.
 - automated local documentation-link and publishable-package hygiene gates,
   including fail-closed secret templates and release-version consistency.
 
+## Shipped in 0.8.18
+
+- authenticated camera/file product images normalized to metadata-free WebP;
+- local product media included in portable export and permanent erasure;
+- centered wide-screen dialogs while mobile stays a bottom-sheet workflow;
+- catalog onboarding copy that reflects whether Grocy is actually enabled.
+
 ## P1 – identity hardening and automation
 
 - optional OIDC for installations that deliberately choose an external IdP;

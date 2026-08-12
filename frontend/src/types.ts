@@ -264,6 +264,8 @@ export interface ExportPreview {
   counts: Record<string, number>
   receipt_file_count: number
   receipt_file_bytes: number
+  product_image_file_count: number
+  product_image_file_bytes: number
   excluded_secret_categories: string[]
 }
 

@@ -187,6 +187,13 @@
 - repeatable source, secret, documentation, container and GitHub/GHCR launch
   checklist.
 
+## 0.8.18 – private product media and responsive dialogs
+
+- camera/file product-image upload with safe WebP normalization;
+- authenticated delivery, portable export and complete erasure;
+- centered desktop dialogs with unchanged mobile bottom sheets;
+- connector-aware catalog guidance and live non-mutating Grocy verification.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.

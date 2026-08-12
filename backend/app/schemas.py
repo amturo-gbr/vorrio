@@ -478,6 +478,8 @@ class ExportPreviewResponse(BaseModel):
     counts: dict[str, int]
     receipt_file_count: int
     receipt_file_bytes: int
+    product_image_file_count: int
+    product_image_file_bytes: int
     excluded_secret_categories: list[str]
 
 
@@ -518,6 +520,8 @@ class HouseholdEraseResponse(BaseModel):
     deleted: bool
     deleted_receipt_files: int
     deleted_receipt_bytes: int
+    deleted_product_image_files: int
+    deleted_product_image_bytes: int
     completed_at: str
 
 
@@ -655,9 +659,24 @@ class CatalogProductUpdateInput(BaseModel):
     default_best_before_days: int = Field(default=0, ge=0, le=3650)
     minimum_stock_quantity: float = Field(default=0, ge=0, le=1_000_000)
     shopping_target_quantity: float = Field(default=0, ge=0, le=1_000_000)
-    image_url: HttpUrl | None = None
+    image_url: str | None = Field(default=None, max_length=2048)
     notes: str = Field(default="", max_length=2000)
     expected_updated_at: str = Field(min_length=10, max_length=80)
+
+    @field_validator("image_url")
+    @classmethod
+    def validate_image_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            return None
+        if normalized.startswith("/api/v1/catalog/products/") and normalized.endswith("/image"):
+            return normalized
+        try:
+            return str(HttpUrl(normalized))
+        except ValueError as exc:
+            raise ValueError("Das Produktbild muss eine HTTP(S)-Adresse sein") from exc
 
     @model_validator(mode="after")
     def validate_reorder_rule(self):

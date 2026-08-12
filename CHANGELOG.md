@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 0.8.18 – 2026-08-12
+
+- Added private product-photo capture and file upload from the product editor.
+- Normalized household photos to bounded, metadata-free WebP in the persistent
+  data volume while retaining external image addresses as an option.
+- Included local product images in portable exports and complete erasure.
+- Centered dialogs on desktop while preserving mobile bottom sheets.
+- Removed Grocy-specific catalog guidance while the connector is disabled.
+
 ## 0.8.17 – 2026-08-12
 
 - Completed a release-candidate UAT pass across the live desktop and mobile

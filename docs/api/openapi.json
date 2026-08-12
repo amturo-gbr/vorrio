@@ -444,6 +444,20 @@
         "title": "Body_analyze_api_v1_receipts_analyze_post",
         "type": "object"
       },
+      "Body_upload_catalog_product_image_api_v1_catalog_products__product_id__image_post": {
+        "properties": {
+          "image": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Image",
+            "type": "string"
+          }
+        },
+        "required": [
+          "image"
+        ],
+        "title": "Body_upload_catalog_product_image_api_v1_catalog_products__product_id__image_post",
+        "type": "object"
+      },
       "BudgetComparisonResponse": {
         "properties": {
           "change_amount": {
@@ -1537,9 +1551,7 @@
           "image_url": {
             "anyOf": [
               {
-                "format": "uri",
-                "maxLength": 2083,
-                "minLength": 1,
+                "maxLength": 2048,
                 "type": "string"
               },
               {
@@ -1928,6 +1940,14 @@
             "title": "Household Name",
             "type": "string"
           },
+          "product_image_file_bytes": {
+            "title": "Product Image File Bytes",
+            "type": "integer"
+          },
+          "product_image_file_count": {
+            "title": "Product Image File Count",
+            "type": "integer"
+          },
           "receipt_file_bytes": {
             "title": "Receipt File Bytes",
             "type": "integer"
@@ -1942,6 +1962,8 @@
           "counts",
           "receipt_file_count",
           "receipt_file_bytes",
+          "product_image_file_count",
+          "product_image_file_bytes",
           "excluded_secret_categories"
         ],
         "title": "ExportPreviewResponse",
@@ -2334,6 +2356,14 @@
             "title": "Deleted",
             "type": "boolean"
           },
+          "deleted_product_image_bytes": {
+            "title": "Deleted Product Image Bytes",
+            "type": "integer"
+          },
+          "deleted_product_image_files": {
+            "title": "Deleted Product Image Files",
+            "type": "integer"
+          },
           "deleted_receipt_bytes": {
             "title": "Deleted Receipt Bytes",
             "type": "integer"
@@ -2347,6 +2377,8 @@
           "deleted",
           "deleted_receipt_files",
           "deleted_receipt_bytes",
+          "deleted_product_image_files",
+          "deleted_product_image_bytes",
           "completed_at"
         ],
         "title": "HouseholdEraseResponse",
@@ -6587,7 +6619,7 @@
     },
     "summary": "Self-hosted household inventory and receipt API",
     "title": "Vorrio REST API",
-    "version": "0.8.17"
+    "version": "0.8.18"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -9752,6 +9784,246 @@
           }
         ],
         "summary": "Edit a local catalog product",
+        "tags": [
+          "Catalog"
+        ]
+      }
+    },
+    "/api/v1/catalog/products/{product_id}/image": {
+      "delete": {
+        "operationId": "delete_catalog_product_image_api_v1_catalog_products__product_id__image_delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogProductDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          }
+        ],
+        "summary": "Remove the current product image",
+        "tags": [
+          "Catalog"
+        ]
+      },
+      "get": {
+        "operationId": "catalog_product_image_api_v1_catalog_products__product_id__image_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          },
+          {
+            "apiToken": []
+          }
+        ],
+        "summary": "Read a locally managed product image",
+        "tags": [
+          "Catalog"
+        ],
+        "x-vorrio-required-scope": "catalog:read"
+      },
+      "post": {
+        "description": "Accepts JPEG, PNG or WebP, removes camera metadata and stores an optimized WebP in the local Vorrio data volume.",
+        "operationId": "upload_catalog_product_image_api_v1_catalog_products__product_id__image_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "title": "Product Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_catalog_product_image_api_v1_catalog_products__product_id__image_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogProductDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          }
+        ],
+        "summary": "Upload a private product image",
         "tags": [
           "Catalog"
         ]

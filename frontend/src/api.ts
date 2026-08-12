@@ -318,6 +318,18 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify(input),
     }),
+  uploadCatalogProductImage: (productId: string, image: File) => {
+    const form = new FormData()
+    form.append('image', image)
+    return request<CatalogProductDetail>(`/api/v1/catalog/products/${encodeURIComponent(productId)}/image`, {
+      method: 'POST',
+      body: form,
+    })
+  },
+  deleteCatalogProductImage: (productId: string) =>
+    request<CatalogProductDetail>(`/api/v1/catalog/products/${encodeURIComponent(productId)}/image`, {
+      method: 'DELETE',
+    }),
   createCatalogVariant: (productId: string, input: CatalogVariantInput) =>
     request<CatalogProductDetail>(`/api/v1/catalog/products/${encodeURIComponent(productId)}/variants`, {
       method: 'POST',

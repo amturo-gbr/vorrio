@@ -7,10 +7,11 @@ rule and erase the single-household installation.
 
 ## Portable export
 
-`GET /api/v1/privacy/export/preview` reports the records and retained source
-files that can be exported. `GET /api/v1/privacy/export` returns a ZIP after a
+`GET /api/v1/privacy/export/preview` reports the records, retained source files
+and locally managed product images that can be exported. `GET /api/v1/privacy/export` returns a ZIP after a
 recent Owner authentication. The caller may exclude receipt images/PDFs while
-keeping all recognized receipt data.
+keeping all recognized receipt data. Locally uploaded product images are always
+included under `product-images/` so the catalog remains portable.
 
 The ZIP contains a versioned `manifest.json`, SHA-256 checksums and readable
 JSON sections for household/member metadata, public preferences, catalog,
@@ -25,7 +26,8 @@ working restore still requires the complete `/data` volume and the matching
 
 ## Receipt-file retention
 
-The privacy setting applies to source images and PDFs only. Recognized lines,
+The privacy setting applies to receipt source images and PDFs only. Product
+images stay with the catalog until replaced, removed or the household is erased. Recognized lines,
 confirmed mappings, prices, receipts and stock movements remain available.
 
 - **Nach Analyse löschen** removes the source immediately after successful
@@ -52,7 +54,7 @@ Uvicorn client-address access logging is disabled.
 the last ten minutes and accepts only the literal confirmation
 `HAUSHALT ENDGÜLTIG LÖSCHEN`. The PWA adds a second browser confirmation. It
 deletes accounts, sessions, settings, catalog, receipts, stock, shopping data,
-audit records and retained receipt files, then returns the installation to
+audit records, retained receipt files and local product images, then returns the installation to
 first-run setup.
 
 Erasure is intentionally installation-wide because Vorrio currently supports

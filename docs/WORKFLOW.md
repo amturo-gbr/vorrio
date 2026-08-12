@@ -47,6 +47,13 @@ Use a generic product for the household concept, such as “Milk”. A concrete
 brand, package size and barcode belongs to a variant. Multiple variants can
 share one stock and shopping concept.
 
+A product image can come from a confirmed external product record, an optional
+HTTP(S) address or a household camera/file upload. Local uploads accept JPEG,
+PNG and WebP, are oriented, reduced to at most 1600 pixels per edge and stored
+as metadata-free WebP. They are served only through the authenticated API. The
+catalog mentions Grocy as an onboarding option only while that connector is
+enabled; Vorrio otherwise remains fully standalone.
+
 Receipt intake does not require a barcode. Scan a package later to enrich or
 create its variant. Once confirmed, Vorrio re-checks unresolved older receipt
 lines and can connect an exact barcode or now-known product automatically.

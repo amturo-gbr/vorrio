@@ -16,6 +16,7 @@ from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pyotp
+from PIL import Image
 
 
 TEST_DATA_DIR = tempfile.mkdtemp(prefix="grocy-receipt-ai-test-")
@@ -125,7 +126,16 @@ class AppFlowTests(unittest.TestCase):
                 json={"password": "sicheres-test-passwort", "display_name": "Owner Test"},
             )
             self.assertEqual(setup.status_code, 200)
-            database.create_catalog_product(name="Export Testprodukt")
+            export_product = database.create_catalog_product(name="Export Testprodukt")
+            product_image_file = (
+                config.data_dir / "product-images" / f"{export_product['id']}.webp"
+            )
+            product_image_file.parent.mkdir(parents=True, exist_ok=True)
+            product_image_file.write_bytes(b"synthetic product image")
+            database.set_catalog_product_image(
+                export_product["id"],
+                f"/api/v1/catalog/products/{export_product['id']}/image",
+            )
             database.create_receipt(
                 {
                     "id": "privacy-receipt",
@@ -161,6 +171,7 @@ class AppFlowTests(unittest.TestCase):
             self.assertEqual(preview.json()["counts"]["products"], 1)
             self.assertEqual(preview.json()["counts"]["receipts"], 2)
             self.assertEqual(preview.json()["receipt_file_count"], 1)
+            self.assertEqual(preview.json()["product_image_file_count"], 1)
 
             exported = client.get("/api/v1/privacy/export?include_receipt_files=true")
             self.assertEqual(exported.status_code, 200)
@@ -175,6 +186,10 @@ class AppFlowTests(unittest.TestCase):
                 self.assertIn("data/catalog.json", archive.namelist())
                 self.assertIn("data/receipts.json", archive.namelist())
                 self.assertTrue(any(name.startswith("receipt-files/privacy-receipt") for name in archive.namelist()))
+                self.assertIn(
+                    f"product-images/{export_product['id']}.webp",
+                    archive.namelist(),
+                )
 
             retention = client.get("/api/v1/privacy/retention")
             self.assertEqual(retention.status_code, 200)
@@ -214,6 +229,8 @@ class AppFlowTests(unittest.TestCase):
             )
             self.assertEqual(erased.status_code, 200)
             self.assertTrue(erased.json()["deleted"])
+            self.assertEqual(erased.json()["deleted_product_image_files"], 1)
+            self.assertFalse(product_image_file.exists())
             state = client.get("/api/v1/auth/state")
             self.assertFalse(state.json()["authenticated"])
             self.assertTrue(state.json()["needs_setup"])
@@ -1807,7 +1824,7 @@ class AppFlowTests(unittest.TestCase):
     def test_openapi_contract_is_versioned_and_scoped_token_authenticated(self) -> None:
         schema = app.openapi()
         self.assertEqual(schema["openapi"], "3.1.0")
-        self.assertEqual(schema["info"]["version"], "0.8.17")
+        self.assertEqual(schema["info"]["version"], "0.8.18")
         self.assertIn("/api/v1/privacy/export", schema["paths"])
         self.assertIn("/api/v1/operations/overview", schema["paths"])
         self.assertIn("/api/v1/catalog/products", schema["paths"])
@@ -1829,6 +1846,7 @@ class AppFlowTests(unittest.TestCase):
         self.assertIn("/api/v1/insights/budget", schema["paths"])
         self.assertIn("/api/v1/insights/budget/settings", schema["paths"])
         self.assertIn("/api/v1/catalog/products/{product_id}", schema["paths"])
+        self.assertIn("/api/v1/catalog/products/{product_id}/image", schema["paths"])
         self.assertIn(
             "/api/v1/catalog/products/{product_id}/variants", schema["paths"]
         )
@@ -2154,6 +2172,91 @@ class AppFlowTests(unittest.TestCase):
             self.assertIn("variant.create", actions)
             self.assertIn("barcode.create", actions)
             self.assertIn("master_data.archive", actions)
+
+    def test_private_product_image_upload_export_and_delete(self) -> None:
+        with TestClient(app) as client:
+            self.assertEqual(
+                client.post(
+                    "/api/v1/auth/setup", json={"password": "sicheres-test-passwort"}
+                ).status_code,
+                200,
+            )
+            master = database.catalog_master_data()
+            product = client.post(
+                "/api/v1/catalog/products",
+                json={
+                    "name": "Produktbild Test",
+                    "location_id": master["locations"][0]["id"],
+                    "quantity_unit_id": master["quantity_units"][0]["id"],
+                },
+            ).json()
+
+            raw = io.BytesIO()
+            exif = Image.Exif()
+            exif[0x010E] = "private camera note"
+            Image.new("RGB", (1800, 1200), color=(34, 111, 67)).save(
+                raw, format="JPEG", quality=90, exif=exif
+            )
+            uploaded = client.post(
+                f"/api/v1/catalog/products/{product['id']}/image",
+                files={"image": ("produkt.jpg", raw.getvalue(), "image/jpeg")},
+            )
+            self.assertEqual(uploaded.status_code, 200)
+            detail = uploaded.json()
+            self.assertEqual(
+                detail["image_url"],
+                f"/api/v1/catalog/products/{product['id']}/image",
+            )
+            image_response = client.get(detail["image_url"])
+            self.assertEqual(image_response.status_code, 200)
+            self.assertEqual(image_response.headers["content-type"], "image/webp")
+            self.assertEqual(image_response.headers["cache-control"], "private, no-cache")
+            with Image.open(io.BytesIO(image_response.content)) as stored:
+                self.assertEqual(stored.format, "WEBP")
+                self.assertLessEqual(max(stored.size), 1600)
+                self.assertFalse(stored.getexif())
+
+            preview = client.get("/api/v1/privacy/export/preview").json()
+            self.assertEqual(preview["product_image_file_count"], 1)
+            exported = client.get(
+                "/api/v1/privacy/export?include_receipt_files=false"
+            )
+            self.assertEqual(exported.status_code, 200)
+            with zipfile.ZipFile(io.BytesIO(exported.content)) as archive:
+                self.assertIn(
+                    f"product-images/{product['id']}.webp", archive.namelist()
+                )
+                manifest = json.loads(archive.read("manifest.json"))
+                self.assertEqual(manifest["product_images_included"], 1)
+
+            bad_internal = client.patch(
+                f"/api/v1/catalog/products/{product['id']}",
+                json={
+                    "name": detail["name"],
+                    "product_group_id": detail["product_group_id"],
+                    "default_location_id": detail["default_location_id"],
+                    "default_quantity_unit_id": detail["default_quantity_unit_id"],
+                    "default_best_before_days": detail["default_best_before_days"],
+                    "minimum_stock_quantity": detail["minimum_stock_quantity"],
+                    "shopping_target_quantity": detail["shopping_target_quantity"],
+                    "image_url": "/api/v1/catalog/products/00000000-0000-0000-0000-000000000000/image",
+                    "notes": detail["notes"],
+                    "expected_updated_at": detail["updated_at"],
+                },
+            )
+            self.assertEqual(bad_internal.status_code, 422)
+
+            deleted = client.delete(
+                f"/api/v1/catalog/products/{product['id']}/image"
+            )
+            self.assertEqual(deleted.status_code, 200)
+            self.assertIsNone(deleted.json()["image_url"])
+            self.assertEqual(client.get(detail["image_url"]).status_code, 404)
+            rejected = client.post(
+                f"/api/v1/catalog/products/{product['id']}/image",
+                files={"image": ("produkt.svg", b"<svg></svg>", "image/svg+xml")},
+            )
+            self.assertEqual(rejected.status_code, 422)
 
     def test_stock_count_api_requires_review_and_is_idempotent(self) -> None:
         with TestClient(app) as client:

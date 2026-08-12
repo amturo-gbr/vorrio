@@ -7,6 +7,7 @@ The persistent `/data` volume contains:
 - `app.db` and SQLite WAL files;
 - encrypted application settings;
 - retained receipt images and PDFs below `receipts/`.
+- locally uploaded product images below `product-images/`.
 
 `APP_SECRET_KEY` is not inside the volume. Back it up separately in a password
 manager or secrets system. Without the same key, stored provider and connector
@@ -56,7 +57,7 @@ docker run --rm \
   --env APP_SECRET_KEY \
   --env APP_SECRET_KEY_NEW \
   --entrypoint python \
-  vorrio:0.8.17 /app/scripts/rotate_secret.py
+  vorrio:0.8.18 /app/scripts/rotate_secret.py
 ```
 
 4. update the normal deployment's `APP_SECRET_KEY` to the new value;
@@ -72,7 +73,7 @@ the complete backup; never delete the only working old key.
 
 ## Release verification
 
-For 0.8.17 the maintainers test a fresh empty volume, first-run setup, family
+For 0.8.18 the maintainers test a fresh empty volume, first-run setup, family
 invitation and role state, passkey/TOTP/recovery schema, recent-auth state,
 API-token creation/scope/revocation state, complete stopped-volume archive,
 restore into a second empty volume, SQLite

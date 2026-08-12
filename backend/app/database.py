@@ -2417,6 +2417,25 @@ class Database:
             raise RuntimeError("Das Produkt konnte nicht geladen werden")
         return updated
 
+    def set_catalog_product_image(
+        self, product_id: str, image_url: str | None
+    ) -> dict[str, Any]:
+        with self.connect() as conn:
+            current = conn.execute(
+                "SELECT id FROM catalog_products WHERE id = ? AND active = 1",
+                (product_id,),
+            ).fetchone()
+            if not current:
+                raise KeyError("Produkt nicht gefunden")
+            conn.execute(
+                "UPDATE catalog_products SET image_url = ?, updated_at = ? WHERE id = ?",
+                (image_url, now_iso(), product_id),
+            )
+        updated = self.get_catalog_product_detail(product_id)
+        if not updated:
+            raise RuntimeError("Das Produkt konnte nicht geladen werden")
+        return updated
+
     def create_catalog_variant(
         self,
         product_id: str,

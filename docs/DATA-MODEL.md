@@ -14,6 +14,11 @@
   product-candidate metadata. Search-query cache records use a hashed context
   key and contain no provider secret.
 
+Local household product images live below `/data/product-images` as one
+metadata-free WebP per product. `catalog_products.image_url` stores either its
+authenticated API route or an optional external HTTP(S) address. The files are
+part of volume backups and portable household exports.
+
 Catalog rows keep `created_at` and `updated_at`. Product, variant and master-data
 forms submit the last observed update timestamp; a stale write is rejected.
 Renaming a product adds the former normalized name to `catalog_aliases` instead
@@ -138,7 +143,7 @@ resolved local actor label; it never returns the fingerprint or detail JSON.
 Multi-household access still requires explicit tenant identifiers on every
 domain table before it can be enabled safely; 0.8.16 remains one household per
 installation. Complete erasure clears every domain, identity, notification,
-audit and setting table, removes only contained receipt source files and then
+audit and setting table, removes only contained receipt source and product image files and then
 reinitializes the empty schema.
 
 The remaining identity schema adds native device authorizations. Every catalog,

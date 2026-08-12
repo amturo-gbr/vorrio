@@ -275,11 +275,14 @@ and strongly confirmed installation erasure. Default client-address access
 logs are disabled; the replacement records request ID, route template, method,
 status and duration only. Version 0.8.16 completes the dedicated external-path
 review and adds the enforced public runtime contract plus its production-image
-smoke. Version 0.8.17 adds a shared frontend error normalizer, local manual-code
+smoke. Version 0.8.18 includes the shared frontend error normalizer, local manual-code
 shape validation and fixed settings feedback so structured API failures remain
 human-readable and visible without changing the REST contract. Remote provider
 response bodies stop at the service boundary; the API returns only a bounded
-status category and operator guidance. Browser
+status category and operator guidance. Household product photos are normalized
+to metadata-free WebP, stored in the local data
+volume and served only through the authenticated catalog API. Portable export
+and installation erasure include this media. Browser
 clients retain same-origin cookie sessions. Native clients use
 browser-based Authorization Code with PKCE and revocable device tokens rather
 than copying a browser cookie. See

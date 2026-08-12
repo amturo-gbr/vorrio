@@ -93,7 +93,7 @@ SESSION_HTTPS_ONLY=true
 ```
 
 Complete first-run setup on a trusted network before publishing a route.
-Version 0.8.17 supports guarded public HTTPS, but private VPN/HTTPS remains the
+Version 0.8.18 supports guarded public HTTPS, but private VPN/HTTPS remains the
 preferred household profile. Public traffic stays HTTP 503 until the complete
 contract passes and `PUBLIC_EXPOSURE_ACKNOWLEDGED=true` is set deliberately.
 The exact profiles and audit are documented in

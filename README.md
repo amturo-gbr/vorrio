@@ -9,7 +9,7 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.17
+## What works in 0.8.18
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;
@@ -71,6 +71,8 @@ The project is maintained by **Amturo UG** and licensed under
 - direct product creation and complete editing for name, image, notes,
   location, unit, group and default shelf life, with conflict detection and
   rename aliases;
+- private camera/file product images normalized to bounded, metadata-free WebP,
+  while external image addresses remain optional;
 - variant and barcode management with GTIN validation, duplicate protection
   and guarded deletion while receipts or stock still reference a package;
 - one responsive master-data workspace for listing, creating, renaming and

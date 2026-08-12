@@ -2,7 +2,7 @@ name: vorrio
 
 services:
   app:
-    image: ghcr.io/amturo/vorrio:${VORRIO_VERSION:-0.8.17}
+    image: ghcr.io/amturo/vorrio:${VORRIO_VERSION:-0.8.18}
     container_name: vorrio
     environment:
       APP_PASSWORD: ${APP_PASSWORD:-}

@@ -4259,6 +4259,71 @@ select:focus-visible {
   height: 30px;
 }
 
+.product-image-editor {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fafbf9;
+}
+
+.product-image-editor > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.product-image-editor strong {
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.product-image-editor small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.product-image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.product-image-actions .image-remove {
+  color: #a24336;
+}
+
+.visually-hidden-file {
+  position: fixed;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.external-image-url {
+  padding-top: 2px;
+}
+
+.external-image-url summary {
+  color: var(--green-dark);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.external-image-url label {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  color: #4b514d;
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .catalog-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -6371,6 +6436,11 @@ select:focus-visible {
 }
 
 @media (min-width: 960px) {
+  .sheet-backdrop {
+    align-items: center;
+    padding: 32px;
+  }
+
   .page-header h1 {
     font-size: 38px;
   }
@@ -6499,6 +6569,10 @@ select:focus-visible {
   }
 
   .reorder-rule-editor {
+    grid-column: 1 / -1;
+  }
+
+  .product-image-editor {
     grid-column: 1 / -1;
   }
 

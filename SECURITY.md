@@ -45,6 +45,8 @@ support policy is published.
   imports.
 - Receipt files can be deleted immediately after analysis or by the previewed
   hourly/manual retention rule; paths outside the receipt directory are refused.
+- Household product-photo uploads accept validated JPEG, PNG or WebP only,
+  discard camera metadata, are size-bounded and require authentication to read.
 - External product data is untrusted input and is shown with provenance before
   confirmed local values are changed.
 - Remote AI-provider failure bodies are not forwarded to browsers or audit
@@ -78,7 +80,7 @@ statement names the CVE, product, standardized justification, technical impact
 reason and assessment timestamp. Package updates remain mandatory when a stable
 compatible fix exists; VEX is not a substitute for upgrades.
 
-For 0.8.17, the High finding `CVE-2026-15308` affects CPython's incremental
+For 0.8.18, the High finding `CVE-2026-15308` affects CPython's incremental
 `html.parser.HTMLParser`. Vorrio neither imports that parser nor accepts HTML as
 a receipt format; bounded untrusted inputs are validated as image or PDF data.
 The VEX statement therefore records `vulnerable_code_not_in_execute_path` while
@@ -93,7 +95,7 @@ statement.
 
 ## Internet exposure
 
-Version 0.8.17 includes the dedicated external-path application review. HTTPS
+Version 0.8.18 includes the dedicated external-path application review. HTTPS
 alone still does not make an installation safe: `public_https` refuses normal
 application traffic until canonical host/origin, trusted proxy, Secure-cookie,
 secret and explicit acknowledgement checks all pass. Private VPN/HTTPS remains

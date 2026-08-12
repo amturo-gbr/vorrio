@@ -1,12 +1,14 @@
 import {
   Archive,
   Barcode,
+  Camera,
   Check,
   ChevronRight,
   CirclePlus,
   ClipboardCheck,
   Database,
   LoaderCircle,
+  ImageUp,
   MapPin,
   PackageCheck,
   PackagePlus,
@@ -20,7 +22,7 @@ import {
   Weight,
   X,
 } from 'lucide-react'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../../api'
 import type {
   CatalogMasterInput,
@@ -177,7 +179,7 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
           })}
         </div>
       ) : (
-        <div className="empty-page"><PackageSearch /><h2>Keine Produkte gefunden</h2><p>Lege Produkte beim nächsten Bon an oder übernimm deinen bisherigen Grocy-Katalog in den Einstellungen.</p></div>
+        <div className="empty-page"><PackageSearch /><h2>Keine Produkte gefunden</h2><p>{grocyEnabled ? 'Lege dein erstes Produkt an, übernimm den Grocy-Katalog oder ordne Artikel beim nächsten Bon zu.' : 'Lege dein erstes Produkt an oder ordne Artikel beim nächsten Bon zu.'}</p></div>
       )}
 
       {selected && masterData && (
@@ -305,10 +307,18 @@ function ProductEditor({
 }) {
   const [form, setForm] = useState<CatalogProductUpdateInput>(() => productForm(product))
   const [busy, setBusy] = useState(false)
+  const [imageBusy, setImageBusy] = useState(false)
   const [showNewVariant, setShowNewVariant] = useState(false)
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const uploadInput = useRef<HTMLInputElement>(null)
+  const preservedDraft = useRef<CatalogProductUpdateInput | null>(null)
   const invalidRule = form.shopping_target_quantity > 0 && form.shopping_target_quantity <= form.minimum_stock_quantity
+  const managedImage = Boolean(form.image_url?.startsWith(`/api/v1/catalog/products/${product.id}/image`))
 
-  useEffect(() => setForm(productForm(product)), [product])
+  useEffect(() => {
+    setForm(preservedDraft.current || productForm(product))
+    preservedDraft.current = null
+  }, [product])
 
   const save = async (event: FormEvent) => {
     event.preventDefault()
@@ -320,6 +330,43 @@ function ProductEditor({
       onNotice('error', (error as Error).message)
     } finally {
       setBusy(false)
+    }
+  }
+
+  const uploadImage = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setImageBusy(true)
+    try {
+      const updated = await api.uploadCatalogProductImage(product.id, file)
+      preservedDraft.current = {
+        ...form,
+        image_url: updated.image_url,
+        expected_updated_at: updated.updated_at,
+      }
+      await onUpdated(updated, 'Dein Produktbild wurde lokal gespeichert.')
+    } catch (error) {
+      onNotice('error', (error as Error).message)
+    } finally {
+      setImageBusy(false)
+    }
+  }
+
+  const removeImage = async () => {
+    setImageBusy(true)
+    try {
+      const updated = await api.deleteCatalogProductImage(product.id)
+      preservedDraft.current = {
+        ...form,
+        image_url: null,
+        expected_updated_at: updated.updated_at,
+      }
+      await onUpdated(updated, 'Produktbild wurde entfernt.')
+    } catch (error) {
+      onNotice('error', (error as Error).message)
+    } finally {
+      setImageBusy(false)
     }
   }
 
@@ -345,13 +392,30 @@ function ProductEditor({
             <label>Produktgruppe<select value={form.product_group_id ?? ''} onChange={(event) => setForm({ ...form, product_group_id: event.target.value ? Number(event.target.value) : null })}><option value="">Keine Gruppe</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
             <label>Standard-Haltbarkeit<input type="number" min="0" max="3650" value={form.default_best_before_days} onChange={(event) => setForm({ ...form, default_best_before_days: Number(event.target.value) })} /><small>Tage ab Einkauf, 0 = unbekannt</small></label>
           </div>
+          <section className="product-image-editor" aria-labelledby="product-image-heading">
+            <div>
+              <strong id="product-image-heading">Produktbild</strong>
+              <small>{managedImage ? 'Eigenes Bild · privat in Vorrio gespeichert' : form.image_url ? 'Bild von einer externen Adresse' : 'Noch kein Produktbild gewählt'}</small>
+            </div>
+            <div className="product-image-actions">
+              <button type="button" className="button tertiary compact" onClick={() => cameraInput.current?.click()} disabled={imageBusy}>{imageBusy ? <LoaderCircle className="spin" /> : <Camera />} Foto aufnehmen</button>
+              <button type="button" className="button tertiary compact" onClick={() => uploadInput.current?.click()} disabled={imageBusy}><ImageUp /> Bild hochladen</button>
+              {form.image_url && <button type="button" className="button quiet compact image-remove" onClick={removeImage} disabled={imageBusy}><Trash2 /> Entfernen</button>}
+            </div>
+            <input ref={cameraInput} className="visually-hidden-file" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={uploadImage} />
+            <input ref={uploadInput} className="visually-hidden-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={uploadImage} />
+            <details className="external-image-url">
+              <summary>Stattdessen externe Bildadresse verwenden</summary>
+              <label>Bildadresse<input inputMode="url" value={managedImage ? '' : form.image_url || ''} placeholder="https://…" onChange={(event) => setForm({ ...form, image_url: event.target.value || null })} /></label>
+              <small>Die Adresse wird erst mit „Produkt speichern“ übernommen. Eigene Uploads ersetzen sie sofort.</small>
+            </details>
+          </section>
           <div className="reorder-rule-editor">
             <div><strong>Automatisch nachkaufen</strong><small>Wenn der Bestand das Minimum erreicht, schlägt Vorrio die Menge bis zum Ziel vor.</small></div>
             <label>Mindestbestand<input type="number" min="0" step="any" value={form.minimum_stock_quantity} onChange={(event) => setForm({ ...form, minimum_stock_quantity: Number(event.target.value) })} /></label>
             <label>Auffüllen bis<input type="number" min="0" step="any" value={form.shopping_target_quantity} onChange={(event) => setForm({ ...form, shopping_target_quantity: Number(event.target.value) })} /></label>
             <p className={invalidRule ? 'field-error' : ''}>{invalidRule ? 'Das Auffüllziel muss größer als der Mindestbestand sein.' : 'Auffüllen bis 0 deaktiviert die Regel. Änderungen landen nie ungeprüft auf der Liste.'}</p>
           </div>
-          <label>Produktbild-URL<input inputMode="url" value={form.image_url || ''} placeholder="https://…" onChange={(event) => setForm({ ...form, image_url: event.target.value || null })} /></label>
           <label>Notizen<textarea rows={3} value={form.notes} placeholder="Optional für den Haushalt" onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
           <button className="button primary full" disabled={busy || invalidRule}>{busy ? <LoaderCircle className="spin" /> : <Save />} Produkt speichern</button>
         </form>

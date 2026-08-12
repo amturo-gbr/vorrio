@@ -154,12 +154,17 @@ from .services.authentication import (
 from .services.matching import match_items, reconcile_unresolved_items
 from .services.notifications import NotificationService
 from .services.outbound_urls import OutboundUrlError, validate_public_push_url
-from .services.media import MediaValidationError, validate_image_upload
+from .services.media import MediaValidationError, prepare_product_image, validate_image_upload
 from .services.pdf_receipt import PdfReceiptError, prepare_pdf_receipt
 from .services.providers import ProviderError, analyze_receipt, test_provider
 from .services.receipt_identity import build_receipt_fingerprint
 from .services.product_data import ProductDataError, lookup_open_facts
 from .services.product_candidates import find_product_candidates
+from .services.product_images import (
+    ProductImageStore,
+    is_managed_product_image_url,
+    managed_product_image_url,
+)
 from .services.privacy import PrivacyService
 from .services.scanning import (
     BarcodeValidationError,
@@ -172,6 +177,7 @@ from .services.settings import SettingsService
 config.data_dir.mkdir(parents=True, exist_ok=True)
 (config.data_dir / "receipts").mkdir(parents=True, exist_ok=True)
 database = Database(config.data_dir / "app.db")
+product_image_store = ProductImageStore(config.data_dir)
 secret_store = SecretStore(config.secret_key)
 settings_service = SettingsService(database, secret_store)
 notification_service = NotificationService(
@@ -265,7 +271,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.17",
+    version="0.8.18",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -2564,6 +2570,14 @@ async def update_catalog_product(
     request: Request,
     _: None = Depends(require_auth),
 ) -> dict[str, Any]:
+    previous = database.get_catalog_product_detail(product_id)
+    if not previous:
+        raise HTTPException(status_code=404, detail="Produkt nicht gefunden")
+    image_url = payload.image_url
+    if image_url and image_url.startswith("/api/v1/catalog/products/") and not is_managed_product_image_url(
+        image_url, product_id
+    ):
+        raise HTTPException(status_code=422, detail="Ungültige interne Produktbild-Adresse")
     try:
         product = database.update_catalog_product(
             product_id,
@@ -2574,12 +2588,16 @@ async def update_catalog_product(
             default_best_before_days=payload.default_best_before_days,
             minimum_stock_quantity=payload.minimum_stock_quantity,
             shopping_target_quantity=payload.shopping_target_quantity,
-            image_url=str(payload.image_url) if payload.image_url else None,
+            image_url=image_url,
             notes=payload.notes,
             expected_updated_at=payload.expected_updated_at,
         )
     except (KeyError, RuntimeError, ValueError) as exc:
         raise_catalog_error(exc)
+    if is_managed_product_image_url(previous.get("image_url"), product_id) and not is_managed_product_image_url(
+        product.get("image_url"), product_id
+    ):
+        product_image_store.delete(product_id)
     database.add_audit_event(
         category="catalog",
         action="product.update",
@@ -2588,6 +2606,113 @@ async def update_catalog_product(
         details={"product_id": product_id},
     )
     return product
+
+
+@app.get(
+    "/api/v1/catalog/products/{product_id}/image",
+    tags=["Catalog"],
+    summary="Read a locally managed product image",
+)
+async def catalog_product_image(
+    product_id: str,
+    _: None = Depends(require_auth),
+) -> FileResponse:
+    product = database.get_catalog_product_detail(product_id)
+    if not product or not is_managed_product_image_url(product.get("image_url"), product_id):
+        raise HTTPException(status_code=404, detail="Produktbild nicht gefunden")
+    try:
+        path = product_image_store.path(product_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Produktbild nicht gefunden") from exc
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Produktbild nicht gefunden")
+    return FileResponse(
+        path,
+        media_type="image/webp",
+        headers={"Cache-Control": "private, no-cache"},
+    )
+
+
+@app.post(
+    "/api/v1/catalog/products/{product_id}/image",
+    tags=["Catalog"],
+    summary="Upload a private product image",
+    description=(
+        "Accepts JPEG, PNG or WebP, removes camera metadata and stores an optimized "
+        "WebP in the local Vorrio data volume."
+    ),
+    response_model=CatalogProductDetailResponse,
+)
+async def upload_catalog_product_image(
+    product_id: str,
+    request: Request,
+    image: UploadFile = File(...),
+    _: None = Depends(require_auth),
+) -> dict[str, Any]:
+    previous = database.get_catalog_product_detail(product_id)
+    if not previous:
+        raise HTTPException(status_code=404, detail="Produkt nicht gefunden")
+    raw = await image.read(config.max_upload_bytes + 1)
+    if len(raw) > config.max_upload_bytes:
+        raise HTTPException(status_code=413, detail="Das Produktbild ist zu groß")
+    content_type = (image.content_type or "").split(";", 1)[0].strip().lower()
+    try:
+        body = await asyncio.to_thread(
+            prepare_product_image,
+            raw,
+            content_type,
+            config.max_image_pixels,
+        )
+    except MediaValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    try:
+        staged = product_image_store.stage(product_id, body)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail="Produkt nicht gefunden") from exc
+    previous_url = previous.get("image_url")
+    try:
+        updated = database.set_catalog_product_image(
+            product_id, managed_product_image_url(product_id)
+        )
+        product_image_store.commit(product_id, staged)
+    except Exception:
+        product_image_store.discard(staged)
+        database.set_catalog_product_image(product_id, previous_url)
+        raise
+    database.add_audit_event(
+        category="catalog",
+        action="product.image.upload",
+        outcome="success",
+        source_hash=request_source_fingerprint(request, config.secret_key),
+        details={"product_id": product_id, "bytes": len(body)},
+    )
+    return updated
+
+
+@app.delete(
+    "/api/v1/catalog/products/{product_id}/image",
+    tags=["Catalog"],
+    summary="Remove the current product image",
+    response_model=CatalogProductDetailResponse,
+)
+async def delete_catalog_product_image(
+    product_id: str,
+    request: Request,
+    _: None = Depends(require_auth),
+) -> dict[str, Any]:
+    try:
+        updated = database.set_catalog_product_image(product_id, None)
+        product_image_store.delete(product_id)
+    except (KeyError, RuntimeError, ValueError) as exc:
+        raise_catalog_error(exc)
+    database.add_audit_event(
+        category="catalog",
+        action="product.image.delete",
+        outcome="success",
+        source_hash=request_source_fingerprint(request, config.secret_key),
+        details={"product_id": product_id},
+    )
+    return updated
 
 
 @app.post(

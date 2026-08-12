@@ -5,12 +5,14 @@ import json
 import re
 import sqlite3
 import tempfile
+import uuid
 import zipfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 from ..database import Database, now_iso
+from .product_images import is_managed_product_image_url
 
 
 EXPORT_EXCLUSIONS = (
@@ -60,6 +62,24 @@ def _safe_receipt_path(data_dir: Path, value: str | None) -> Path | None:
     candidate = Path(value).resolve()
     try:
         candidate.relative_to(receipts_root)
+    except ValueError:
+        return None
+    return candidate
+
+
+def _safe_product_image_path(
+    data_dir: Path, product_id: str, image_url: str | None
+) -> Path | None:
+    if not is_managed_product_image_url(image_url, product_id):
+        return None
+    try:
+        normalized_id = str(uuid.UUID(product_id))
+    except ValueError:
+        return None
+    root = (data_dir / "product-images").resolve()
+    candidate = (root / f"{normalized_id}.webp").resolve()
+    try:
+        candidate.relative_to(root)
     except ValueError:
         return None
     return candidate
@@ -172,6 +192,10 @@ class PrivacyService:
                 "shopping_items": int(conn.execute("SELECT COUNT(*) FROM shopping_list_items").fetchone()[0]),
             }
             files = _rows(conn, "SELECT image_path FROM receipts WHERE image_path IS NOT NULL")
+            product_images = _rows(
+                conn,
+                "SELECT id, image_url FROM catalog_products WHERE image_url IS NOT NULL",
+            )
         file_count = 0
         file_bytes = 0
         for row in files:
@@ -179,11 +203,22 @@ class PrivacyService:
             if path and path.is_file():
                 file_count += 1
                 file_bytes += path.stat().st_size
+        product_image_file_count = 0
+        product_image_file_bytes = 0
+        for row in product_images:
+            path = _safe_product_image_path(
+                self.data_dir, str(row["id"]), row.get("image_url")
+            )
+            if path and path.is_file():
+                product_image_file_count += 1
+                product_image_file_bytes += path.stat().st_size
         return {
             "household_name": str(household["name"]),
             "counts": counts,
             "receipt_file_count": file_count,
             "receipt_file_bytes": file_bytes,
+            "product_image_file_count": product_image_file_count,
+            "product_image_file_bytes": product_image_file_bytes,
             "excluded_secret_categories": list(EXPORT_EXCLUSIONS),
         }
 
@@ -336,6 +371,12 @@ class PrivacyService:
             str(receipt["id"]): receipt.get("image_path")
             for receipt in sections["receipts"]["receipts"]
         }
+        product_image_paths = {
+            str(product["id"]): _safe_product_image_path(
+                self.data_dir, str(product["id"]), product.get("image_url")
+            )
+            for product in sections["catalog"]["catalog_products"]
+        }
         for receipt in sections["receipts"]["receipts"]:
             if receipt.get("image_path"):
                 receipt["image_path"] = Path(str(receipt["image_path"])).name
@@ -353,6 +394,8 @@ class PrivacyService:
             "counts": preview["counts"],
             "receipt_files_included": 0,
             "receipt_file_bytes": 0,
+            "product_images_included": 0,
+            "product_image_bytes": 0,
             "excluded_secret_categories": list(EXPORT_EXCLUSIONS),
             "files": [],
         }
@@ -384,6 +427,19 @@ class PrivacyService:
                         "bytes": len(body),
                         "sha256": hashlib.sha256(body).hexdigest(),
                     })
+            for product_id, path in product_image_paths.items():
+                if not path or not path.is_file():
+                    continue
+                body = path.read_bytes()
+                archive_name = f"product-images/{product_id}.webp"
+                bundle.writestr(archive_name, body)
+                manifest["product_images_included"] += 1
+                manifest["product_image_bytes"] += len(body)
+                manifest["files"].append({
+                    "path": archive_name,
+                    "bytes": len(body),
+                    "sha256": hashlib.sha256(body).hexdigest(),
+                })
             bundle.writestr("manifest.json", _json_bytes(manifest))
         archive.seek(0)
         return archive, manifest
@@ -460,14 +516,24 @@ class PrivacyService:
 
     def erase_installation(self) -> dict[str, Any]:
         receipt_root = (self.data_dir / "receipts").resolve()
-        deleted_files = 0
-        deleted_bytes = 0
+        deleted_receipt_files = 0
+        deleted_receipt_bytes = 0
         if receipt_root.is_dir():
             for path in receipt_root.iterdir():
                 if path.is_file():
-                    deleted_bytes += path.stat().st_size
+                    deleted_receipt_bytes += path.stat().st_size
                     path.unlink()
-                    deleted_files += 1
+                    deleted_receipt_files += 1
+
+        product_image_root = (self.data_dir / "product-images").resolve()
+        deleted_product_image_files = 0
+        deleted_product_image_bytes = 0
+        if product_image_root.is_dir():
+            for path in product_image_root.iterdir():
+                if path.is_file():
+                    deleted_product_image_bytes += path.stat().st_size
+                    path.unlink()
+                    deleted_product_image_files += 1
 
         table_order = (
             "notification_deliveries", "notification_events", "push_subscriptions",
@@ -491,7 +557,9 @@ class PrivacyService:
         self.database.initialize()
         return {
             "deleted": True,
-            "deleted_receipt_files": deleted_files,
-            "deleted_receipt_bytes": deleted_bytes,
+            "deleted_receipt_files": deleted_receipt_files,
+            "deleted_receipt_bytes": deleted_receipt_bytes,
+            "deleted_product_image_files": deleted_product_image_files,
+            "deleted_product_image_bytes": deleted_product_image_bytes,
             "completed_at": now_iso(),
         }

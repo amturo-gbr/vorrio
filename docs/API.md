@@ -63,6 +63,9 @@ submitting a change.
 | `POST` | `/api/v1/catalog/products` | Catalog | Create a local catalog product | no |
 | `GET` | `/api/v1/catalog/products/{product_id}` | Catalog | Read a product with variants and barcodes | no |
 | `PATCH` | `/api/v1/catalog/products/{product_id}` | Catalog | Edit a local catalog product | no |
+| `GET` | `/api/v1/catalog/products/{product_id}/image` | Catalog | Read a locally managed product image | no |
+| `POST` | `/api/v1/catalog/products/{product_id}/image` | Catalog | Upload a private product image | no |
+| `DELETE` | `/api/v1/catalog/products/{product_id}/image` | Catalog | Remove the current product image | no |
 | `GET` | `/api/v1/catalog/products/{product_id}/price-history` | Catalog | List receipt prices for a catalog product | no |
 | `POST` | `/api/v1/catalog/products/{product_id}/variants` | Catalog | Add a sellable product variant | no |
 | `POST` | `/api/v1/catalog/reconcile` | Catalog | Re-evaluate unresolved receipt lines | no |
