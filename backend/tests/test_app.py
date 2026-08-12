@@ -289,7 +289,11 @@ class AppFlowTests(unittest.TestCase):
             with TestClient(app) as client:
                 setup = client.post(
                     "/api/v1/auth/setup",
-                    json={"password": "sicheres-test-passwort", "display_name": "Owner Test"},
+                    json={
+                        "password": "sicheres-test-passwort",
+                        "display_name": "Owner Test",
+                        "preferred_locale": "en",
+                    },
                 )
                 self.assertEqual(setup.status_code, 200)
                 state = client.get("/api/v1/notifications/state")
@@ -355,6 +359,9 @@ class AppFlowTests(unittest.TestCase):
                 second = notification_service.evaluate_and_send()
                 self.assertEqual(second["events"], 1)
                 self.assertEqual(sender.call_count, first_delivery_count + 1)
+                stock_payload = json.loads(sender.call_args.kwargs["data"])
+                self.assertEqual(stock_payload["locale"], "en")
+                self.assertEqual(stock_payload["title"], "Stock is running low")
 
                 tested = client.post(
                     "/api/v1/notifications/test",
@@ -363,6 +370,9 @@ class AppFlowTests(unittest.TestCase):
                 self.assertEqual(tested.status_code, 200)
                 self.assertEqual(tested.json()["delivered"], 1)
                 self.assertEqual(sender.call_count, first_delivery_count + 2)
+                test_payload = json.loads(sender.call_args.kwargs["data"])
+                self.assertEqual(test_payload["locale"], "en")
+                self.assertEqual(test_payload["title"], "Vorrio is ready")
                 revoked = client.delete(
                     f"/api/v1/notifications/subscriptions/{subscription_id}"
                 )
@@ -789,17 +799,17 @@ class AppFlowTests(unittest.TestCase):
             self.assertFalse(completed.json()["release_notes_pending"])
             self.assertEqual(completed.json()["last_acknowledged_version"], app.version)
 
-            with patch.object(app, "version", "0.8.22"):
+            with patch.object(app, "version", "0.8.23"):
                 upgraded = client.get("/api/v1/experience")
                 self.assertTrue(upgraded.json()["release_notes_pending"])
-                self.assertEqual(upgraded.json()["release"]["version"], "0.8.22")
+                self.assertEqual(upgraded.json()["release"]["version"], "0.8.23")
                 acknowledged = client.put(
                     "/api/v1/experience",
                     json={"acknowledge_current_version": True},
                 )
                 self.assertFalse(acknowledged.json()["release_notes_pending"])
                 self.assertEqual(
-                    acknowledged.json()["last_acknowledged_version"], "0.8.22"
+                    acknowledged.json()["last_acknowledged_version"], "0.8.23"
                 )
 
             with database.connect() as conn:
@@ -807,7 +817,7 @@ class AppFlowTests(unittest.TestCase):
                     "SELECT onboarding_completed_at, last_acknowledged_version FROM user_experience"
                 ).fetchone()
                 self.assertIsNotNone(exported_experience["onboarding_completed_at"])
-                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.22")
+                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.23")
                 actions = {
                     row[0]
                     for row in conn.execute(
@@ -815,6 +825,67 @@ class AppFlowTests(unittest.TestCase):
                     ).fetchall()
                 }
             self.assertIn("experience_update", actions)
+
+    def test_interface_locale_is_personal_persisted_and_validated(self) -> None:
+        with TestClient(app) as client:
+            setup = client.post(
+                "/api/v1/auth/setup",
+                json={
+                    "password": "sicheres-test-passwort",
+                    "display_name": "Owner Test",
+                    "preferred_locale": "en",
+                },
+            )
+            self.assertEqual(setup.status_code, 200)
+            self.assertEqual(setup.json()["user"]["preferred_locale"], "en")
+            master_data = client.get("/api/v1/catalog/master-data")
+            self.assertEqual(master_data.status_code, 200)
+            self.assertIn(
+                "Pantry",
+                {item["name"] for item in master_data.json()["locations"]},
+            )
+            self.assertIn(
+                "Package",
+                {item["name"] for item in master_data.json()["quantity_units"]},
+            )
+            self.assertIn(
+                "Food",
+                {item["name"] for item in master_data.json()["product_groups"]},
+            )
+            self.assertEqual(
+                client.get("/api/v1/experience").json()["release"]["title"],
+                "Vorrio now speaks German and English",
+            )
+            scopes = client.get("/api/v1/auth/api-token-scopes")
+            self.assertEqual(scopes.status_code, 200)
+            self.assertEqual(scopes.json()[0]["label"], "Read status")
+
+            changed = client.patch(
+                "/api/v1/auth/preferences",
+                json={"preferred_locale": "de"},
+            )
+            self.assertEqual(changed.status_code, 200)
+            self.assertEqual(changed.json()["user"]["preferred_locale"], "de")
+            self.assertIn(
+                "Pantry",
+                {
+                    item["name"]
+                    for item in client.get("/api/v1/catalog/master-data").json()["locations"]
+                },
+            )
+            self.assertEqual(
+                client.get("/api/v1/experience").json()["release"]["title"],
+                "Vorrio spricht Deutsch und Englisch",
+            )
+            self.assertEqual(
+                client.patch(
+                    "/api/v1/auth/preferences",
+                    json={"preferred_locale": "fr"},
+                ).status_code,
+                422,
+            )
+            events = database.list_audit_events(20)
+            self.assertIn("user_locale_update", {event["action"] for event in events})
 
     def test_single_use_family_invitation_login_and_role_enforcement(self) -> None:
         with TestClient(app) as owner:
@@ -869,10 +940,14 @@ class AppFlowTests(unittest.TestCase):
             with TestClient(app) as member:
                 accepted = member.post(
                     f"/api/v1/auth/invitations/{token}/accept",
-                    json={"password": "eigenes-mitglied-passwort"},
+                    json={
+                        "password": "eigenes-mitglied-passwort",
+                        "preferred_locale": "en",
+                    },
                 )
                 self.assertEqual(accepted.status_code, 200)
                 self.assertEqual(accepted.json()["user"]["role"], "member")
+                self.assertEqual(accepted.json()["user"]["preferred_locale"], "en")
                 self.assertTrue(accepted.json()["identifier_required"])
                 self.assertEqual(
                     member.post(
@@ -1890,7 +1965,7 @@ class AppFlowTests(unittest.TestCase):
     def test_openapi_contract_is_versioned_and_scoped_token_authenticated(self) -> None:
         schema = app.openapi()
         self.assertEqual(schema["openapi"], "3.1.0")
-        self.assertEqual(schema["info"]["version"], "0.8.21")
+        self.assertEqual(schema["info"]["version"], "0.8.22")
         self.assertIn("/api/v1/privacy/export", schema["paths"])
         self.assertIn("/api/v1/operations/overview", schema["paths"])
         self.assertIn("/api/v1/catalog/products", schema["paths"])

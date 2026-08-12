@@ -1,4 +1,4 @@
-.PHONY: api-docs api-docs-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image pwa-check release-package-check check
+.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image pwa-check release-package-check website-check check
 
 CHECK_IMAGE ?= vorrio:check
 
@@ -68,7 +68,13 @@ pwa-check:
 docs-check:
 	python3 scripts/check_docs_links.py
 
+backend-i18n-check:
+	python3 scripts/check_backend_i18n_contract.py
+
+website-check:
+	python3 scripts/check_website_contract.py
+
 release-package-check:
 	python3 scripts/check_release_package.py
 
-check: backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check release-package-check api-docs-check
+check: backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check backend-i18n-check website-check release-package-check api-docs-check

@@ -282,6 +282,14 @@
             "title": "Owner Setup Complete",
             "type": "boolean"
           },
+          "preferred_locale": {
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Preferred Locale",
+            "type": "string"
+          },
           "role": {
             "enum": [
               "owner",
@@ -299,7 +307,8 @@
           "role",
           "household_id",
           "household_name",
-          "owner_setup_complete"
+          "owner_setup_complete",
+          "preferred_locale"
         ],
         "title": "AuthenticatedUserResponse",
         "type": "object"
@@ -2449,6 +2458,15 @@
             "maxLength": 512,
             "minLength": 10,
             "title": "Password",
+            "type": "string"
+          },
+          "preferred_locale": {
+            "default": "de",
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Preferred Locale",
             "type": "string"
           }
         },
@@ -5734,6 +5752,15 @@
             "minLength": 10,
             "title": "Password",
             "type": "string"
+          },
+          "preferred_locale": {
+            "default": "de",
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Preferred Locale",
+            "type": "string"
           }
         },
         "required": [
@@ -6575,6 +6602,23 @@
         "title": "TotpVerifyInput",
         "type": "object"
       },
+      "UserPreferencesUpdateInput": {
+        "properties": {
+          "preferred_locale": {
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Preferred Locale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preferred_locale"
+        ],
+        "title": "UserPreferencesUpdateInput",
+        "type": "object"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -6709,7 +6753,7 @@
     },
     "summary": "Self-hosted household inventory and receipt API",
     "title": "Vorrio REST API",
-    "version": "0.8.21"
+    "version": "0.8.22"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -8297,6 +8341,83 @@
           }
         ],
         "summary": "Change the current account password",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/v1/auth/preferences": {
+      "patch": {
+        "description": "Stores the signed-in user's supported BCP 47 interface locale. The preference is personal and does not alter household product data, currency or installation timezone.",
+        "operationId": "update_user_preferences_api_v1_auth_preferences_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserPreferencesUpdateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          }
+        ],
+        "summary": "Update personal interface preferences",
         "tags": [
           "Authentication"
         ]

@@ -38,12 +38,12 @@ import type {
   AuthenticatedUser,
 } from '../../types'
 import { StockCountSheet } from './StockCountSheet'
+import { formatNumber, translate } from '../../i18n'
 
-const formatQuantity = (value: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value)
+const formatQuantity = (value: number) => formatNumber(value)
 
 const countLabel = (value: number, singular: string, plural: string) =>
-  `${value} ${value === 1 ? singular : plural}`
+  `${formatNumber(value)} ${translate(value === 1 ? singular : plural)}`
 
 const emptyVariant: CatalogVariantInput = {
   name: null,
@@ -147,17 +147,17 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
   return (
     <div className="screen simple-screen catalog-screen">
       <header className="page-header catalog-page-header">
-        <div><h1>Vorrat</h1><p>Produkte, Packungen und Stammdaten an einem Ort.</p></div>
+        <div><h1>{translate("Vorrat")}</h1><p>{translate("Produkte, Packungen und Stammdaten an einem Ort.")}</p></div>
         <div className="catalog-header-actions">
-          {canCountStock && <button className="button tertiary compact" type="button" onClick={() => setStockCountOpen(true)}><ClipboardCheck /> Zählen</button>}
-          {canManageCatalog && <button className="button tertiary compact" type="button" onClick={openCreateProduct}><CirclePlus /> Produkt</button>}
-          {canManageCatalog && <button className="button tertiary compact" type="button" onClick={openMasterData}><Database /> Stammdaten</button>}
+          {canCountStock && <button className="button tertiary compact" type="button" onClick={() => setStockCountOpen(true)}><ClipboardCheck /> {translate("Zählen")}</button>}
+          {canManageCatalog && <button className="button tertiary compact" type="button" onClick={openCreateProduct}><CirclePlus /> {translate("Produkt")}</button>}
+          {canManageCatalog && <button className="button tertiary compact" type="button" onClick={openMasterData}><Database /> {translate("Stammdaten")}</button>}
         </div>
       </header>
-      <label className="search-field catalog-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Produkt suchen" /></label>
+      <label className="search-field catalog-search"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={translate("Produkt suchen")} /></label>
       {error && <p className="field-error" role="alert">{error}</p>}
       {busy ? (
-        <div className="inline-loading"><LoaderCircle className="spin" /> Produkte laden…</div>
+        <div className="inline-loading"><LoaderCircle className="spin" /> {translate("Produkte laden…")}</div>
       ) : products.length ? (
         <div className="catalog-list">
           {products.map((product) => {
@@ -167,10 +167,10 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
               </span>
               <span className="catalog-copy">
                 <strong>{product.name}</strong>
-                <small>{[product.product_group_name, product.default_location_name].filter(Boolean).join(' · ') || 'Stammdaten noch offen'}</small>
+                <small>{[product.product_group_name, product.default_location_name].filter(Boolean).join(' · ') || translate('Stammdaten noch offen')}</small>
                 {(product.variant_count > 0 || product.barcode_count > 0) && <em>{countLabel(product.variant_count, 'Variante', 'Varianten')} · {countLabel(product.barcode_count, 'Barcode', 'Barcodes')}</em>}
               </span>
-              <span className="catalog-stock"><strong>{formatQuantity(product.stock_quantity)}</strong><small>{product.default_quantity_unit_name || 'Einheiten'}</small></span>
+              <span className="catalog-stock"><strong>{formatQuantity(product.stock_quantity)}</strong><small>{product.default_quantity_unit_name || translate('Einheiten')}</small></span>
               {canManageCatalog && <ChevronRight />}
             </>
             return canManageCatalog
@@ -179,7 +179,7 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
           })}
         </div>
       ) : (
-        <div className="empty-page"><PackageSearch /><h2>Keine Produkte gefunden</h2><p>{grocyEnabled ? 'Lege dein erstes Produkt an, übernimm den Grocy-Katalog oder ordne Artikel beim nächsten Bon zu.' : 'Lege dein erstes Produkt an oder ordne Artikel beim nächsten Bon zu.'}</p></div>
+        <div className="empty-page"><PackageSearch /><h2>{translate("Keine Produkte gefunden")}</h2><p>{translate(grocyEnabled ? 'Lege dein erstes Produkt an, übernimm den Grocy-Katalog oder ordne Artikel beim nächsten Bon zu.' : 'Lege dein erstes Produkt an oder ordne Artikel beim nächsten Bon zu.')}</p></div>
       )}
 
       {selected && masterData && (
@@ -212,7 +212,7 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
             setCreateOpen(false)
             setSelected(product)
             await loadProducts()
-            onNotice('success', 'Produkt wurde angelegt und kann jetzt ergänzt werden.')
+            onNotice('success', translate('Produkt wurde angelegt und kann jetzt ergänzt werden.'))
           }}
           onNotice={onNotice}
         />
@@ -224,7 +224,7 @@ export function CatalogScreen({ onNotice, grocyEnabled, role }: { onNotice: Noti
           onClose={() => setStockCountOpen(false)}
           onCommitted={async () => {
             await loadProducts()
-            onNotice('success', 'Bestandszählung wurde übernommen.')
+            onNotice('success', translate('Bestandszählung wurde übernommen.'))
           }}
           onNotice={onNotice}
         />
@@ -267,25 +267,25 @@ function CreateProductSheet({ masterData, onClose, onCreated, onNotice }: { mast
 
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="product-sheet create-product-sheet" role="dialog" aria-modal="true" aria-label="Produkt anlegen">
+      <section className="product-sheet create-product-sheet" role="dialog" aria-modal="true" aria-label={translate("Produkt anlegen")}>
         <span className="sheet-handle" />
-        <header><div><h2>Produkt anlegen</h2><p>Erst das Haushaltsprodukt, Packungen danach</p></div><button type="button" className="icon-close" onClick={onClose} aria-label="Produktanlage schließen"><X /></button></header>
+        <header><div><h2>{translate("Produkt anlegen")}</h2><p>{translate("Erst das Haushaltsprodukt, Packungen danach")}</p></div><button type="button" className="icon-close" onClick={onClose} aria-label={translate("Produktanlage schließen")}><X /></button></header>
         <form className="catalog-product-form" onSubmit={submit}>
-          <label>Produktname<input autoFocus required value={draft.name} placeholder="z. B. Milch" onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
+          <label>{translate("Produktname")}<input autoFocus required value={draft.name} placeholder={translate("z. B. Milch")} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
           <div className="catalog-form-grid">
-            <label>Lagerort<select value={draft.location_id ?? ''} onChange={(event) => setDraft({ ...draft, location_id: event.target.value ? Number(event.target.value) : null })}><option value="">Kein Standard</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Einheit<select value={draft.quantity_unit_id ?? ''} onChange={(event) => setDraft({ ...draft, quantity_unit_id: event.target.value ? Number(event.target.value) : null })}><option value="">Keine Einheit</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Produktgruppe<select value={draft.product_group_id ?? ''} onChange={(event) => setDraft({ ...draft, product_group_id: event.target.value ? Number(event.target.value) : null })}><option value="">Keine Gruppe</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Standard-Haltbarkeit<input type="number" min="0" max="3650" value={draft.default_best_before_days} onChange={(event) => setDraft({ ...draft, default_best_before_days: Number(event.target.value) })} /></label>
+            <label>{translate("Lagerort")}<select value={draft.location_id ?? ''} onChange={(event) => setDraft({ ...draft, location_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Kein Standard")}</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Einheit")}<select value={draft.quantity_unit_id ?? ''} onChange={(event) => setDraft({ ...draft, quantity_unit_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Keine Einheit")}</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Produktgruppe")}<select value={draft.product_group_id ?? ''} onChange={(event) => setDraft({ ...draft, product_group_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Keine Gruppe")}</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Standard-Haltbarkeit")}<input type="number" min="0" max="3650" value={draft.default_best_before_days} onChange={(event) => setDraft({ ...draft, default_best_before_days: Number(event.target.value) })} /></label>
           </div>
           <div className="reorder-rule-editor">
-            <div><strong>Automatisch nachkaufen</strong><small>Vorschlag anzeigen, sobald der Bestand knapp wird.</small></div>
-            <label>Mindestbestand<input type="number" min="0" step="any" value={draft.minimum_stock_quantity} onChange={(event) => setDraft({ ...draft, minimum_stock_quantity: Number(event.target.value) })} /></label>
-            <label>Auffüllen bis<input type="number" min="0" step="any" value={draft.shopping_target_quantity} onChange={(event) => setDraft({ ...draft, shopping_target_quantity: Number(event.target.value) })} /></label>
-            <p className={invalidRule ? 'field-error' : ''}>{invalidRule ? 'Das Auffüllziel muss größer als der Mindestbestand sein.' : 'Auffüllen bis 0 lässt die Regel deaktiviert.'}</p>
+            <div><strong>{translate("Automatisch nachkaufen")}</strong><small>{translate("Vorschlag anzeigen, sobald der Bestand knapp wird.")}</small></div>
+            <label>{translate("Mindestbestand")}<input type="number" min="0" step="any" value={draft.minimum_stock_quantity} onChange={(event) => setDraft({ ...draft, minimum_stock_quantity: Number(event.target.value) })} /></label>
+            <label>{translate("Auffüllen bis")}<input type="number" min="0" step="any" value={draft.shopping_target_quantity} onChange={(event) => setDraft({ ...draft, shopping_target_quantity: Number(event.target.value) })} /></label>
+            <p className={invalidRule ? 'field-error' : ''}>{translate(invalidRule ? 'Das Auffüllziel muss größer als der Mindestbestand sein.' : 'Auffüllen bis 0 lässt die Regel deaktiviert.')}</p>
           </div>
-          <p className="create-helper">Marke, Packungsgröße, Bild und Barcode ergänzt du anschließend als konkrete Variante.</p>
-          <button className="button primary full" disabled={busy || !draft.name.trim() || invalidRule}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} Produkt anlegen</button>
+          <p className="create-helper">{translate("Marke, Packungsgröße, Bild und Barcode ergänzt du anschließend als konkrete Variante.")}</p>
+          <button className="button primary full" disabled={busy || !draft.name.trim() || invalidRule}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} {translate("Produkt anlegen")}</button>
         </form>
       </section>
     </div>
@@ -325,7 +325,7 @@ function ProductEditor({
     setBusy(true)
     try {
       const updated = await api.updateCatalogProduct(product.id, form)
-      await onUpdated(updated, 'Produkt wurde gespeichert.')
+      await onUpdated(updated, translate('Produkt wurde gespeichert.'))
     } catch (error) {
       onNotice('error', (error as Error).message)
     } finally {
@@ -345,7 +345,7 @@ function ProductEditor({
         image_url: updated.image_url,
         expected_updated_at: updated.updated_at,
       }
-      await onUpdated(updated, 'Dein Produktbild wurde lokal gespeichert.')
+      await onUpdated(updated, translate('Dein Produktbild wurde lokal gespeichert.'))
     } catch (error) {
       onNotice('error', (error as Error).message)
     } finally {
@@ -362,7 +362,7 @@ function ProductEditor({
         image_url: null,
         expected_updated_at: updated.updated_at,
       }
-      await onUpdated(updated, 'Produktbild wurde entfernt.')
+      await onUpdated(updated, translate('Produktbild wurde entfernt.'))
     } catch (error) {
       onNotice('error', (error as Error).message)
     } finally {
@@ -372,11 +372,11 @@ function ProductEditor({
 
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="product-sheet catalog-editor-sheet" role="dialog" aria-modal="true" aria-label="Produkt bearbeiten">
+      <section className="product-sheet catalog-editor-sheet" role="dialog" aria-modal="true" aria-label={translate("Produkt bearbeiten")}>
         <span className="sheet-handle" />
         <header>
-          <div><h2>Produkt bearbeiten</h2><p>Allgemeine Daten und konkrete Packungen</p></div>
-          <button type="button" className="icon-close" onClick={onClose} aria-label="Produkt schließen"><X /></button>
+          <div><h2>{translate("Produkt bearbeiten")}</h2><p>{translate("Allgemeine Daten und konkrete Packungen")}</p></div>
+          <button type="button" className="icon-close" onClick={onClose} aria-label={translate("Produkt schließen")}><X /></button>
         </header>
 
         <form className="catalog-product-form" onSubmit={save}>
@@ -384,46 +384,46 @@ function ProductEditor({
             <span className="catalog-product-image">
               {form.image_url ? <img src={form.image_url} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <PackageCheck />}
             </span>
-            <label>Produktname<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
+            <label>{translate("Produktname")}<input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} /></label>
           </div>
           <div className="catalog-form-grid">
-            <label>Lagerort<select value={form.default_location_id ?? ''} onChange={(event) => setForm({ ...form, default_location_id: event.target.value ? Number(event.target.value) : null })}><option value="">Kein Standard</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Einheit<select value={form.default_quantity_unit_id ?? ''} onChange={(event) => setForm({ ...form, default_quantity_unit_id: event.target.value ? Number(event.target.value) : null })}><option value="">Keine Einheit</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Produktgruppe<select value={form.product_group_id ?? ''} onChange={(event) => setForm({ ...form, product_group_id: event.target.value ? Number(event.target.value) : null })}><option value="">Keine Gruppe</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-            <label>Standard-Haltbarkeit<input type="number" min="0" max="3650" value={form.default_best_before_days} onChange={(event) => setForm({ ...form, default_best_before_days: Number(event.target.value) })} /><small>Tage ab Einkauf, 0 = unbekannt</small></label>
+            <label>{translate("Lagerort")}<select value={form.default_location_id ?? ''} onChange={(event) => setForm({ ...form, default_location_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Kein Standard")}</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Einheit")}<select value={form.default_quantity_unit_id ?? ''} onChange={(event) => setForm({ ...form, default_quantity_unit_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Keine Einheit")}</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Produktgruppe")}<select value={form.product_group_id ?? ''} onChange={(event) => setForm({ ...form, product_group_id: event.target.value ? Number(event.target.value) : null })}><option value="">{translate("Keine Gruppe")}</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+            <label>{translate("Standard-Haltbarkeit")}<input type="number" min="0" max="3650" value={form.default_best_before_days} onChange={(event) => setForm({ ...form, default_best_before_days: Number(event.target.value) })} /><small>{translate("Tage ab Einkauf, 0 = unbekannt")}</small></label>
           </div>
           <section className="product-image-editor" aria-labelledby="product-image-heading">
             <div>
-              <strong id="product-image-heading">Produktbild</strong>
-              <small>{managedImage ? 'Eigenes Bild · privat in Vorrio gespeichert' : form.image_url ? 'Bild von einer externen Adresse' : 'Noch kein Produktbild gewählt'}</small>
+              <strong id="product-image-heading">{translate("Produktbild")}</strong>
+              <small>{translate(managedImage ? 'Eigenes Bild · privat in Vorrio gespeichert' : form.image_url ? 'Bild von einer externen Adresse' : 'Noch kein Produktbild gewählt')}</small>
             </div>
             <div className="product-image-actions">
-              <button type="button" className="button tertiary compact" onClick={() => cameraInput.current?.click()} disabled={imageBusy}>{imageBusy ? <LoaderCircle className="spin" /> : <Camera />} Foto aufnehmen</button>
-              <button type="button" className="button tertiary compact" onClick={() => uploadInput.current?.click()} disabled={imageBusy}><ImageUp /> Bild hochladen</button>
-              {form.image_url && <button type="button" className="button quiet compact image-remove" onClick={removeImage} disabled={imageBusy}><Trash2 /> Entfernen</button>}
+              <button type="button" className="button tertiary compact" onClick={() => cameraInput.current?.click()} disabled={imageBusy}>{imageBusy ? <LoaderCircle className="spin" /> : <Camera />} {translate("Foto aufnehmen")}</button>
+              <button type="button" className="button tertiary compact" onClick={() => uploadInput.current?.click()} disabled={imageBusy}><ImageUp /> {translate("Bild hochladen")}</button>
+              {form.image_url && <button type="button" className="button quiet compact image-remove" onClick={removeImage} disabled={imageBusy}><Trash2 /> {translate("Entfernen")}</button>}
             </div>
             <input ref={cameraInput} className="visually-hidden-file" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={uploadImage} />
             <input ref={uploadInput} className="visually-hidden-file" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" onChange={uploadImage} />
             <details className="external-image-url">
-              <summary>Stattdessen externe Bildadresse verwenden</summary>
-              <label>Bildadresse<input inputMode="url" value={managedImage ? '' : form.image_url || ''} placeholder="https://…" onChange={(event) => setForm({ ...form, image_url: event.target.value || null })} /></label>
-              <small>Die Adresse wird erst mit „Produkt speichern“ übernommen. Eigene Uploads ersetzen sie sofort.</small>
+              <summary>{translate("Stattdessen externe Bildadresse verwenden")}</summary>
+              <label>{translate("Bildadresse")}<input inputMode="url" value={managedImage ? '' : form.image_url || ''} placeholder={translate("https://…")} onChange={(event) => setForm({ ...form, image_url: event.target.value || null })} /></label>
+              <small>{translate("Die Adresse wird erst mit „Produkt speichern“ übernommen. Eigene Uploads ersetzen sie sofort.")}</small>
             </details>
           </section>
           <div className="reorder-rule-editor">
-            <div><strong>Automatisch nachkaufen</strong><small>Wenn der Bestand das Minimum erreicht, schlägt Vorrio die Menge bis zum Ziel vor.</small></div>
-            <label>Mindestbestand<input type="number" min="0" step="any" value={form.minimum_stock_quantity} onChange={(event) => setForm({ ...form, minimum_stock_quantity: Number(event.target.value) })} /></label>
-            <label>Auffüllen bis<input type="number" min="0" step="any" value={form.shopping_target_quantity} onChange={(event) => setForm({ ...form, shopping_target_quantity: Number(event.target.value) })} /></label>
-            <p className={invalidRule ? 'field-error' : ''}>{invalidRule ? 'Das Auffüllziel muss größer als der Mindestbestand sein.' : 'Auffüllen bis 0 deaktiviert die Regel. Änderungen landen nie ungeprüft auf der Liste.'}</p>
+            <div><strong>{translate("Automatisch nachkaufen")}</strong><small>{translate("Wenn der Bestand das Minimum erreicht, schlägt Vorrio die Menge bis zum Ziel vor.")}</small></div>
+            <label>{translate("Mindestbestand")}<input type="number" min="0" step="any" value={form.minimum_stock_quantity} onChange={(event) => setForm({ ...form, minimum_stock_quantity: Number(event.target.value) })} /></label>
+            <label>{translate("Auffüllen bis")}<input type="number" min="0" step="any" value={form.shopping_target_quantity} onChange={(event) => setForm({ ...form, shopping_target_quantity: Number(event.target.value) })} /></label>
+            <p className={invalidRule ? 'field-error' : ''}>{translate(invalidRule ? 'Das Auffüllziel muss größer als der Mindestbestand sein.' : 'Auffüllen bis 0 deaktiviert die Regel. Änderungen landen nie ungeprüft auf der Liste.')}</p>
           </div>
-          <label>Notizen<textarea rows={3} value={form.notes} placeholder="Optional für den Haushalt" onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
-          <button className="button primary full" disabled={busy || invalidRule}>{busy ? <LoaderCircle className="spin" /> : <Save />} Produkt speichern</button>
+          <label>{translate("Notizen")}<textarea rows={3} value={form.notes} placeholder={translate("Optional für den Haushalt")} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></label>
+          <button className="button primary full" disabled={busy || invalidRule}>{busy ? <LoaderCircle className="spin" /> : <Save />} {translate("Produkt speichern")}</button>
         </form>
 
         <section className="variant-section">
           <div className="section-heading compact-heading">
-            <div><h3>Packungen & Barcodes</h3><p>Marken und Größen gehören als Variante zum Produkt.</p></div>
-            <button type="button" className="button tertiary compact" onClick={() => setShowNewVariant(!showNewVariant)}><CirclePlus /> Variante</button>
+            <div><h3>{translate("Packungen & Barcodes")}</h3><p>{translate("Marken und Größen gehören als Variante zum Produkt.")}</p></div>
+            <button type="button" className="button tertiary compact" onClick={() => setShowNewVariant(!showNewVariant)}><CirclePlus /> {translate("Variante")}</button>
           </div>
           {showNewVariant && (
             <NewVariantForm
@@ -431,7 +431,7 @@ function ProductEditor({
               onCancel={() => setShowNewVariant(false)}
               onCreated={async (updated) => {
                 setShowNewVariant(false)
-                await onUpdated(updated, 'Variante wurde angelegt.')
+                await onUpdated(updated, translate('Variante wurde angelegt.'))
               }}
               onNotice={onNotice}
             />
@@ -440,7 +440,7 @@ function ProductEditor({
             {product.variants.map((variant) => (
               <VariantEditor key={variant.id} variant={variant} onUpdated={onUpdated} onNotice={onNotice} />
             ))}
-            {!product.variants.length && <p className="empty-inline">Noch keine konkrete Packung. Das allgemeine Produkt funktioniert trotzdem.</p>}
+            {!product.variants.length && <p className="empty-inline">{translate("Noch keine konkrete Packung. Das allgemeine Produkt funktioniert trotzdem.")}</p>}
           </div>
         </section>
       </section>
@@ -481,9 +481,9 @@ function NewVariantForm({ productId, onCancel, onCreated, onNotice }: { productI
 
   return (
     <form className="variant-editor new-variant" onSubmit={submit}>
-      <strong>Neue Variante</strong>
+      <strong>{translate("Neue Variante")}</strong>
       <VariantFields value={draft} onChange={setDraft} />
-      <div className="row-actions"><button type="button" className="button tertiary compact" onClick={onCancel}>Abbrechen</button><button className="button primary compact" disabled={busy}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} Anlegen</button></div>
+      <div className="row-actions"><button type="button" className="button tertiary compact" onClick={onCancel}>{translate("Abbrechen")}</button><button className="button primary compact" disabled={busy}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} {translate("Anlegen")}</button></div>
     </form>
   )
 }
@@ -513,22 +513,22 @@ function VariantEditor({ variant, onUpdated, onNotice }: { variant: CatalogVaria
     <article className={`variant-editor ${open ? 'open' : ''}`}>
       <button type="button" className="variant-summary" onClick={() => setOpen(!open)}>
         <span className="variant-image">{variant.image_url ? <img src={variant.image_url} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <Barcode />}</span>
-        <span><strong>{variant.brand || variant.name || 'Unbenannte Variante'}</strong><small>{[variant.name !== variant.brand ? variant.name : null, variant.package_amount && variant.package_unit ? `${formatQuantity(variant.package_amount)} ${variant.package_unit}` : null].filter(Boolean).join(' · ') || 'Packungsdaten offen'}</small><em>{countLabel(variant.barcodes.length, 'Barcode', 'Barcodes')} · {countLabel(variant.receipt_count, 'Bon', 'Bons')}</em></span>
+        <span><strong>{variant.brand || variant.name || translate('Unbenannte Variante')}</strong><small>{[variant.name !== variant.brand ? variant.name : null, variant.package_amount && variant.package_unit ? `${formatQuantity(variant.package_amount)} ${variant.package_unit}` : null].filter(Boolean).join(' · ') || translate('Packungsdaten offen')}</small><em>{countLabel(variant.barcodes.length, 'Barcode', 'Barcodes')} · {countLabel(variant.receipt_count, 'Bon', 'Bons')}</em></span>
         <Pencil />
       </button>
       {open && (
         <div className="variant-body">
           <VariantFields value={draft} onChange={setDraft} />
           <div className="barcode-manager">
-            <strong>Barcodes</strong>
-            {variant.barcodes.map((entry) => <span className="barcode-chip" key={entry.barcode}><span><b>{entry.barcode}</b><small>{entry.symbology || 'Code'}</small></span><button type="button" aria-label={`Barcode ${entry.barcode} entfernen`} onClick={() => execute(() => api.deleteCatalogBarcode(variant.id, entry.barcode), 'Barcode wurde entfernt.')} disabled={busy}><X /></button></span>)}
-            <div className="barcode-add"><input value={barcode} inputMode="numeric" placeholder="Barcode scannen oder eingeben" onChange={(event) => setBarcode(event.target.value)} /><button type="button" className="button tertiary compact" disabled={busy || barcode.trim().length < 4} onClick={() => execute(() => api.createCatalogBarcode(variant.id, barcode), 'Barcode wurde gespeichert.')}><CirclePlus /> Hinzufügen</button></div>
+            <strong>{translate("Barcodes")}</strong>
+            {variant.barcodes.map((entry) => <span className="barcode-chip" key={entry.barcode}><span><b>{entry.barcode}</b><small>{entry.symbology || 'Code'}</small></span><button type="button" aria-label={translate('Barcode {{barcode}} entfernen', { barcode: entry.barcode })} onClick={() => execute(() => api.deleteCatalogBarcode(variant.id, entry.barcode), translate('Barcode wurde entfernt.'))} disabled={busy}><X /></button></span>)}
+            <div className="barcode-add"><input value={barcode} inputMode="numeric" placeholder={translate("Barcode scannen oder eingeben")} onChange={(event) => setBarcode(event.target.value)} /><button type="button" className="button tertiary compact" disabled={busy || barcode.trim().length < 4} onClick={() => execute(() => api.createCatalogBarcode(variant.id, barcode), translate('Barcode wurde gespeichert.'))}><CirclePlus /> {translate("Hinzufügen")}</button></div>
           </div>
           <div className="row-actions variant-actions">
-            <button type="button" className={`button ${confirmDelete ? 'danger' : 'ghost-danger'} compact`} disabled={busy || variant.receipt_count > 0 || variant.stock_lot_count > 0} onClick={() => confirmDelete ? execute(() => api.deleteCatalogVariant(variant.id), 'Variante wurde gelöscht.') : setConfirmDelete(true)}><Trash2 /> {confirmDelete ? 'Wirklich löschen' : 'Variante löschen'}</button>
-            <button type="button" className="button primary compact" disabled={busy} onClick={() => execute(() => api.updateCatalogVariant(variant.id, { ...draft, expected_updated_at: variant.updated_at }), 'Variante wurde gespeichert.')}><Check /> Speichern</button>
+            <button type="button" className={`button ${confirmDelete ? 'danger' : 'ghost-danger'} compact`} disabled={busy || variant.receipt_count > 0 || variant.stock_lot_count > 0} onClick={() => confirmDelete ? execute(() => api.deleteCatalogVariant(variant.id), translate('Variante wurde gelöscht.')) : setConfirmDelete(true)}><Trash2 /> {translate(confirmDelete ? 'Wirklich löschen' : 'Variante löschen')}</button>
+            <button type="button" className="button primary compact" disabled={busy} onClick={() => execute(() => api.updateCatalogVariant(variant.id, { ...draft, expected_updated_at: variant.updated_at }), translate('Variante wurde gespeichert.'))}><Check /> {translate("Speichern")}</button>
           </div>
-          {(variant.receipt_count > 0 || variant.stock_lot_count > 0) && <p className="protected-note">Diese Variante bleibt geschützt, weil Bons oder Bestände darauf verweisen.</p>}
+          {(variant.receipt_count > 0 || variant.stock_lot_count > 0) && <p className="protected-note">{translate("Diese Variante bleibt geschützt, weil Bons oder Bestände darauf verweisen.")}</p>}
         </div>
       )}
     </article>
@@ -548,11 +548,11 @@ function variantForm(variant: CatalogVariant): CatalogVariantInput {
 function VariantFields({ value, onChange }: { value: CatalogVariantInput; onChange: (value: CatalogVariantInput) => void }) {
   return (
     <div className="catalog-form-grid variant-fields">
-      <label>Marke<input value={value.brand || ''} onChange={(event) => onChange({ ...value, brand: event.target.value || null })} /></label>
-      <label>Variantenname<input value={value.name || ''} placeholder="z. B. Barista" onChange={(event) => onChange({ ...value, name: event.target.value || null })} /></label>
-      <label>Menge<input type="number" min="0" step="0.01" value={value.package_amount ?? ''} onChange={(event) => onChange({ ...value, package_amount: event.target.value ? Number(event.target.value) : null })} /></label>
-      <label>Packungseinheit<input value={value.package_unit || ''} placeholder="ml, g, Stück …" onChange={(event) => onChange({ ...value, package_unit: event.target.value || null })} /></label>
-      <label className="wide-field">Bild-URL<input inputMode="url" value={value.image_url || ''} placeholder="https://…" onChange={(event) => onChange({ ...value, image_url: event.target.value || null })} /></label>
+      <label>{translate("Marke")}<input value={value.brand || ''} onChange={(event) => onChange({ ...value, brand: event.target.value || null })} /></label>
+      <label>{translate("Variantenname")}<input value={value.name || ''} placeholder={translate("z. B. Barista")} onChange={(event) => onChange({ ...value, name: event.target.value || null })} /></label>
+      <label>{translate("Menge")}<input type="number" min="0" step="0.01" value={value.package_amount ?? ''} onChange={(event) => onChange({ ...value, package_amount: event.target.value ? Number(event.target.value) : null })} /></label>
+      <label>{translate("Packungseinheit")}<input value={value.package_unit || ''} placeholder={translate("ml, g, Stück …")} onChange={(event) => onChange({ ...value, package_unit: event.target.value || null })} /></label>
+      <label className="wide-field">{translate("Bild-URL")}<input inputMode="url" value={value.image_url || ''} placeholder={translate("https://…")} onChange={(event) => onChange({ ...value, image_url: event.target.value || null })} /></label>
     </div>
   )
 }
@@ -593,10 +593,10 @@ function MasterDataManager({ data, onClose, onChanged, onNotice }: { data: Grocy
     try {
       if (selected) {
         await api.updateCatalogMaster(kind, selected.id, { ...draft, expected_updated_at: selected.updated_at || '' })
-        onNotice('success', `${definition.singular} wurde gespeichert.`)
+        onNotice('success', translate('{{type}} wurde gespeichert.', { type: translate(definition.singular) }))
       } else {
         await api.createCatalogMaster(kind, draft)
-        onNotice('success', `${definition.singular} wurde angelegt.`)
+        onNotice('success', translate('{{type}} wurde angelegt.', { type: translate(definition.singular) }))
       }
       await onChanged()
       select(null)
@@ -618,7 +618,7 @@ function MasterDataManager({ data, onClose, onChanged, onNotice }: { data: Grocy
       await api.archiveCatalogMaster(kind, selected.id)
       await onChanged()
       select(null)
-      onNotice('success', 'Eintrag wurde archiviert.')
+      onNotice('success', translate('Eintrag wurde archiviert.'))
     } catch (error) {
       onNotice('error', (error as Error).message)
     } finally {
@@ -628,26 +628,26 @@ function MasterDataManager({ data, onClose, onChanged, onNotice }: { data: Grocy
 
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="product-sheet master-data-sheet" role="dialog" aria-modal="true" aria-label="Stammdaten verwalten">
+      <section className="product-sheet master-data-sheet" role="dialog" aria-modal="true" aria-label={translate("Stammdaten verwalten")}>
         <span className="sheet-handle" />
-        <header><div><h2>Stammdaten</h2><p>Umbenennen, ergänzen und sauber zuordnen</p></div><button type="button" className="icon-close" onClick={onClose} aria-label="Stammdaten schließen"><X /></button></header>
-        <nav className="master-tabs" aria-label="Stammdatentyp">
-          {masterDefinitions.map(({ kind: tabKind, label, icon: Icon }) => <button type="button" className={kind === tabKind ? 'selected' : ''} key={tabKind} onClick={() => setKind(tabKind)}><Icon /> {label}</button>)}
+        <header><div><h2>{translate("Stammdaten")}</h2><p>{translate("Umbenennen, ergänzen und sauber zuordnen")}</p></div><button type="button" className="icon-close" onClick={onClose} aria-label={translate("Stammdaten schließen")}><X /></button></header>
+        <nav className="master-tabs" aria-label={translate("Stammdatentyp")}>
+          {masterDefinitions.map(({ kind: tabKind, label, icon: Icon }) => <button type="button" className={kind === tabKind ? 'selected' : ''} key={tabKind} onClick={() => setKind(tabKind)}><Icon /> {translate(label)}</button>)}
         </nav>
         <div className="master-data-workspace">
           <div className="master-data-list">
-            <button type="button" className={!selected ? 'selected new-master-row' : 'new-master-row'} onClick={() => select(null)}><CirclePlus /><span><strong>Neu anlegen</strong><small>{definition.label}</small></span></button>
+            <button type="button" className={!selected ? 'selected new-master-row' : 'new-master-row'} onClick={() => select(null)}><CirclePlus /><span><strong>{translate("Neu anlegen")}</strong><small>{translate(definition.singular)}</small></span></button>
             {rows.map((row) => <button type="button" className={selected?.id === row.id ? 'selected' : ''} key={row.id} onClick={() => select(row)}><span className="master-type-icon">{kind === 'locations' && row.is_freezer ? <Snowflake /> : <MasterIcon />}</span><span><strong>{row.name}</strong><small>{countLabel(row.usage_count || 0, 'Produkt', 'Produkte')}</small></span><ChevronRight /></button>)}
           </div>
           <form className="master-data-form" onSubmit={save}>
-            <div className="section-heading compact-heading"><div><h3>{selected ? `${selected.name} bearbeiten` : `${definition.singular} anlegen`}</h3><p>Änderungen gelten sofort überall in Vorrio.</p></div></div>
-            <label>Name<input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
-            {kind === 'quantity-units' && <label>Mehrzahl<input value={draft.name_plural || ''} placeholder="z. B. Flaschen" onChange={(event) => setDraft({ ...draft, name_plural: event.target.value || null })} /></label>}
-            <label>Beschreibung<textarea rows={3} value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
-            {kind === 'locations' && <label className="toggle-row"><span><strong>Gefrierstandort</strong><small>Für Tiefkühlware und Temperaturhinweise.</small></span><input type="checkbox" checked={draft.is_freezer} onChange={(event) => setDraft({ ...draft, is_freezer: event.target.checked })} /></label>}
-            <button className="button primary full" disabled={busy || !draft.name.trim()}>{busy ? <LoaderCircle className="spin" /> : <Save />} {selected ? 'Änderungen speichern' : 'Eintrag anlegen'}</button>
-            {selected && <button type="button" className={`button ${confirmArchive ? 'danger' : 'ghost-danger'} full`} disabled={busy || Boolean(selected.usage_count)} onClick={archive}><Archive /> {confirmArchive ? 'Wirklich archivieren' : 'Eintrag archivieren'}</button>}
-            {selected && Boolean(selected.usage_count) && <p className="protected-note">Noch von {countLabel(selected.usage_count || 0, 'Produkt', 'Produkten')} verwendet. Ordne {selected.usage_count === 1 ? 'dieses Produkt' : 'diese Produkte'} zuerst neu zu.</p>}
+            <div className="section-heading compact-heading"><div><h3>{selected ? translate('{{name}} bearbeiten', { name: selected.name }) : translate('{{type}} anlegen', { type: translate(definition.singular) })}</h3><p>{translate("Änderungen gelten sofort überall in Vorrio.")}</p></div></div>
+            <label>{translate("Name")}<input required value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} /></label>
+            {kind === 'quantity-units' && <label>{translate("Mehrzahl")}<input value={draft.name_plural || ''} placeholder={translate("z. B. Flaschen")} onChange={(event) => setDraft({ ...draft, name_plural: event.target.value || null })} /></label>}
+            <label>{translate("Beschreibung")}<textarea rows={3} value={draft.description} onChange={(event) => setDraft({ ...draft, description: event.target.value })} /></label>
+            {kind === 'locations' && <label className="toggle-row"><span><strong>{translate("Gefrierstandort")}</strong><small>{translate("Für Tiefkühlware und Temperaturhinweise.")}</small></span><input type="checkbox" checked={draft.is_freezer} onChange={(event) => setDraft({ ...draft, is_freezer: event.target.checked })} /></label>}
+            <button className="button primary full" disabled={busy || !draft.name.trim()}>{busy ? <LoaderCircle className="spin" /> : <Save />} {translate(selected ? 'Änderungen speichern' : 'Eintrag anlegen')}</button>
+            {selected && <button type="button" className={`button ${confirmArchive ? 'danger' : 'ghost-danger'} full`} disabled={busy || Boolean(selected.usage_count)} onClick={archive}><Archive /> {translate(confirmArchive ? 'Wirklich archivieren' : 'Eintrag archivieren')}</button>}
+            {selected && Boolean(selected.usage_count) && <p className="protected-note">{translate('Wird noch von {{count}} Produkten verwendet. Ordne diese Produkte zuerst neu zu.', { count: selected.usage_count || 0 })}</p>}
           </form>
         </div>
       </section>

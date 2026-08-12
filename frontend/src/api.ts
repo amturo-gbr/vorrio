@@ -1,5 +1,6 @@
 import type {
   AppStatus,
+  AuthenticatedUser,
   AuthenticationState,
   ExperienceState,
   AuthSession,
@@ -115,7 +116,11 @@ export const api = {
   setup: (password: string, displayName: string) =>
     request<AuthenticationState>('/api/v1/auth/setup', {
       method: 'POST',
-      body: JSON.stringify({ password, display_name: displayName }),
+      body: JSON.stringify({
+        password,
+        display_name: displayName,
+        preferred_locale: document.documentElement.lang || 'de',
+      }),
     }),
   login: (password: string, identifier?: string) =>
     request<AuthenticationState>('/api/v1/auth/login', {
@@ -248,7 +253,12 @@ export const api = {
   acceptHouseholdInvitation: (token: string, password: string) =>
     request<AuthenticationState>(`/api/v1/auth/invitations/${encodeURIComponent(token)}/accept`, {
       method: 'POST',
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password, preferred_locale: document.documentElement.lang || 'de' }),
+    }),
+  updatePreferences: (preferredLocale: AuthenticatedUser['preferred_locale']) =>
+    request<AuthenticationState>('/api/v1/auth/preferences', {
+      method: 'PATCH',
+      body: JSON.stringify({ preferred_locale: preferredLocale }),
     }),
   logout: () => request('/api/v1/auth/logout', { method: 'POST' }),
   experience: () => request<ExperienceState>('/api/v1/experience'),

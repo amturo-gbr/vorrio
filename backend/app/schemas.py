@@ -16,6 +16,7 @@ ScanStatus = Literal["resolved", "unresolved", "confirmed", "discarded"]
 ScanResolutionSource = Literal["local", "cache", "open_facts", "unresolved"]
 StockCountSource = Literal["manual", "grocy_review"]
 HouseholdRole = Literal["owner", "admin", "member", "viewer"]
+SupportedLocale = Literal["de", "en"]
 ApiTokenScope = Literal[
     "status:read",
     "catalog:read",
@@ -35,6 +36,7 @@ class LoginRequest(BaseModel):
 class SetupRequest(BaseModel):
     password: str = Field(min_length=10, max_length=512)
     display_name: str | None = Field(default=None, min_length=2, max_length=100)
+    preferred_locale: SupportedLocale = "de"
 
 
 class OwnerProfileUpdateInput(BaseModel):
@@ -59,6 +61,11 @@ class HouseholdInvitationCreateInput(BaseModel):
 
 class HouseholdInvitationAcceptInput(BaseModel):
     password: str = Field(min_length=10, max_length=512)
+    preferred_locale: SupportedLocale = "de"
+
+
+class UserPreferencesUpdateInput(BaseModel):
+    preferred_locale: SupportedLocale
 
 
 class HouseholdMemberUpdateInput(BaseModel):
@@ -199,6 +206,7 @@ class AuthenticatedUserResponse(BaseModel):
     household_id: str
     household_name: str
     owner_setup_complete: bool
+    preferred_locale: SupportedLocale
 
 
 class AuthenticationResponse(BaseModel):

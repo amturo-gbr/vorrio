@@ -35,6 +35,7 @@ import {
   type OfflineScanEntry,
   type OfflineScanStorage,
 } from './offlineQueue'
+import { currentLocale, formatDate, formatNumber, translate } from '../../i18n'
 
 const modes: { id: ScanMode; label: string; icon: typeof Barcode; action: string; description: string }[] = [
   { id: 'identify', label: 'Erkennen', icon: Barcode, action: 'Produkt bestätigen', description: 'ordnet das Produkt zu, ohne den Bestand zu ändern' },
@@ -48,17 +49,16 @@ const mutationId = (prefix: string) =>
   `${prefix}_${globalThis.crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(16).slice(2)}`}`
 
 const sourceLabel = (scan: ScanDraft) => {
-  if (scan.resolution_source === 'local') return 'Eigener Vorrio-Katalog'
-  if (scan.resolution_source === 'cache') return 'Open-Facts-Cache'
+  if (scan.resolution_source === 'local') return translate('Eigener Vorrio-Katalog')
+  if (scan.resolution_source === 'cache') return translate('Open-Facts-Cache')
   if (scan.resolution_source === 'open_facts') return scan.suggestion?.source || 'Open Facts'
-  return 'Noch nicht erkannt'
+  return translate('Noch nicht erkannt')
 }
 
 const productTitle = (scan: ScanDraft) =>
-  scan.product_name || scan.suggestion?.name || 'Unbekanntes Produkt'
+  scan.product_name || scan.suggestion?.name || translate('Unbekanntes Produkt')
 
-const formatQuantity = (value: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value)
+const formatQuantity = (value: number) => formatNumber(value)
 
 const localQueueStorage = (): OfflineScanStorage | null => {
   try {
@@ -183,7 +183,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   const enqueueOffline = useCallback((value: string, queuedMode: ScanMode, clientMutationId: string) => {
     const storage = localQueueStorage()
     if (!storage) {
-      setError('Der lokale Gerätespeicher ist nicht verfügbar. Der Code konnte nicht vorgemerkt werden.')
+      setError(translate('Der lokale Gerätespeicher ist nicht verfügbar. Der Code konnte nicht vorgemerkt werden.'))
       playFeedback(false)
       return false
     }
@@ -196,7 +196,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     })
     setOfflineScans(result.entries)
     if (result.status === 'full') {
-      setError('Die Offline-Warteschlange ist voll. Bitte zuerst vorhandene Scans synchronisieren oder entfernen.')
+      setError(translate('Die Offline-Warteschlange ist voll. Bitte zuerst vorhandene Scans synchronisieren oder entfernen.'))
       playFeedback(false)
       return false
     }
@@ -204,8 +204,8 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     setError('')
     playFeedback(true)
     onNotice('success', result.status === 'added'
-      ? 'Scan lokal vorgemerkt. Nach der Verbindung wird er zur Prüfung synchronisiert.'
-      : 'Dieser Code wartet mit derselben Aktion bereits auf die Synchronisierung.')
+      ? translate('Scan lokal vorgemerkt. Nach der Verbindung wird er zur Prüfung synchronisiert.')
+      : translate('Dieser Code wartet mit derselben Aktion bereits auf die Synchronisierung.'))
     return true
   }, [onNotice])
 
@@ -233,18 +233,18 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
           setOfflineScans(markOfflineScanFailed(storage, entry.id, message))
           if (nextError instanceof ApiNetworkError) {
             setOnline(navigator.onLine)
-            setError('Die Verbindung ist wieder unterbrochen. Offene Scans bleiben lokal gespeichert.')
+            setError(translate('Die Verbindung ist wieder unterbrochen. Offene Scans bleiben lokal gespeichert.'))
             break
           }
           if (nextError instanceof ApiError && nextError.status === 401) {
-            setError('Bitte Vorrio nach der Wiederverbindung neu anmelden. Die Scans bleiben lokal gespeichert.')
+            setError(translate('Bitte Vorrio nach der Wiederverbindung neu anmelden. Die Scans bleiben lokal gespeichert.'))
             break
           }
         }
       }
       if (lastResolved) loadScan(lastResolved)
       if (synced) {
-        onNotice('success', `${synced} ${synced === 1 ? 'Scan wurde' : 'Scans wurden'} synchronisiert und wartet auf Bestätigung.`)
+        onNotice('success', translate('{{count}} Scans wurden synchronisiert und warten auf Bestätigung.', { count: synced }))
         try {
           await refreshReviewData()
         } catch (nextError) {
@@ -281,7 +281,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     if (!value || busy) return
     const normalized = value.replace(/[\s-]+/g, '')
     if (!/^\d{4,18}$/.test(normalized)) {
-      setError('Der Code muss aus 4 bis 18 Ziffern bestehen.')
+      setError(translate('Der Code muss aus 4 bis 18 Ziffern bestehen.'))
       playFeedback(false)
       return
     }
@@ -315,7 +315,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
 
   const startCamera = async () => {
     if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
-      setError('Die Kamera braucht HTTPS. Manuelle Eingabe und Handscanner funktionieren auch über die lokale HTTP-Adresse.')
+      setError(translate('Die Kamera braucht HTTPS. Manuelle Eingabe und Handscanner funktionieren auch über die lokale HTTP-Adresse.'))
       manualInputRef.current?.focus()
       return
     }
@@ -347,8 +347,8 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
       setCameraState('active')
     } catch (nextError) {
       stopCamera()
-      const message = nextError instanceof Error ? nextError.message : 'Kamera konnte nicht gestartet werden'
-      setError(`Kamera nicht verfügbar: ${message}`)
+      const message = nextError instanceof Error ? nextError.message : translate('Kamera konnte nicht gestartet werden')
+      setError(translate('Kamera nicht verfügbar: {{message}}', { message }))
     }
   }
 
@@ -390,7 +390,10 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
       const confirmed = await api.confirmScan(scan.id, input)
       loadScan(confirmed)
       playFeedback(true)
-      onNotice('success', `${productTitle(confirmed)}: ${modes.find((item) => item.id === confirmed.mode)?.action || 'Aktion'} erledigt.`)
+      onNotice('success', translate('{{product}}: {{action}} erledigt.', {
+        product: productTitle(confirmed),
+        action: translate(modes.find((item) => item.id === confirmed.mode)?.action || 'Aktion'),
+      }))
       await refreshReviewData()
     } catch (nextError) {
       const message = (nextError as Error).message
@@ -417,9 +420,9 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   }
 
   const filteredProducts = useMemo(() => {
-    const needle = productQuery.trim().toLocaleLowerCase('de-DE')
+    const needle = productQuery.trim().toLocaleLowerCase(currentLocale())
     if (!needle) return products.slice(0, 12)
-    return products.filter((product) => product.name.toLocaleLowerCase('de-DE').includes(needle)).slice(0, 12)
+    return products.filter((product) => product.name.toLocaleLowerCase(currentLocale()).includes(needle)).slice(0, 12)
   }, [productQuery, products])
 
   const activeMode = modes.find((item) => item.id === mode) || modes[0]
@@ -435,20 +438,20 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     <div className={`screen scanner-screen${scan ? ' has-scan' : ''}`}>
       <header className="page-header scanner-header">
         <div>
-          <h1>Produkt scannen</h1>
-          <p>Kamera, Handscanner oder Code – Vorrio ändert erst nach deiner Bestätigung etwas.</p>
+          <h1>{translate("Produkt scannen")}</h1>
+          <p>{translate("Kamera, Handscanner oder Code – Vorrio ändert erst nach deiner Bestätigung etwas.")}</p>
         </div>
-        {scan ? <button className="button tertiary scanner-reset" onClick={reset}><RefreshCw /> Neu scannen</button> : null}
+        {scan ? <button className="button tertiary scanner-reset" onClick={reset}><RefreshCw /> {translate("Neu scannen")}</button> : null}
       </header>
 
-      <div className="scan-mode-bar" role="tablist" aria-label="Scan-Aktion">
+      <div className="scan-mode-bar" role="tablist" aria-label={translate("Scan-Aktion")}>
         {modes.map(({ id, label, icon: Icon, description }) => (
           <button
             key={id}
             type="button"
             role="tab"
             aria-selected={mode === id}
-            aria-label={`${label}: ${description}`}
+            aria-label={translate('{{label}}: {{description}}', { label: translate(label), description: translate(description) })}
             className={mode === id ? 'selected' : ''}
             onClick={() => {
               setMode(id)
@@ -458,29 +461,29 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
             }}
           >
             <Icon />
-            <span>{label}</span>
+            <span>{translate(label)}</span>
           </button>
         ))}
       </div>
       <p className="scan-mode-help" aria-live="polite">
         <ActiveModeIcon />
-        <span><strong>{activeMode.label}</strong> {activeMode.description}.</span>
+        <span><strong>{translate(activeMode.label)}</strong> {translate(activeMode.description)}.</span>
       </p>
 
       {!online || offlineScans.length ? (
-        <section className={`offline-scan-panel${online ? '' : ' is-offline'}`} aria-label="Offline-Scans">
+        <section className={`offline-scan-panel${online ? '' : ' is-offline'}`} aria-label={translate("Offline-Scans")}>
           <header>
             <span className="offline-scan-icon">{online ? <CloudUpload /> : <WifiOff />}</span>
             <span>
-              <strong>{online ? `${offlineScans.length} ${offlineScans.length === 1 ? 'Scan wartet' : 'Scans warten'}` : 'Offline scannen'}</strong>
-              <small>{online
+              <strong>{online ? translate('{{count}} Scans warten', { count: offlineScans.length }) : translate('Offline scannen')}</strong>
+              <small>{translate(online
                 ? 'Codes werden zur Prüfung synchronisiert – noch ohne Bestandsänderung.'
-                : 'Codes bleiben nur auf diesem Gerät und werden später zur Prüfung übertragen.'}</small>
+                : 'Codes bleiben nur auf diesem Gerät und werden später zur Prüfung übertragen.')}</small>
             </span>
             {offlineScans.length ? (
               <button className="button tertiary compact" type="button" disabled={!online || syncing} onClick={() => void syncOfflineScans()}>
                 {syncing ? <LoaderCircle className="spin" /> : <CloudUpload />}
-                {syncing ? 'Abgleich läuft' : 'Jetzt abgleichen'}
+                {translate(syncing ? 'Abgleich läuft' : 'Jetzt abgleichen')}
               </button>
             ) : null}
           </header>
@@ -492,13 +495,13 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
                   <span>
                     <strong>{entry.barcode}</strong>
                     <small>
-                      {modes.find((item) => item.id === entry.mode)?.label || entry.mode}
+                      {translate(modes.find((item) => item.id === entry.mode)?.label || entry.mode)}
                       {' · '}
-                      {new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' }).format(new Date(entry.createdAt))}
+                      {formatDate(entry.createdAt, { hour: '2-digit', minute: '2-digit' })}
                     </small>
                     {entry.lastError ? <em>{entry.lastError}</em> : null}
                   </span>
-                  <button type="button" className="discard-scan" onClick={() => discardOffline(entry.id)} aria-label={`${entry.barcode} aus Offline-Warteschlange entfernen`}>
+                  <button type="button" className="discard-scan" onClick={() => discardOffline(entry.id)} aria-label={translate('{{barcode}} aus Offline-Warteschlange entfernen', { barcode: entry.barcode })}>
                     <Trash2 />
                   </button>
                 </div>
@@ -511,9 +514,9 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
       {error ? <p className="scanner-error scanner-page-error" role="alert"><AlertCircle /> {error}</p> : null}
 
       <div className={`scanner-workspace${scan ? ' has-scan' : ''}`}>
-        {!scan ? <section className="scanner-capture" aria-label="Barcode erfassen">
+        {!scan ? <section className="scanner-capture" aria-label={translate("Barcode erfassen")}>
           <div className={`camera-preview ${cameraState}`}>
-            <video ref={videoRef} muted playsInline aria-label="Kameravorschau" />
+            <video ref={videoRef} muted playsInline aria-label={translate("Kameravorschau")} />
             <i className="camera-frame top-left" />
             <i className="camera-frame top-right" />
             <i className="camera-frame bottom-left" />
@@ -521,20 +524,20 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
             {cameraState !== 'active' ? (
               <div className="camera-empty">
                 {cameraState === 'starting' ? <LoaderCircle className="spin" /> : <Camera />}
-                <strong>{cameraState === 'starting' ? 'Kamera wird vorbereitet' : 'Barcode mit der Kamera erfassen'}</strong>
-                <span>Das Bild bleibt auf diesem Gerät.</span>
+                <strong>{translate(cameraState === 'starting' ? 'Kamera wird vorbereitet' : 'Barcode mit der Kamera erfassen')}</strong>
+                <span>{translate("Das Bild bleibt auf diesem Gerät.")}</span>
                 <button className="button primary" onClick={startCamera} disabled={cameraState === 'starting'}>
-                  <Camera /> Kamera starten
+                  <Camera /> {translate("Kamera starten")}
                 </button>
               </div>
             ) : (
-              <button className="camera-stop" onClick={stopCamera}><X /> Kamera schließen</button>
+              <button className="camera-stop" onClick={stopCamera}><X /> {translate("Kamera schließen")}</button>
             )}
           </div>
 
-          <div className="scanner-divider"><span>oder</span></div>
+          <div className="scanner-divider"><span>{translate("oder")}</span></div>
           <form className="barcode-form" onSubmit={submitManual}>
-            <label htmlFor="barcode-input">Barcode manuell eingeben</label>
+            <label htmlFor="barcode-input">{translate("Barcode manuell eingeben")}</label>
             <div>
               <span><Barcode /></span>
               <input
@@ -547,38 +550,38 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
                 enterKeyHint="go"
                 value={barcode}
                 onChange={(event) => setBarcode(event.target.value)}
-                placeholder="z. B. 4000000000016"
+                placeholder={translate("z. B. 4000000000016")}
                 disabled={busy}
               />
               <button className="button primary" disabled={busy || !barcode.trim()}>
-                {busy ? <LoaderCircle className="spin" /> : <Search />} Code prüfen
+                {busy ? <LoaderCircle className="spin" /> : <Search />} {translate("Code prüfen")}
               </button>
             </div>
           </form>
-          <p className="keyboard-hint"><Keyboard /> Handscanner funktionieren hier wie eine Tastatur: scannen und Enter.</p>
+          <p className="keyboard-hint"><Keyboard /> {translate("Handscanner funktionieren hier wie eine Tastatur: scannen und Enter.")}</p>
         </section> : null}
 
         <aside ref={resultRef} className="scanner-result" aria-live="polite">
           {!scan ? (
             <div className="scanner-empty-result">
               <Barcode />
-              <h2>Bereit zum Scannen</h2>
-              <p>Wähle die Aktion, erfasse den Code und prüfe das Ergebnis.</p>
+              <h2>{translate("Bereit zum Scannen")}</h2>
+              <p>{translate("Wähle die Aktion, erfasse den Code und prüfe das Ergebnis.")}</p>
             </div>
           ) : scan.status === 'confirmed' ? (
             <div className="scanner-confirmed">
               <CheckCircle2 />
-              <h2>Erledigt</h2>
+              <h2>{translate("Erledigt")}</h2>
               <strong>{productTitle(scan)}</strong>
-              <p>{activeMode.action} wurde genau einmal gespeichert.</p>
-              <button className="button primary" onClick={reset}><RefreshCw /> Nächstes Produkt</button>
+              <p>{translate('{{action}} wurde genau einmal gespeichert.', { action: translate(activeMode.action) })}</p>
+              <button className="button primary" onClick={reset}><RefreshCw /> {translate("Nächstes Produkt")}</button>
             </div>
           ) : (
             <form className="scan-review-form" onSubmit={confirm}>
               <div className={`resolution-state ${scan.product_id || scan.suggestion?.name ? 'found' : 'unknown'}`}>
                 {scan.product_id || scan.suggestion?.name ? <CheckCircle2 /> : <AlertCircle />}
                 <span>
-                  <strong>{scan.product_id || scan.suggestion?.name ? 'Produkt gefunden' : 'Unbekannter Code'}</strong>
+                  <strong>{translate(scan.product_id || scan.suggestion?.name ? 'Produkt gefunden' : 'Unbekannter Code')}</strong>
                   <small>{sourceLabel(scan)}</small>
                 </span>
               </div>
@@ -594,7 +597,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
                 ) : <span className="product-placeholder"><ShoppingCart /></span>}
                 <div>
                   <h2>{productTitle(scan)}</h2>
-                  <p>{scan.brand || scan.suggestion?.brand || 'Marke nicht bekannt'}</p>
+                  <p>{scan.brand || scan.suggestion?.brand || translate('Marke nicht bekannt')}</p>
                   <code>{scan.barcode_normalized}</code>
                   <small>{scan.symbology}</small>
                 </div>
@@ -602,16 +605,16 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
 
               {scan.product_id ? (
                 <div className="local-match-row">
-                  <span><Check /> Lokal zugeordnet</span>
+                  <span><Check /> {translate("Lokal zugeordnet")}</span>
                   <strong>{scan.product_name}</strong>
-                  <small>{formatQuantity(scan.stock_quantity)} {scan.default_quantity_unit_name || 'Einheiten'} im Bestand</small>
+                  <small>{formatQuantity(scan.stock_quantity)} {scan.default_quantity_unit_name || translate('Einheiten')} {translate("im Bestand")}</small>
                 </div>
               ) : (
                 <fieldset className="product-assignment">
-                  <legend>Produkt zuordnen</legend>
+                  <legend>{translate("Produkt zuordnen")}</legend>
                   <label>
-                    Vorhandenes Produkt (optional)
-                    <span className="assignment-search"><Search /><input value={productQuery} onChange={(event) => setProductQuery(event.target.value)} placeholder="Katalog durchsuchen" /></span>
+                    {translate("Vorhandenes Produkt (optional)")}
+                    <span className="assignment-search"><Search /><input value={productQuery} onChange={(event) => setProductQuery(event.target.value)} placeholder={translate("Katalog durchsuchen")} /></span>
                   </label>
                   {productQuery ? (
                     <div className="assignment-results">
@@ -625,61 +628,61 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
                             setName(product.name)
                           }}
                         >
-                          <span>{product.name}</span><small>{product.default_location_name || 'Kein Lagerort'}</small>
+                          <span>{product.name}</span><small>{product.default_location_name || translate('Kein Lagerort')}</small>
                         </button>
                       ))}
                     </div>
                   ) : null}
-                  <div className="or-separator"><span>oder neu anlegen</span></div>
-                  <label>Produktname<input value={name} onChange={(event) => { setName(event.target.value); setSelectedProductId('') }} placeholder="z. B. Filterkaffee" required={!selectedProductId} /></label>
-                  <label>Marke (optional)<input value={brand} onChange={(event) => setBrand(event.target.value)} placeholder="z. B. Lavazza" /></label>
+                  <div className="or-separator"><span>{translate("oder neu anlegen")}</span></div>
+                  <label>{translate("Produktname")}<input value={name} onChange={(event) => { setName(event.target.value); setSelectedProductId('') }} placeholder={translate("z. B. Filterkaffee")} required={!selectedProductId} /></label>
+                  <label>{translate("Marke (optional)")}<input value={brand} onChange={(event) => setBrand(event.target.value)} placeholder={translate("z. B. Lavazza")} /></label>
                 </fieldset>
               )}
 
               <div className="scan-action-fields">
                 {mode !== 'identify' && mode !== 'open' ? (
-                  <label>Menge<input type="number" min="0.001" step="0.001" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>
+                  <label>{translate("Menge")}<input type="number" min="0.001" step="0.001" value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} /></label>
                 ) : null}
                 {mode === 'add' ? (
                   <>
-                    <label>Lagerort<select value={locationId || ''} onChange={(event) => setLocationId(event.target.value ? Number(event.target.value) : null)}>
-                      <option value="">Produktstandard</option>
+                    <label>{translate("Lagerort")}<select value={locationId || ''} onChange={(event) => setLocationId(event.target.value ? Number(event.target.value) : null)}>
+                      <option value="">{translate("Produktstandard")}</option>
                       {masterData?.locations.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}
                     </select></label>
-                    <label>Einheit<select value={quantityUnitId || ''} onChange={(event) => setQuantityUnitId(event.target.value ? Number(event.target.value) : null)}>
-                      <option value="">Produktstandard</option>
+                    <label>{translate("Einheit")}<select value={quantityUnitId || ''} onChange={(event) => setQuantityUnitId(event.target.value ? Number(event.target.value) : null)}>
+                      <option value="">{translate("Produktstandard")}</option>
                       {masterData?.quantity_units.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}
                     </select></label>
-                    {requiresProductChoice ? <label>Produktgruppe<select value={productGroupId || ''} onChange={(event) => setProductGroupId(event.target.value ? Number(event.target.value) : null)}>
-                      <option value="">Noch offen</option>
+                    {requiresProductChoice ? <label>{translate("Produktgruppe")}<select value={productGroupId || ''} onChange={(event) => setProductGroupId(event.target.value ? Number(event.target.value) : null)}>
+                      <option value="">{translate("Noch offen")}</option>
                       {masterData?.product_groups.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}
                     </select></label> : null}
-                    <label>Mindestens haltbar bis<input type="date" value={bestBeforeDate} onChange={(event) => setBestBeforeDate(event.target.value)} /></label>
-                    <label>Preis pro Einheit<input inputMode="decimal" value={unitPrice} onChange={(event) => setUnitPrice(event.target.value)} placeholder="optional" /></label>
+                    <label>{translate("Mindestens haltbar bis")}<input type="date" value={bestBeforeDate} onChange={(event) => setBestBeforeDate(event.target.value)} /></label>
+                    <label>{translate("Preis pro Einheit")}<input inputMode="decimal" value={unitPrice} onChange={(event) => setUnitPrice(event.target.value)} placeholder={translate("optional")} /></label>
                   </>
                 ) : null}
               </div>
 
-              {scan.upstream_error ? <p className="upstream-note">Externe Suche war nicht erreichbar. Du kannst trotzdem lokal zuordnen.</p> : null}
+              {scan.upstream_error ? <p className="upstream-note">{translate("Externe Suche war nicht erreichbar. Du kannst trotzdem lokal zuordnen.")}</p> : null}
               <button className="button primary full scan-confirm" disabled={busy || !canConfirm}>
-                {busy ? <LoaderCircle className="spin" /> : <ActiveModeIcon />} {activeMode.action}
+                {busy ? <LoaderCircle className="spin" /> : <ActiveModeIcon />} {translate(activeMode.action)}
               </button>
             </form>
           )}
 
           <section className="unresolved-inbox">
             <header>
-              <div><AlertCircle /><h2>Unbekannte Codes</h2></div>
+              <div><AlertCircle /><h2>{translate("Unbekannte Codes")}</h2></div>
               <span>{unresolved.length}</span>
             </header>
             {unresolved.length ? unresolved.slice(0, 5).map((draft) => (
               <div className="unresolved-row" key={draft.id}>
                 <button type="button" onClick={() => loadScan(draft)}>
-                  <Barcode /><span><strong>{draft.suggestion?.name || draft.barcode_normalized}</strong><small>{draft.suggestion?.name ? draft.barcode_normalized : 'Noch nicht zugeordnet'}</small></span>
+                  <Barcode /><span><strong>{draft.suggestion?.name || draft.barcode_normalized}</strong><small>{draft.suggestion?.name ? draft.barcode_normalized : translate('Noch nicht zugeordnet')}</small></span>
                 </button>
-                <button className="discard-scan" type="button" onClick={() => void discard(draft)} aria-label={`${draft.barcode_normalized} verwerfen`}><Trash2 /></button>
+                <button className="discard-scan" type="button" onClick={() => void discard(draft)} aria-label={translate('{{barcode}} verwerfen', { barcode: draft.barcode_normalized })}><Trash2 /></button>
               </div>
-            )) : <p>Keine offenen Codes.</p>}
+            )) : <p>{translate("Keine offenen Codes.")}</p>}
           </section>
         </aside>
       </div>

@@ -119,7 +119,7 @@ def main() -> None:
     backend_match = re.search(r'version="([0-9]+\.[0-9]+\.[0-9]+)"', backend)
     if not backend_match or backend_match.group(1) != package_version:
         failures.append("backend and frontend versions are not synchronized")
-    if f"ghcr.io/amturo/vorrio:{package_version}" not in (
+    if f"ghcr.io/amturo-gbr/vorrio:{package_version}" not in (
         ROOT / "stack.yml"
     ).read_text(encoding="utf-8"):
         failures.append("stack.yml does not default to the current version")

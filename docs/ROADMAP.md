@@ -219,6 +219,14 @@
 - use the same maintained client for AI, product-data and Grocy connections;
 - repeat the complete release gate without changing the REST or data contract.
 
+## 0.8.22 – German and English
+
+- localize the complete signed-out and authenticated PWA plus known errors;
+- store language per account and apply it to release notes, scope descriptions
+  and Web Push notifications;
+- localize formatting and install metadata without rewriting household data;
+- ship a bilingual project website and enforce translation completeness in CI.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.

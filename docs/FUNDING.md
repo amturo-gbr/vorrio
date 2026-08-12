@@ -34,5 +34,26 @@ charitable donation, and Vorrio does not promise donation receipts. Public copy
 uses “support” or “sponsorship”. Amturo UG records payouts and applicable taxes
 through its normal accounting process.
 
-No payment link is active in 0.8.21. Funding configuration is added only after
+No payment link is active in 0.8.22. Funding configuration is added only after
 the receiving Amturo account, legal copy and bookkeeping process are ready.
+
+## Website activation sequence
+
+The static project website intentionally shows GitHub Sponsors as unavailable
+until all launch gates are complete:
+
+1. publish and verify the public `amturo-gbr/vorrio` repository;
+2. activate the sponsored Amturo organization with the correct payout and tax
+   details;
+3. approve the public sponsorship wording and bookkeeping flow;
+4. add `.github/FUNDING.yml` and replace the disabled website control with the
+   canonical GitHub Sponsors URL;
+5. verify one-time and recurring contributions from a signed-out browser.
+
+PayPal is not the launch default. A standalone PayPal button would add another
+checkout, reconciliation and legal-copy path without improving the source-to-
+support flow already provided by GitHub Sponsors. It may be reconsidered later
+only when supporters demonstrably need it and Amturo has approved the business
+account, fees, refunds, privacy wording and accounting treatment. Open
+Collective remains a later transparency option if Vorrio develops a community
+budget that benefits from a public income and expense ledger.

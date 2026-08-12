@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import struct
 from pathlib import Path
 
@@ -28,9 +29,9 @@ def main() -> None:
         ("frontend/index.html", 'name="apple-mobile-web-app-title" content="Vorrio"', "iOS app title"),
         ("frontend/index.html", 'rel="icon" type="image/png" sizes="1024x1024" href="/pwa-icon.png"', "browser favicon"),
         ("frontend/index.html", 'rel="apple-touch-icon" sizes="1024x1024" href="/pwa-icon.png"', "iOS home-screen icon"),
-        ("frontend/vite.config.ts", "id: '/'", "stable manifest identity"),
-        ("frontend/vite.config.ts", "display: 'standalone'", "standalone display mode"),
-        ("frontend/vite.config.ts", "scope: '/'", "manifest scope"),
+        ("frontend/index.html", 'rel="manifest" href="/manifest-de.webmanifest"', "default localized manifest"),
+        ("frontend/src/i18n.ts", "`/manifest-${locale}.webmanifest`", "runtime localized manifest selection"),
+        ("frontend/vite.config.ts", "manifest: false", "explicit localized manifests"),
         ("frontend/vite.config.ts", "navigateFallback: '/index.html'", "offline navigation fallback"),
         ("frontend/vite.config.ts", "importScripts: ['/push-worker.js']", "push worker integration"),
         ("frontend/src/main.tsx", "registerSW({ immediate: true })", "service-worker registration"),
@@ -61,6 +62,27 @@ def main() -> None:
                 f"PWA check failed: brand/{asset} must be square and at least 512px"
             )
 
+    for locale in ("de", "en"):
+        manifest_path = ROOT / f"frontend/public/manifest-{locale}.webmanifest"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        for key, value in {
+            "id": "/",
+            "name": "Vorrio",
+            "short_name": "Vorrio",
+            "display": "standalone",
+            "start_url": "/",
+            "scope": "/",
+            "lang": locale,
+        }.items():
+            if manifest.get(key) != value:
+                raise SystemExit(
+                    f"PWA check failed: manifest-{locale}.webmanifest {key} must be {value!r}"
+                )
+        if not str(manifest.get("description", "")).strip():
+            raise SystemExit(
+                f"PWA check failed: manifest-{locale}.webmanifest needs a description"
+            )
+
     service_worker = ROOT / "frontend/dist/sw.js"
     if not service_worker.exists():
         raise SystemExit("PWA check failed: production service worker was not built")
@@ -72,6 +94,8 @@ def main() -> None:
         "assets/receipt-folded.png",
         "brand/vorrio-mark.png",
         "brand/vorrio-mark-white.png",
+        "manifest-de.webmanifest",
+        "manifest-en.webmanifest",
     ):
         if service_worker_content.count(f'url:"{asset}"') != 1:
             raise SystemExit(f"PWA check failed: {asset} must occur exactly once in the precache")

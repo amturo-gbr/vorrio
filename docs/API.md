@@ -41,6 +41,7 @@ submitting a change.
 | `POST` | `/api/v1/auth/passkeys/registration/complete` | Authentication | Verify and save a passkey | no |
 | `DELETE` | `/api/v1/auth/passkeys/{credential_id}` | Authentication | Delete one passkey | no |
 | `PUT` | `/api/v1/auth/password` | Authentication | Change the current account password | no |
+| `PATCH` | `/api/v1/auth/preferences` | Authentication | Update personal interface preferences | no |
 | `PATCH` | `/api/v1/auth/profile` | Authentication | Complete or update the owner profile | no |
 | `POST` | `/api/v1/auth/reauthenticate` | Authentication | Confirm identity before a sensitive change | no |
 | `POST` | `/api/v1/auth/recovery` | Authentication | Recover an account with a single-use recovery code | no |

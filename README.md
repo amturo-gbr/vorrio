@@ -9,10 +9,13 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.21
+## What works in 0.8.22
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;
+- complete German and English interfaces with a personal language preference
+  shared across devices, localized formatting, known errors, release notes and
+  Web Push messages;
 - iOS-safe 16 px form controls, bounded horizontal layout, dynamic viewport
   units and safe-area-aware navigation without disabling accessible pinch zoom;
 - a named first Owner, one-time family invitations, separate local accounts,
@@ -117,12 +120,15 @@ docker compose up -d --build
 Open `http://localhost:9380`, name the first Owner, create the household password, configure an
 analysis provider, and scan the first receipt or package. Live camera scanning
 requires HTTPS; manual entry and hardware scanners work on a LAN HTTP address.
+Vorrio initially follows the browser language and stores the chosen German or
+English interface per account; it can be changed later under **Settings →
+Language & region**.
 Vorrio opens a short product guide after each account's first login. After a
 container upgrade, each user sees the installed release highlights once; both
 surfaces remain available under **Einstellungen → Hilfe & Version**.
 
 After the first signed public image exists, `docker-compose.release.yml` pulls
-`ghcr.io/amturo/vorrio` instead of building locally. Portainer users can paste
+`ghcr.io/amturo-gbr/vorrio` instead of building locally. Portainer users can paste
 `stack.yml`; both release templates keep data in a named Docker volume.
 
 Never commit `.env`. The Compose templates stop with a clear error while
@@ -225,6 +231,7 @@ required permission as `x-vorrio-required-scope`.
 
 - [Architecture](ARCHITECTURE.md)
 - [Getting started and update notes](docs/GETTING-STARTED.md)
+- [Localization](docs/LOCALIZATION.md)
 - [Installation](docs/INSTALLATION.md)
 - [Deployment profiles and URLs](docs/DEPLOYMENT-PROFILES.md)
 - [Configuration](docs/CONFIGURATION.md)
@@ -246,6 +253,7 @@ required permission as `x-vorrio-required-scope`.
 - [AI providers](docs/AI-PROVIDERS.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Funding](docs/FUNDING.md)
+- [Project website](website/README.md)
 - [Governance](docs/GOVERNANCE.md)
 - [Security](SECURITY.md)
 - [Support](SUPPORT.md)
@@ -271,9 +279,9 @@ synthetic or anonymized household data.
 
 ## Public project
 
-The planned public repository is `github.com/amturo/vorrio` and the planned
-container image is `ghcr.io/amturo/vorrio`. These addresses become canonical
-only after the first public release. Until then, build the image from source.
+The canonical repository is `github.com/amturo-gbr/vorrio` and the container
+image is `ghcr.io/amturo-gbr/vorrio`. They remain private during the release
+rehearsal and become public only after the installation and privacy gates pass.
 
 ## License
 

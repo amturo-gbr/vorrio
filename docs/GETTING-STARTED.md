@@ -10,6 +10,17 @@ Nothing changes stock merely because an AI model or product database found a
 possible match. Vorrio first presents the result and its evidence; a household
 member confirms the intended product and action.
 
+## Language
+
+The signed-out screen initially follows the browser and supports German and
+English. First-run setup and invitation acceptance store that language for the
+new account. After sign-in, each user's saved choice is authoritative across
+devices and can be changed under **Settings → Language & region**.
+
+Changing the interface never translates or rewrites household product names,
+brands, store names, receipt text, currency or the server timezone. See
+[Localization](LOCALIZATION.md) for the exact behavior.
+
 ## First login
 
 After an Owner creates the installation, and after every invited account's first
@@ -61,4 +72,3 @@ pull, recreate and health/readiness checks in [Installation](INSTALLATION.md).
 - Portable export includes it with personal preferences.
 - Complete installation erasure deletes it.
 - Automation tokens cannot read or change it.
-

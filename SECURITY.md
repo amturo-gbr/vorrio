@@ -2,7 +2,7 @@
 
 Report vulnerabilities privately to the Amturo UG maintainers before opening a
 public issue. The public repository uses
-[GitHub private vulnerability reporting](https://github.com/amturo/vorrio/security/advisories/new);
+[GitHub private vulnerability reporting](https://github.com/amturo-gbr/vorrio/security/advisories/new);
 the maintainer must enable that repository setting before launch.
 
 Do not include secrets, session cookies, receipt images, household addresses or

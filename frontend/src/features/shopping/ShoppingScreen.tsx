@@ -20,21 +20,17 @@ import { api } from '../../api'
 import type { Receipt, ShoppingListItem, ShoppingLowStockItem } from '../../types'
 import { BudgetOverview } from './BudgetOverview'
 import { PriceInsights } from './PriceInsights'
+import { formatCurrency, formatDate, formatNumber, translate } from '../../i18n'
 
 type Notice = (kind: 'success' | 'error', text: string) => void
 
-const formatQuantity = (value: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value)
+const formatQuantity = (value: number) => formatNumber(value)
 
-const euro = (value: number | null | undefined) =>
-  value == null
-    ? '–'
-    : new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value)
+const euro = (value: number | null | undefined) => formatCurrency(value)
 
 const shortDate = (value: string | null | undefined) => {
-  if (!value) return 'Heute'
-  return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short' })
-    .format(new Date(`${value}T12:00:00`))
+  if (!value) return translate('Heute')
+  return formatDate(new Date(`${value}T12:00:00`), { day: '2-digit', month: 'short' })
 }
 
 const needsListChange = (item: ShoppingLowStockItem) =>
@@ -91,7 +87,7 @@ export function ShoppingScreen({
       })
       if (checked) {
         setItems((current) => current.filter((row) => row.id !== item.id))
-        onNotice('success', `${item.product_name || item.label} ist erledigt.`)
+        onNotice('success', translate('{{product}} ist erledigt.', { product: item.product_name || item.label }))
       } else {
         setItems((current) => current.map((row) => row.id === item.id ? updated : row))
       }
@@ -108,51 +104,51 @@ export function ShoppingScreen({
   return (
     <div className="screen simple-screen shopping-screen">
       <header className="page-header shopping-page-header">
-        <div><h1>Einkäufe</h1><p>Gemeinsame Liste und deine verarbeiteten Bons.</p></div>
+        <div><h1>{translate("Einkäufe")}</h1><p>{translate("Gemeinsame Liste und deine verarbeiteten Bons.")}</p></div>
         {tab === 'list' && (
           <button className="button tertiary compact" type="button" onClick={() => reload()} disabled={loading}>
-            <RefreshCw className={loading ? 'spin' : ''} /> Aktualisieren
+            <RefreshCw className={loading ? 'spin' : ''} /> {translate("Aktualisieren")}
           </button>
         )}
       </header>
 
-      <div className="shopping-tabs" role="tablist" aria-label="Einkaufsbereiche">
+      <div className="shopping-tabs" role="tablist" aria-label={translate("Einkaufsbereiche")}>
         <button role="tab" aria-selected={tab === 'list'} className={tab === 'list' ? 'selected' : ''} onClick={() => setTab('list')}>
-          <ClipboardList /> Liste <span>{items.length}</span>
+          <ClipboardList /> {translate("Liste")} <span>{items.length}</span>
         </button>
         <button role="tab" aria-selected={tab === 'budget'} className={tab === 'budget' ? 'selected' : ''} onClick={() => setTab('budget')}>
-          <WalletCards /> Budget
+          <WalletCards /> {translate("Budget")}
         </button>
         <button role="tab" aria-selected={tab === 'prices'} className={tab === 'prices' ? 'selected' : ''} onClick={() => setTab('prices')}>
-          <BarChart3 /> Preise
+          <BarChart3 /> {translate("Preise")}
         </button>
         <button role="tab" aria-selected={tab === 'history'} className={tab === 'history' ? 'selected' : ''} onClick={() => setTab('history')}>
-          <History /> Bons <span>{receipts.length}</span>
+          <History /> {translate("Bons")} <span>{receipts.length}</span>
         </button>
       </div>
 
       {tab === 'list' ? (
-        <section className="shopping-list-panel" aria-label="Einkaufsliste">
+        <section className="shopping-list-panel" aria-label={translate("Einkaufsliste")}>
           {lowStock.length > 0 && !readOnly && (
             <button className="refill-callout" type="button" onClick={() => setRefillOpen(true)}>
               <span><Sparkles /></span>
-              <span><strong>{lowStock.length} {lowStock.length === 1 ? 'Produkt wird knapp' : 'Produkte werden knapp'}</strong><small>Mindestbestände prüfen und gezielt auffüllen</small></span>
-              <span>Auffüllen</span>
+              <span><strong>{translate('{{count}} Produkte werden knapp', { count: lowStock.length })}</strong><small>{translate("Mindestbestände prüfen und gezielt auffüllen")}</small></span>
+              <span>{translate("Auffüllen")}</span>
               <ChevronRight />
             </button>
           )}
 
           {loading ? (
-            <div className="inline-loading shopping-loading"><LoaderCircle className="spin" /> Einkaufsliste laden…</div>
+            <div className="inline-loading shopping-loading"><LoaderCircle className="spin" /> {translate("Einkaufsliste laden…")}</div>
           ) : items.length ? (
             <div className="shopping-items">
-              <div className="shopping-list-heading"><h2>Offene Liste</h2><span>{items.length} {items.length === 1 ? 'Eintrag' : 'Einträge'}</span></div>
+              <div className="shopping-list-heading"><h2>{translate("Offene Liste")}</h2><span>{translate('{{count}} Einträge', { count: items.length })}</span></div>
               {items.map((item) => (
                 <article className="shopping-item" key={item.id}>
                   <button
                     className="shopping-check"
                     type="button"
-                    aria-label={`${item.product_name || item.label} erledigen`}
+                    aria-label={translate('{{product}} erledigen', { product: item.product_name || item.label })}
                     disabled={readOnly || busyItem === item.id}
                     onClick={() => updateItem(item, item.desired_quantity, true)}
                   >
@@ -163,12 +159,12 @@ export function ShoppingScreen({
                   </span>
                   <span className="shopping-item-copy">
                     <strong>{item.product_name || item.label}</strong>
-                    <small>{formatQuantity(item.stock_quantity)} {item.quantity_unit_name || 'Einheiten'} da · Ziel {formatQuantity(item.shopping_target_quantity)}</small>
+                    <small>{formatQuantity(item.stock_quantity)} {item.quantity_unit_name || translate('Einheiten')} · {translate('Ziel')} {formatQuantity(item.shopping_target_quantity)}</small>
                   </span>
-                  <span className="shopping-stepper" aria-label={`Menge für ${item.product_name || item.label}`}>
-                    <button type="button" aria-label="Menge verringern" disabled={readOnly || busyItem === item.id || item.desired_quantity <= 1} onClick={() => updateItem(item, item.desired_quantity - 1)}><Minus /></button>
+                  <span className="shopping-stepper" aria-label={translate('Menge für {{product}}', { product: item.product_name || item.label })}>
+                    <button type="button" aria-label={translate("Menge verringern")} disabled={readOnly || busyItem === item.id || item.desired_quantity <= 1} onClick={() => updateItem(item, item.desired_quantity - 1)}><Minus /></button>
                     <strong>{formatQuantity(item.desired_quantity)}</strong>
-                    <button type="button" aria-label="Menge erhöhen" disabled={readOnly || busyItem === item.id} onClick={() => updateItem(item, item.desired_quantity + 1)}><Plus /></button>
+                    <button type="button" aria-label={translate("Menge erhöhen")} disabled={readOnly || busyItem === item.id} onClick={() => updateItem(item, item.desired_quantity + 1)}><Plus /></button>
                   </span>
                 </article>
               ))}
@@ -176,8 +172,8 @@ export function ShoppingScreen({
           ) : (
             <div className="shopping-empty">
               <span><ShoppingBasket /></span>
-              <h2>Alles besorgt</h2>
-              <p>Deine Liste ist leer. Neue Artikel kommen per Scanner oder nach geprüfter Mindestbestand-Empfehlung dazu.</p>
+              <h2>{translate("Alles besorgt")}</h2>
+              <p>{translate("Deine Liste ist leer. Neue Artikel kommen per Scanner oder nach geprüfter Mindestbestand-Empfehlung dazu.")}</p>
             </div>
           )}
         </section>
@@ -211,12 +207,12 @@ function HistoryList({ receipts, onOpenReceipt }: { receipts: Receipt[]; onOpenR
       {receipts.map((receipt) => (
         <button key={receipt.id} className="history-row" onClick={() => onOpenReceipt(receipt.id)}>
           <span className="history-date">{shortDate(receipt.purchase_date)}</span>
-          <span className="history-main"><strong>{receipt.store_name || 'Einkauf'}</strong><small>{receipt.item_count || 0} Artikel</small></span>
+          <span className="history-main"><strong>{receipt.store_name || translate('Einkauf')}</strong><small>{translate('{{count}} Artikel', { count: receipt.item_count || 0 })}</small></span>
           <strong>{euro(receipt.total)}</strong>
           <ChevronRight />
         </button>
       ))}
-      {!receipts.length && <div className="empty-page"><ReceiptText /><h2>Noch keine Bons</h2><p>Nach dem ersten Bon entsteht hier dein Einkaufsverlauf.</p></div>}
+      {!receipts.length && <div className="empty-page"><ReceiptText /><h2>{translate("Noch keine Bons")}</h2><p>{translate("Nach dem ersten Bon entsteht hier dein Einkaufsverlauf.")}</p></div>}
     </div>
   )
 }
@@ -254,8 +250,8 @@ function RefillSheet({
       })
       const changed = result.created_count + result.updated_count
       await onGenerated(changed
-        ? `${changed} ${changed === 1 ? 'Eintrag wurde' : 'Einträge wurden'} zur Einkaufsliste hinzugefügt.`
-        : 'Die Einkaufsliste war bereits aktuell.')
+        ? translate('{{count}} Einträge wurden zur Einkaufsliste hinzugefügt.', { count: changed })
+        : translate('Die Einkaufsliste war bereits aktuell.'))
     } catch (error) {
       onNotice('error', (error as Error).message)
     } finally {
@@ -265,13 +261,13 @@ function RefillSheet({
 
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="product-sheet refill-sheet" role="dialog" aria-modal="true" aria-label="Auffüllen prüfen">
+      <section className="product-sheet refill-sheet" role="dialog" aria-modal="true" aria-label={translate("Auffüllen prüfen")}>
         <span className="sheet-handle" />
         <header>
-          <div><h2>Auffüllen prüfen</h2><p>Vorrio ändert erst nach deiner Bestätigung die Liste.</p></div>
-          <button type="button" className="icon-close" onClick={onClose} aria-label="Vorschläge schließen"><X /></button>
+          <div><h2>{translate("Auffüllen prüfen")}</h2><p>{translate("Vorrio ändert erst nach deiner Bestätigung die Liste.")}</p></div>
+          <button type="button" className="icon-close" onClick={onClose} aria-label={translate("Vorschläge schließen")}><X /></button>
         </header>
-        <div className="refill-summary"><Sparkles /><span><strong>{items.length} Vorschläge</strong><small>Aus aktuellem Bestand, Mindestbestand und Auffüllziel</small></span></div>
+        <div className="refill-summary"><Sparkles /><span><strong>{items.length} {translate("Vorschläge")}</strong><small>{translate("Aus aktuellem Bestand, Mindestbestand und Auffüllziel")}</small></span></div>
         <div className="refill-list">
           {items.map((item) => {
             const active = selected.has(item.product_id)
@@ -283,18 +279,18 @@ function RefillSheet({
                 </span>
                 <span className="refill-copy">
                   <strong>{item.product_name}</strong>
-                  <small>Da {formatQuantity(item.current_quantity)} · Minimum {formatQuantity(item.minimum_quantity)} · Ziel {formatQuantity(item.target_quantity)}</small>
-                  {item.existing_item_id && <em>Schon auf der Liste: {formatQuantity(item.existing_desired_quantity || 0)}</em>}
+                  <small>{translate("Da")} {formatQuantity(item.current_quantity)} {translate("· Minimum")} {formatQuantity(item.minimum_quantity)} {translate("· Ziel")} {formatQuantity(item.target_quantity)}</small>
+                  {item.existing_item_id && <em>{translate("Schon auf der Liste:")} {formatQuantity(item.existing_desired_quantity || 0)}</em>}
                 </span>
-                <span className="refill-amount"><small>Nachkaufen</small><strong>{formatQuantity(item.suggested_quantity)}</strong><small>{item.quantity_unit_name || 'Einheiten'}</small></span>
+                <span className="refill-amount"><small>{translate("Nachkaufen")}</small><strong>{formatQuantity(item.suggested_quantity)}</strong><small>{item.quantity_unit_name || translate('Einheiten')}</small></span>
               </button>
             )
           })}
         </div>
         <div className="refill-footer">
-          <span><strong>{selectedItems.length}</strong> ausgewählt</span>
+          <span><strong>{selectedItems.length}</strong> {translate("ausgewählt")}</span>
           <button className="button primary" type="button" disabled={busy || !selectedItems.length} onClick={generate}>
-            {busy ? <LoaderCircle className="spin" /> : <ShoppingBasket />} Zur Einkaufsliste
+            {busy ? <LoaderCircle className="spin" /> : <ShoppingBasket />} {translate("Zur Einkaufsliste")}
           </button>
         </div>
       </section>

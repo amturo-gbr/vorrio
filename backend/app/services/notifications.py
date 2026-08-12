@@ -25,9 +25,17 @@ def _base64url(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).decode("ascii").rstrip("=")
 
 
-def _quantity(value: float) -> str:
+def _quantity(value: float, locale: str) -> str:
     rounded = round(float(value), 3)
-    return str(int(rounded)) if rounded.is_integer() else str(rounded).replace(".", ",")
+    if rounded.is_integer():
+        return str(int(rounded))
+    rendered = str(rounded)
+    return rendered.replace(".", ",") if locale == "de" else rendered
+
+
+def _date_label(value: str, locale: str) -> str:
+    parsed = datetime.strptime(value, "%Y-%m-%d")
+    return parsed.strftime("%d.%m.%Y" if locale == "de" else "%m/%d/%Y")
 
 
 class NotificationService:
@@ -388,21 +396,27 @@ class NotificationService:
         ]
         if not subscriptions:
             raise KeyError("Push-Gerät nicht gefunden")
+        locale = self.database.get_user_locale(user_id)
         delivered = self._send(
             subscriptions[0],
             {
-                "title": "Vorrio ist bereit",
-                "body": "Test erfolgreich – dieses Gerät erhält Vorratsmeldungen.",
+                "title": "Vorrio ist bereit" if locale == "de" else "Vorrio is ready",
+                "body": (
+                    "Test erfolgreich – dieses Gerät erhält Vorratsmeldungen."
+                    if locale == "de"
+                    else "Test successful – this device will receive stock notifications."
+                ),
                 "url": "/",
                 "tag": "vorrio-test",
                 "kind": "test",
+                "locale": locale,
             },
             event_id=None,
             kind="test",
         )
         return {"delivered": int(delivered), "failed": int(not delivered)}
 
-    def _conditions(self, expiry_days_before: int) -> list[dict[str, Any]]:
+    def _conditions(self, expiry_days_before: int, locale: str) -> list[dict[str, Any]]:
         deadline = (datetime.now(UTC).date() + timedelta(days=expiry_days_before)).isoformat()
         with self.database.connect() as conn:
             low_stock = conn.execute(
@@ -443,10 +457,13 @@ class NotificationService:
                     "kind": "low_stock",
                     "subject_id": str(row["subject_id"]),
                     "condition_key": f"{row['current_quantity']}:{row['minimum_quantity']}",
-                    "title": "Vorrat wird knapp",
+                    "title": "Vorrat wird knapp" if locale == "de" else "Stock is running low",
                     "body": (
-                        f"{row['name']}: {_quantity(row['current_quantity'])}{unit} "
-                        f"vorhanden, Mindestbestand {_quantity(row['minimum_quantity'])}."
+                        f"{row['name']}: {_quantity(row['current_quantity'], locale)}{unit} "
+                        f"vorhanden, Mindestbestand {_quantity(row['minimum_quantity'], locale)}."
+                        if locale == "de"
+                        else f"{row['name']}: {_quantity(row['current_quantity'], locale)}{unit} "
+                        f"available, minimum stock {_quantity(row['minimum_quantity'], locale)}."
                     ),
                     "url": "/",
                     "tag": f"vorrio-low-stock-{row['subject_id']}",
@@ -455,13 +472,22 @@ class NotificationService:
         today = datetime.now(UTC).date().isoformat()
         for source in expiry:
             row = dict(source)
-            when = "ist abgelaufen" if str(row["best_before_date"]) < today else f"läuft am {row['best_before_date']} ab"
+            expired = str(row["best_before_date"]) < today
+            when = (
+                "ist abgelaufen"
+                if locale == "de" and expired
+                else f"läuft am {_date_label(str(row['best_before_date']), locale)} ab"
+                if locale == "de"
+                else "has expired"
+                if expired
+                else f"expires on {_date_label(str(row['best_before_date']), locale)}"
+            )
             conditions.append(
                 {
                     "kind": "expiry",
                     "subject_id": str(row["subject_id"]),
                     "condition_key": str(row["best_before_date"]),
-                    "title": "Haltbarkeit prüfen",
+                    "title": "Haltbarkeit prüfen" if locale == "de" else "Check shelf life",
                     "body": f"{row['name']} {when}.",
                     "url": "/",
                     "tag": f"vorrio-expiry-{row['subject_id']}",
@@ -530,6 +556,7 @@ class NotificationService:
                 preferences = dict(source)
                 user_id = str(preferences["user_id"])
                 household_id = str(preferences["household_id"])
+                locale = self.database.get_user_locale(user_id)
                 enabled_kinds = {
                     kind
                     for kind, enabled in (
@@ -540,7 +567,7 @@ class NotificationService:
                 }
                 conditions = [
                     condition
-                    for condition in self._conditions(int(preferences["expiry_days_before"]))
+                    for condition in self._conditions(int(preferences["expiry_days_before"]), locale)
                     if condition["kind"] in enabled_kinds
                 ]
                 active_keys = {(item["kind"], item["subject_id"]) for item in conditions}
@@ -566,6 +593,7 @@ class NotificationService:
                         key: condition[key]
                         for key in ("title", "body", "url", "tag", "kind")
                     }
+                    payload["locale"] = locale
                     delivered = 0
                     for subscription in subscriptions:
                         if self._send(

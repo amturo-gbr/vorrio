@@ -6,9 +6,12 @@ self.addEventListener('push', (event) => {
     message = { body: event.data ? event.data.text() : '' }
   }
 
+  const locale = message.locale === 'en' ? 'en' : 'de'
   const title = message.title || 'Vorrio'
   const options = {
-    body: message.body || 'Es gibt Neuigkeiten zu deinem Vorrat.',
+    body: message.body || (locale === 'en'
+      ? 'There is an update about your stock.'
+      : 'Es gibt Neuigkeiten zu deinem Vorrat.'),
     icon: '/pwa-icon.png',
     badge: '/pwa-icon.png',
     tag: message.tag || 'vorrio-notification',
@@ -16,6 +19,7 @@ self.addEventListener('push', (event) => {
     data: {
       url: message.url || '/',
       kind: message.kind || 'stock',
+      locale,
     },
   }
 

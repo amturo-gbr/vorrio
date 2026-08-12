@@ -1,5 +1,6 @@
 export type Screen = 'home' | 'scan' | 'catalog' | 'history' | 'settings' | 'review'
 export type ScanMode = 'identify' | 'add' | 'consume' | 'open' | 'shopping'
+export type SupportedLocale = 'de' | 'en'
 
 export interface AuthenticatedUser {
   id: string
@@ -9,6 +10,7 @@ export interface AuthenticatedUser {
   household_id: string
   household_name: string
   owner_setup_complete: boolean
+  preferred_locale: SupportedLocale
 }
 
 export interface AuthenticationState {

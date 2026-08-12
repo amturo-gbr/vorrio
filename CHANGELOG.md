@@ -1,10 +1,41 @@
 # Changelog
 
-## Unreleased
+## 0.8.22 – 2026-08-12
+
+- Added a complete German and English PWA, including signed-out flows,
+  onboarding, scanner, catalog, shopping, settings, validation and known API
+  errors.
+- Added a personal server-side language preference that follows each account
+  across devices and is also applied to release notes, API-token scope copy and
+  Web Push notifications.
+- Localized number, date and EUR presentation while deliberately preserving
+  product names, receipt text, stored currency and deployment timezone.
+- Localized factory master data for a fresh English household and added
+  explicit German and English singular/plural forms for every counted UI
+  message without renaming existing household data.
+- Added separate German and English install manifests plus an automated source
+  audit that fails for missing translations, missing plural forms or likely
+  untranslated UI copy.
+- Published both German and English variants of the static project website.
+- Split scanner, catalog, shopping, launch-readiness and passkey code from the
+  initial JavaScript path, reducing the entry bundle from about 531 kB to
+  431 kB before gzip. A release contract now prevents it from exceeding 500
+  KiB unnoticed.
+- Switched all repository, support, installation, signing and container
+  references to the canonical `amturo-gbr/vorrio` project identity.
 
 - Replaced the receipt-shaped product mark with the final Vorrio identity in
   the PWA header, desktop navigation and first-run guide, including transparent
   light/dark assets plus the new maskable app icon and browser favicon.
+- Added a dependency-free, responsive bilingual project website under `website/`
+  with real synthetic Vorrio product views, installation guidance, open-source
+  contribution routes and an explicit pre-launch GitHub Sponsors state.
+- Added coordinated desktop and mobile website concepts that extend the PWA's
+  white, green and folded-receipt design system without exposing private
+  installation data.
+- Kept the marketing surface completely separate from the authenticated PWA
+  and documented the legal, repository and receiving-account gates that remain
+  before a public website or funding link goes live.
 
 ## 0.8.21 – 2026-08-12
 

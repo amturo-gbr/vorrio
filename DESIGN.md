@@ -14,9 +14,19 @@ Die verbindlichen Vorrio-Konzepte liegen unter:
 - `docs/design/scanner-entry-mobile-final-0.8.5.png`
 - `docs/design/scanner-review-mobile-final-0.8.5.png`
 - `docs/design/receipt-product-resolution-mobile-0.7.1.png`
+- `docs/design/website-hero-concept.png`
+- `docs/design/website-workflow-concept.png`
+- `docs/design/website-features-concept.png`
+- `docs/design/website-install-support-concept.png`
+- `docs/design/website-mobile-concept.png`
 
 Das gefaltete Bon-Asset liegt unter
 `frontend/public/assets/receipt-folded.png`.
+
+Die öffentliche Projektseite unter `website/` überträgt dasselbe System auf
+einen statischen Onepager. Sie verwendet ausschließlich synthetische, bereits
+freigegebene Produktansichten, bleibt technisch von der authentifizierten PWA
+getrennt und führt keine API-Aufrufe aus.
 
 ## Visuelle Idee
 

@@ -1,6 +1,6 @@
 # Web Push notifications
 
-Vorrio 0.8.14 can send personal, opt-in browser notifications when a product
+Vorrio can send personal, opt-in browser notifications when a product
 enters its low-stock state or a stock lot enters the configured best-before
 window. No notification permission is requested automatically and no external
 notification account is required.
@@ -31,6 +31,10 @@ personal switch can pause delivery while keeping the devices registered.
   events, so deliberately re-enabling it evaluates the current state afresh.
 - A failed delivery remains retryable. HTTP 404/410 responses from a push
   service revoke the dead device automatically.
+- Message title, body, numbers and dates use the receiving user's stored German
+  or English interface language. Product and unit names remain the household's
+  original data. Changing the language affects later events and test messages;
+  it does not resend an already delivered state transition.
 
 The in-process evaluator runs every 15 minutes by default. It is intentionally
 small and appropriate for the supported single-container/single-household

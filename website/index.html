@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Vorrio verbindet Bons, Produktscans und deinen aktuellen Bestand – selbst gehostet und unter deiner Kontrolle."
+    />
+    <meta name="theme-color" content="#176b35" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Vorrio – Dein Einkauf wird zum verlässlichen Vorrat" />
+    <meta
+      property="og:description"
+      content="Die selbst gehostete Haushalts-App für Bons, Bestand, Einkaufsliste, Preise und Budget."
+    />
+    <link rel="alternate" hreflang="de" href="index.html" />
+    <link rel="alternate" hreflang="en" href="index-en.html" />
+    <link rel="alternate" hreflang="x-default" href="index.html" />
+    <link rel="icon" href="assets/vorrio-icon.png" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Vorrio – Self-hosted Haushaltsvorrat</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Zum Inhalt springen</a>
+
+    <header class="site-header" data-site-header>
+      <div class="shell nav-shell">
+        <a class="brand" href="#top" aria-label="Vorrio Startseite">
+          <img src="assets/brand/vorrio-mark.png" alt="" aria-hidden="true" />
+          <span>Vorrio</span>
+        </a>
+
+        <button
+          class="menu-button"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+          data-menu-button
+        >
+          <span class="visually-hidden">Menü öffnen</span>
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+
+        <nav id="site-navigation" class="site-nav" aria-label="Hauptnavigation" data-site-nav>
+          <a href="#funktionen">Funktionen</a>
+          <a href="#prinzipien">Prinzipien</a>
+          <a href="#installation">Installation</a>
+          <a href="#unterstuetzen">Unterstützen</a>
+          <a class="language-nav" href="index-en.html" lang="en" hreflang="en">English</a>
+        </nav>
+
+        <a
+          class="button button-outline github-header"
+          href="https://github.com/amturo-gbr/vorrio"
+          aria-label="Vorrio auf GitHub öffnen"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.3 4 5 5 0 0 0 19.2.5S18 0 15 2a13.4 13.4 0 0 0-7 0C5-.1 3.8.5 3.8.5A5 5 0 0 0 3.7 4a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 8 18v4" />
+            <path d="M8 19c-3 .9-3-1.5-4-2" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="hero" id="top">
+        <div class="shell hero-grid">
+          <div class="hero-copy reveal">
+            <h1>Dein Einkauf wird zum verlässlichen Vorrat.</h1>
+            <p>
+              Vorrio verbindet Bons, Produktscans und deinen aktuellen Bestand – selbst gehostet und
+              unter deiner Kontrolle.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="https://github.com/amturo-gbr/vorrio">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.3 4 5 5 0 0 0 19.2.5S18 0 15 2a13.4 13.4 0 0 0-7 0C5-.1 3.8.5 3.8.5A5 5 0 0 0 3.7 4a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 8 18v4" />
+                  <path d="M8 19c-3 .9-3-1.5-4-2" />
+                </svg>
+                Auf GitHub ansehen
+              </a>
+              <a class="button button-outline" href="#installation">Installation</a>
+            </div>
+          </div>
+
+          <div class="hero-media reveal" aria-label="Vorrio auf Desktop und Smartphone">
+            <div class="receipt-backdrop" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <figure class="device device-laptop">
+              <div class="device-screen">
+                <img
+                  src="assets/scanner-desktop.png"
+                  alt="Vorrio Produkt-Scanner auf einem Desktop-Bildschirm"
+                  width="1440"
+                  height="1000"
+                />
+              </div>
+              <div class="laptop-base" aria-hidden="true"></div>
+            </figure>
+            <figure class="device device-phone">
+              <div class="phone-speaker" aria-hidden="true"></div>
+              <div class="device-screen">
+                <img
+                  src="assets/receipt-review-mobile.jpg"
+                  alt="Vorrio Bon-Prüfung auf einem Smartphone"
+                  width="390"
+                  height="844"
+                />
+              </div>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="workflow section" id="funktionen">
+        <div class="shell">
+          <div class="section-heading reveal">
+            <h2>Vom Bon zum Bestand. Ohne Blindflug.</h2>
+            <p>Vorrio bereitet vor. Du entscheidest, was sich ändert.</p>
+          </div>
+
+          <ol class="workflow-steps" aria-label="Der Vorrio-Ablauf">
+            <li class="reveal">
+              <span class="step-number">01</span>
+              <span class="step-line" aria-hidden="true"></span>
+              <h3>Erfassen</h3>
+              <p>Bon fotografieren, PDF hochladen oder Barcode scannen.</p>
+              <figure class="workflow-media phone-frame">
+                <img
+                  src="assets/scanner-entry-mobile.jpg"
+                  alt="Vorrio Scan-Einstieg auf einem Smartphone"
+                  width="390"
+                  height="1464"
+                />
+              </figure>
+            </li>
+            <li class="reveal">
+              <span class="step-number">02</span>
+              <span class="step-line" aria-hidden="true"></span>
+              <h3>Prüfen</h3>
+              <p>Treffer, Mengen und Preise verständlich kontrollieren.</p>
+              <figure class="workflow-media phone-frame">
+                <img
+                  src="assets/receipt-review-mobile.jpg"
+                  alt="Vorrio zeigt einen sicheren und einen zu prüfenden Bon-Treffer"
+                  width="390"
+                  height="844"
+                />
+              </figure>
+            </li>
+            <li class="reveal">
+              <span class="step-number">03</span>
+              <h3>Übernehmen</h3>
+              <p>Nur bestätigte Produkte landen im lokalen Bestand.</p>
+              <figure class="workflow-media desktop-frame">
+                <img
+                  src="assets/stock-count-desktop.png"
+                  alt="Vorrio Bestandsansicht auf einem Desktop-Bildschirm"
+                  width="1280"
+                  height="900"
+                />
+              </figure>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="features section">
+        <div class="shell features-grid">
+          <div class="features-copy reveal">
+            <h2>Alles, was im Haushalt zusammengehört.</h2>
+            <p class="section-lead">
+              Bestand, Einkäufe und Produktwissen in einer einzigen, selbst gehosteten Anwendung.
+            </p>
+
+            <div class="feature-list">
+              <article>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M6 3v18l2-1 2 1 2-1 2 1 2-1 2 1V3l-2 1-2-1-2 1-2-1-2 1-2-1Z" />
+                  <path d="M9 8h6M9 12h6M9 16h4" />
+                </svg>
+                <div><h3>Bons &amp; Scans</h3><p>Einkäufe als Bon erfassen oder einzelne Produkte per Barcode bewegen.</p></div>
+              </article>
+              <article>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="m21 8-9 5-9-5 9-5 9 5Z" /><path d="m3 8 9 5 9-5M3 8v8l9 5 9-5V8M12 13v8" />
+                </svg>
+                <div><h3>Eigener Katalog</h3><p>Produkte, Varianten, Lagerorte und Mengen selbst verwalten.</p></div>
+              </article>
+              <article>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M20 12a8 8 0 1 1-2.34-5.66L20 8.67" /><path d="M20 4v4.67h-4.67" />
+                </svg>
+                <div><h3>Bestand &amp; Nachkaufen</h3><p>Mindestbestände erkennen und gemeinsam einkaufen.</p></div>
+              </article>
+              <article>
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M20.6 13.6 11 23.2 1.8 14V4.8H11l9.6 9.6a1.1 1.1 0 0 1 0 1.6Z" /><path d="M6.5 9.5h.01" />
+                </svg>
+                <div><h3>Preise &amp; Budget</h3><p>Nur bestätigte Haushaltsdaten auswerten – transparent und lokal.</p></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="feature-media reveal" aria-label="Vorrio Einkaufs- und Katalogansichten">
+            <div class="paper-canvas">
+              <img
+                class="shopping-screen"
+                src="assets/shopping-list-desktop.jpg"
+                alt="Gemeinsame Einkaufsliste in Vorrio"
+                width="1280"
+                height="900"
+              />
+              <div class="catalog-phone">
+                <img
+                  src="assets/catalog-editor-mobile.png"
+                  alt="Vorrio Produktbearbeitung auf einem Smartphone"
+                  width="390"
+                  height="844"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="principles" id="prinzipien">
+        <div class="shell">
+          <h2 class="reveal">Deine Daten. Deine Regeln.</h2>
+          <div class="principle-list">
+            <article class="reveal">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 8h.01M8 12h.01M8 16h.01M12 8h4M12 12h4M12 16h4" /></svg>
+              <div><h3>Self-hosted</h3><p>Vorrio läuft auf deiner Infrastruktur.</p></div>
+            </article>
+            <article class="reveal">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" /></svg>
+              <div><h3>Local-first</h3><p>Bestand und Produktwissen bleiben bei dir.</p></div>
+            </article>
+            <article class="reveal">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3v8Z" /><path d="m9 12 2 2 4-4" /></svg>
+              <div><h3>Erst bestätigen</h3><p>Kein unsicherer Treffer ändert still deine Daten.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="installation section" id="installation">
+        <div class="shell install-grid">
+          <div class="install-copy reveal">
+            <h2>In wenigen Minuten bei dir zu Hause.</h2>
+            <p>Docker Compose starten, ersten Owner anlegen und Vorrio im Browser oder als PWA verwenden.</p>
+            <div class="install-actions">
+              <a class="button button-primary" href="https://github.com/amturo-gbr/vorrio/blob/main/docs/INSTALLATION.md">
+                Installation öffnen
+              </a>
+              <a class="text-link" href="https://github.com/amturo-gbr/vorrio/tree/main/docs">Dokumentation</a>
+            </div>
+          </div>
+
+          <div class="terminal-wrap reveal">
+            <div class="terminal" aria-label="Installationsbefehle">
+              <div class="terminal-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+              <button class="copy-button" type="button" data-copy-command>Kopieren</button>
+              <pre><code><span>$</span> git clone https://github.com/amturo-gbr/vorrio.git
+<span>$</span> cd vorrio
+<span>$</span> cp .env.example .env
+<span>$</span> docker compose up -d --build</code></pre>
+            </div>
+            <p class="tech-line">AGPL-3.0-or-later <span>·</span> Docker <span>·</span> Responsive PWA</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="support section" id="unterstuetzen">
+        <div class="shell support-grid">
+          <div class="reveal">
+            <h2>Offen entwickelt.<br />Gemeinsam erhalten.</h2>
+            <p>
+              Vorrio bleibt freie Software. Unterstützung fließt in Wartung, Sicherheit,
+              Dokumentation und öffentliche Build-Infrastruktur.
+            </p>
+          </div>
+          <div class="support-actions reveal">
+            <div>
+              <a class="button button-outline" href="https://github.com/amturo-gbr/vorrio/blob/main/CONTRIBUTING.md">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.3 4 5 5 0 0 0 19.2.5S18 0 15 2a13.4 13.4 0 0 0-7 0C5-.1 3.8.5 3.8.5A5 5 0 0 0 3.7 4a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 8 18v4" />
+                  <path d="M8 19c-3 .9-3-1.5-4-2" />
+                </svg>
+                Auf GitHub mitmachen
+              </a>
+              <span class="button button-muted" aria-disabled="true">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>
+                GitHub Sponsors zum Start
+              </span>
+            </div>
+            <p class="support-note">
+              Finanzielle Unterstützung wird als Sponsoring behandelt; Spendenbescheinigungen sind nicht vorgesehen.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div class="footer-brand">
+          <a class="brand brand-inverse" href="#top">
+            <img src="assets/brand/vorrio-mark-white.png" alt="" aria-hidden="true" />
+            <span>Vorrio</span>
+          </a>
+          <p>Selbst gehosteter Vorrat für deinen Haushalt.</p>
+        </div>
+        <nav aria-label="Projektlinks">
+          <strong>Projekt</strong>
+          <a href="https://github.com/amturo-gbr/vorrio">GitHub</a>
+          <a href="https://github.com/amturo-gbr/vorrio/tree/main/docs">Dokumentation</a>
+          <a href="https://github.com/amturo-gbr/vorrio/releases">Releases</a>
+        </nav>
+        <nav aria-label="Mitmachen">
+          <strong>Mitmachen</strong>
+          <a href="https://github.com/amturo-gbr/vorrio/issues">Issues</a>
+          <a href="https://github.com/amturo-gbr/vorrio/discussions">Diskussionen</a>
+          <a href="https://github.com/amturo-gbr/vorrio/security/advisories/new">Sicherheit</a>
+        </nav>
+        <nav aria-label="Rechtliche Hinweise">
+          <strong>Rechtliches</strong>
+          <a href="https://github.com/amturo-gbr/vorrio/blob/main/LICENSE">AGPL-3.0</a>
+          <a href="https://github.com/amturo-gbr/vorrio/blob/main/NOTICE">Hinweise</a>
+          <a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/DATA-PRIVACY.md">Datenschutz im Produkt</a>
+        </nav>
+      </div>
+      <div class="shell footer-bottom">
+        <span>© 2026 Amturo UG</span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

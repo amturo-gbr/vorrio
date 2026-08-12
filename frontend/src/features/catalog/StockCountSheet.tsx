@@ -22,12 +22,12 @@ import type {
   StockCountSession,
   StockCountSource,
 } from '../../types'
+import { currentLocale, formatNumber, translate } from '../../i18n'
 
 type Notice = (kind: 'success' | 'error', text: string) => void
 type DetailDraft = { location_id: number | null; variant_id: string | null; best_before_date: string }
 
-const formatQuantity = (value: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value)
+const formatQuantity = (value: number) => formatNumber(value)
 
 const mutationId = () =>
   `count_${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}_${Math.random().toString(16).slice(2)}`}`
@@ -70,12 +70,12 @@ export function StockCountSheet({
   }, [])
 
   const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase('de-DE')
+    const needle = query.trim().toLocaleLowerCase(currentLocale())
     if (!needle) return products
     return products.filter((product) =>
       [product.name, product.product_group_name, product.default_location_name]
         .filter(Boolean)
-        .some((value) => String(value).toLocaleLowerCase('de-DE').includes(needle)),
+        .some((value) => String(value).toLocaleLowerCase(currentLocale()).includes(needle)),
     )
   }, [products, query])
 
@@ -134,7 +134,12 @@ export function StockCountSheet({
       setDetails(nextDetails)
       setSource('grocy_review')
       setSourceMessage(
-        `${preview.items.length} Grocy-Werte als Vorschlag geladen.${preview.unmapped.length ? ` ${preview.unmapped.length} nicht zugeordnete Grocy-Produkte wurden ausgelassen.` : ''}`,
+        preview.unmapped.length
+          ? translate('{{count}} Grocy-Werte als Vorschlag geladen. {{unmapped}} nicht zugeordnete Grocy-Produkte wurden ausgelassen.', {
+            count: preview.items.length,
+            unmapped: preview.unmapped.length,
+          })
+          : translate('{{count}} Grocy-Werte als Vorschlag geladen.', { count: preview.items.length }),
       )
     } catch (error) {
       onNotice('error', (error as Error).message)
@@ -173,26 +178,26 @@ export function StockCountSheet({
 
   return (
     <div className="sheet-backdrop" role="presentation">
-      <section className="product-sheet stock-count-sheet" role="dialog" aria-modal="true" aria-label="Bestand zählen">
+      <section className="product-sheet stock-count-sheet" role="dialog" aria-modal="true" aria-label={translate("Bestand zählen")}>
         <span className="sheet-handle" />
         <header>
           <div>
-            <h2>{phase === 'count' ? 'Bestand zählen' : phase === 'review' ? 'Zählung prüfen' : 'Bestand aktualisiert'}</h2>
-            <p>{phase === 'count' ? 'Nur eingetragene Produkte werden verändert' : phase === 'review' ? 'Vorher und gezählte Menge direkt vergleichen' : 'Die Differenzen wurden nachvollziehbar gebucht'}</p>
+            <h2>{translate(phase === 'count' ? 'Bestand zählen' : phase === 'review' ? 'Zählung prüfen' : 'Bestand aktualisiert')}</h2>
+            <p>{translate(phase === 'count' ? 'Nur eingetragene Produkte werden verändert' : phase === 'review' ? 'Vorher und gezählte Menge direkt vergleichen' : 'Die Differenzen wurden nachvollziehbar gebucht')}</p>
           </div>
-          <button type="button" className="icon-close" onClick={onClose} aria-label="Bestandszählung schließen"><X /></button>
+          <button type="button" className="icon-close" onClick={onClose} aria-label={translate("Bestandszählung schließen")}><X /></button>
         </header>
 
         {busy && !products.length ? (
-          <div className="inline-loading stock-count-loading"><LoaderCircle className="spin" /> Katalog vorbereiten…</div>
+          <div className="inline-loading stock-count-loading"><LoaderCircle className="spin" /> {translate("Katalog vorbereiten…")}</div>
         ) : phase === 'count' ? (
           <>
             <div className="stock-count-toolbar">
-              <label className="search-field"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Produkt oder Lagerort suchen" /></label>
-              {grocyEnabled && <button type="button" className="button tertiary compact" disabled={busy} onClick={loadGrocy}>{busy ? <LoaderCircle className="spin" /> : <CloudDownload />} Grocy-Vorschlag</button>}
+              <label className="search-field"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={translate("Produkt oder Lagerort suchen")} /></label>
+              {grocyEnabled && <button type="button" className="button tertiary compact" disabled={busy} onClick={loadGrocy}>{busy ? <LoaderCircle className="spin" /> : <CloudDownload />} {translate("Grocy-Vorschlag")}</button>}
             </div>
             {sourceMessage && <p className="stock-count-source"><Check /> {sourceMessage}</p>}
-            <div className="stock-count-progress"><span style={{ width: `${products.length ? Math.min(100, (enteredCount / products.length) * 100) : 0}%` }} /><strong>{enteredCount} von {products.length} erfasst</strong></div>
+            <div className="stock-count-progress"><span style={{ width: `${products.length ? Math.min(100, (enteredCount / products.length) * 100) : 0}%` }} /><strong>{enteredCount} {translate("von")} {products.length} {translate("erfasst")}</strong></div>
             <div className="stock-count-list">
               {filtered.map((product) => {
                 const raw = counts[product.id] ?? ''
@@ -202,56 +207,56 @@ export function StockCountSheet({
                   <article className={isEntered ? 'counted' : ''} key={product.id}>
                     <div className="stock-count-row">
                       <span className="catalog-icon">{product.image_url ? <img src={product.image_url} alt="" onError={(event) => { event.currentTarget.hidden = true }} /> : <PackageCheck />}</span>
-                      <span className="stock-count-copy"><strong>{product.name}</strong><small>Aktuell {formatQuantity(product.stock_quantity)} {product.default_quantity_unit_name || 'Einheiten'}</small></span>
+                      <span className="stock-count-copy"><strong>{product.name}</strong><small>{translate("Aktuell")} {formatQuantity(product.stock_quantity)} {product.default_quantity_unit_name || translate('Einheiten')}</small></span>
                       <div className="stock-count-input">
-                        <button type="button" onClick={() => step(product, -1)} aria-label={`${product.name} um eins verringern`}><CircleMinus /></button>
-                        <input aria-label={`Gezählte Menge ${product.name}`} inputMode="decimal" type="number" min="0" step="0.001" placeholder="–" value={raw} onChange={(event) => setCount(product, event.target.value)} />
-                        <button type="button" onClick={() => step(product, 1)} aria-label={`${product.name} um eins erhöhen`}><CirclePlus /></button>
+                        <button type="button" onClick={() => step(product, -1)} aria-label={translate('{{product}} um eins verringern', { product: product.name })}><CircleMinus /></button>
+                        <input aria-label={translate('Gezählte Menge {{product}}', { product: product.name })} inputMode="decimal" type="number" min="0" step="0.001" placeholder="–" value={raw} onChange={(event) => setCount(product, event.target.value)} />
+                        <button type="button" onClick={() => step(product, 1)} aria-label={translate('{{product}} um eins erhöhen', { product: product.name })}><CirclePlus /></button>
                       </div>
-                      {isEntered && <button type="button" className="count-detail-toggle" aria-label={`Details für ${product.name}`} onClick={() => setExpanded(expanded === product.id ? null : product.id)}>{expanded === product.id ? <ChevronUp /> : <ChevronDown />}</button>}
+                      {isEntered && <button type="button" className="count-detail-toggle" aria-label={translate('Details für {{product}}', { product: product.name })} onClick={() => setExpanded(expanded === product.id ? null : product.id)}>{expanded === product.id ? <ChevronUp /> : <ChevronDown />}</button>}
                     </div>
                     {expanded === product.id && isEntered && masterData && (
                       <div className="stock-count-details">
-                        <label>Lagerort<select value={detail.location_id ?? ''} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, location_id: event.target.value ? Number(event.target.value) : null } })}><option value="">Kein Lagerort</option>{masterData.locations.map((location) => <option value={location.id} key={location.id}>{location.name}</option>)}</select></label>
-                        <label>Variante<select value={detail.variant_id ?? ''} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, variant_id: event.target.value || null } })}><option value="">Allgemeines Produkt</option>{product.variants.map((variant) => <option value={variant.id} key={variant.id}>{[variant.brand, variant.name, variant.package_amount && variant.package_unit ? `${formatQuantity(variant.package_amount)} ${variant.package_unit}` : null].filter(Boolean).join(' · ')}</option>)}</select></label>
-                        <label>Mindesthaltbar bis<input type="date" value={detail.best_before_date} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, best_before_date: event.target.value } })} /></label>
+                        <label>{translate("Lagerort")}<select value={detail.location_id ?? ''} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, location_id: event.target.value ? Number(event.target.value) : null } })}><option value="">{translate("Kein Lagerort")}</option>{masterData.locations.map((location) => <option value={location.id} key={location.id}>{location.name}</option>)}</select></label>
+                        <label>{translate("Variante")}<select value={detail.variant_id ?? ''} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, variant_id: event.target.value || null } })}><option value="">{translate("Allgemeines Produkt")}</option>{product.variants.map((variant) => <option value={variant.id} key={variant.id}>{[variant.brand, variant.name, variant.package_amount && variant.package_unit ? `${formatQuantity(variant.package_amount)} ${variant.package_unit}` : null].filter(Boolean).join(' · ')}</option>)}</select></label>
+                        <label>{translate("Mindesthaltbar bis")}<input type="date" value={detail.best_before_date} onChange={(event) => setDetails({ ...details, [product.id]: { ...detail, best_before_date: event.target.value } })} /></label>
                       </div>
                     )}
                   </article>
                 )
               })}
-              {!filtered.length && <p className="empty-inline">Kein passendes Produkt gefunden.</p>}
+              {!filtered.length && <p className="empty-inline">{translate("Kein passendes Produkt gefunden.")}</p>}
             </div>
             <footer className="stock-count-footer">
-              <span><strong>{enteredCount} erfasst</strong><small>Nicht ausgefüllte Produkte bleiben unverändert.</small></span>
-              <button type="button" className="button primary" disabled={!reviewed.length || invalidCount > 0} onClick={() => setPhase('review')}><ClipboardCheck /> Änderungen prüfen</button>
+              <span><strong>{enteredCount} {translate("erfasst")}</strong><small>{translate("Nicht ausgefüllte Produkte bleiben unverändert.")}</small></span>
+              <button type="button" className="button primary" disabled={!reviewed.length || invalidCount > 0} onClick={() => setPhase('review')}><ClipboardCheck /> {translate("Änderungen prüfen")}</button>
             </footer>
           </>
         ) : phase === 'review' ? (
           <>
-            <div className="stock-review-summary"><strong>{reviewed.length} Produkte geprüft</strong><span>{reviewed.filter((line) => Math.abs(line.delta) > 1e-9).length} mit Änderung</span></div>
+            <div className="stock-review-summary"><strong>{reviewed.length} {translate("Produkte geprüft")}</strong><span>{reviewed.filter((line) => Math.abs(line.delta) > 1e-9).length} {translate("mit Änderung")}</span></div>
             <div className="stock-review-list">
               {reviewed.map(({ product, counted, delta }) => (
                 <article key={product.id}>
-                  <span><strong>{product.name}</strong><small>{product.default_quantity_unit_name || 'Einheiten'}</small></span>
-                  <span className="stock-review-values"><small>{formatQuantity(product.stock_quantity)} vorher</small><strong>{formatQuantity(counted)} gezählt</strong><em className={delta > 0 ? 'positive' : delta < 0 ? 'negative' : ''}>{delta > 0 ? '+' : ''}{formatQuantity(delta)}</em></span>
+                  <span><strong>{product.name}</strong><small>{product.default_quantity_unit_name || translate('Einheiten')}</small></span>
+                  <span className="stock-review-values"><small>{formatQuantity(product.stock_quantity)} {translate("vorher")}</small><strong>{formatQuantity(counted)} {translate("gezählt")}</strong><em className={delta > 0 ? 'positive' : delta < 0 ? 'negative' : ''}>{delta > 0 ? '+' : ''}{formatQuantity(delta)}</em></span>
                 </article>
               ))}
             </div>
-            <label className="stock-count-note">Notiz zur Zählung<textarea rows={2} maxLength={1000} value={note} placeholder="Optional, z. B. Vorratskammer komplett gezählt" onChange={(event) => setNote(event.target.value)} /></label>
-            <p className="stock-review-safety"><Check /> Erst diese Bestätigung erzeugt Bestandsbewegungen. Die Zählung bleibt danach im Verlauf nachvollziehbar.</p>
+            <label className="stock-count-note">{translate("Notiz zur Zählung")}<textarea rows={2} maxLength={1000} value={note} placeholder={translate("Optional, z. B. Vorratskammer komplett gezählt")} onChange={(event) => setNote(event.target.value)} /></label>
+            <p className="stock-review-safety"><Check /> {translate("Erst diese Bestätigung erzeugt Bestandsbewegungen. Die Zählung bleibt danach im Verlauf nachvollziehbar.")}</p>
             <footer className="stock-count-footer review-actions">
-              <button type="button" className="button tertiary" disabled={busy} onClick={() => setPhase('count')}><ArrowLeft /> Zurück</button>
-              <button type="button" className="button primary" disabled={busy} onClick={commit}>{busy ? <LoaderCircle className="spin" /> : <ClipboardCheck />} {reviewed.length} Produkte übernehmen</button>
+              <button type="button" className="button tertiary" disabled={busy} onClick={() => setPhase('count')}><ArrowLeft /> {translate("Zurück")}</button>
+              <button type="button" className="button primary" disabled={busy} onClick={commit}>{busy ? <LoaderCircle className="spin" /> : <ClipboardCheck />} {reviewed.length} {translate("Produkte übernehmen")}</button>
             </footer>
           </>
         ) : (
           <div className="stock-count-done">
             <span><CheckCircle2 /></span>
-            <h3>{session?.changed_count || 0} Bestände geändert</h3>
-            <p>{session?.line_count || 0} gezählte Produkte wurden geprüft. Jede Differenz ist im Bewegungsjournal dokumentiert.</p>
-            <div><strong>{source === 'grocy_review' ? 'Geprüfter Grocy-Vorschlag' : 'Manuelle Zählung'}</strong><small>{note || 'Ohne zusätzliche Notiz'}</small></div>
-            <button type="button" className="button primary full" onClick={onClose}><CheckCircle2 /> Fertig</button>
+            <h3>{session?.changed_count || 0} {translate("Bestände geändert")}</h3>
+            <p>{session?.line_count || 0} {translate("gezählte Produkte wurden geprüft. Jede Differenz ist im Bewegungsjournal dokumentiert.")}</p>
+            <div><strong>{translate(source === 'grocy_review' ? 'Geprüfter Grocy-Vorschlag' : 'Manuelle Zählung')}</strong><small>{note || translate('Ohne zusätzliche Notiz')}</small></div>
+            <button type="button" className="button primary full" onClick={onClose}><CheckCircle2 /> {translate("Fertig")}</button>
           </div>
         )}
       </section>

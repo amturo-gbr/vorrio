@@ -14,7 +14,7 @@ not provide reliable file locking.
 ## Docker Compose
 
 ```bash
-git clone https://github.com/amturo/vorrio.git
+git clone https://github.com/amturo-gbr/vorrio.git
 cd vorrio
 cp .env.example .env
 openssl rand -hex 32
@@ -28,6 +28,9 @@ docker compose ps
 ```
 
 Open `http://SERVER:9380`, name the first Owner and complete the password setup.
+The setup screen follows German or English browser preferences and stores the
+selected interface language for that Owner. It can be changed later per user
+without rebuilding the container.
 
 For a LAN installation, replace the wildcard with the exact names or IPs used
 by browsers whenever practical:
@@ -157,11 +160,17 @@ used for evaluation, but a pinned version remains the recommended household
 upgrade path because it makes rollback preparation and release-note review
 explicit.
 
+Version 0.8.22 adds `users.preferred_locale` with a safe German default for
+existing accounts. It does not rewrite household, receipt, catalog, stock,
+currency or timezone data. Each account may switch between German and English
+after login; release notes, API-token scope descriptions and future Push
+messages then follow that personal choice. Reinstalling the PWA is not required.
+
 Version 0.8.21 changes only the maintained HTTP client dependency used by
 tests and outbound connectors. It adds no schema migration, rewrites no
-household data and leaves the versioned REST contract unchanged. After the
-normal container replacement, verify the configured AI provider and optional
-Grocy connection once from Settings.
+household data and leaves the versioned REST contract unchanged. After that
+container replacement, verify the configured AI provider and optional Grocy
+connection once from Settings.
 
 The 0.8.19 migration adds only per-user onboarding and version acknowledgement.
 Users that already exist during the first 0.8.19 startup are marked as familiar

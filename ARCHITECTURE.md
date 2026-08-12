@@ -25,9 +25,31 @@ One Docker container contains:
 - SQLite in the persistent `/data` volume;
 - optional retained receipt files below `/data/receipts`.
 
+The public project website is a separate dependency-free static surface under
+`website/`. It is not part of the authenticated application container, makes no
+API request and contains no runtime configuration. A static host may publish
+it independently after the public repository, legal pages and funding links
+are ready. Its product media consists only of checked-in synthetic design and
+QA fixtures; private installation screenshots are outside this boundary.
+
 SQLite uses foreign keys and WAL mode. Schema changes are additive and
 idempotent. A later PostgreSQL adapter must preserve the same repository and
 REST contracts rather than leaking database-specific behavior into the UI.
+
+## Localization boundary
+
+The React PWA uses `i18next` with German source copy as the fallback key set and
+a reviewed English catalog. Locale detection is local only before sign-in;
+after authentication `users.preferred_locale` is authoritative per account.
+The language switch updates optimistically and persists through the versioned
+preferences endpoint. Server-generated personal copy (release notes, API-token
+scope descriptions and Push payloads) reads that user's locale, while product
+names, receipt text, currency and deployment timezone remain domain data.
+
+Two explicit Web App Manifests keep install metadata aligned with the active
+language. The static `website/` entry points are translated separately and do
+not share application sessions or runtime configuration. The complete contract
+and extension procedure are documented in `docs/LOCALIZATION.md`.
 
 ## Domain model
 

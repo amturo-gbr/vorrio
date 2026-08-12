@@ -63,6 +63,8 @@ class Database:
                     display_name TEXT NOT NULL,
                     email TEXT COLLATE NOCASE UNIQUE,
                     password_hash TEXT,
+                    preferred_locale TEXT NOT NULL DEFAULT 'de'
+                        CHECK(preferred_locale IN ('de', 'en')),
                     active INTEGER NOT NULL DEFAULT 1,
                     owner_setup_complete INTEGER NOT NULL DEFAULT 0,
                     created_at TEXT NOT NULL,
@@ -716,6 +718,9 @@ class Database:
                 "authenticated_at": "TEXT",
                 "authentication_method": "TEXT NOT NULL DEFAULT 'password'",
             },
+            "users": {
+                "preferred_locale": "TEXT NOT NULL DEFAULT 'de'",
+            },
         }
         for table, expected in columns.items():
             existing = {
@@ -726,6 +731,10 @@ class Database:
                     conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {definition}")
         conn.execute(
             "UPDATE auth_sessions SET authenticated_at = created_at WHERE authenticated_at IS NULL"
+        )
+        conn.execute(
+            "UPDATE users SET preferred_locale = 'de' "
+            "WHERE preferred_locale IS NULL OR preferred_locale NOT IN ('de', 'en')"
         )
 
     def _backfill_receipt_fingerprints(self, conn: sqlite3.Connection) -> None:
@@ -849,6 +858,57 @@ class Database:
                 """,
                 (name, timestamp, timestamp),
             )
+
+    def localize_seeded_master_data(self, locale: str) -> None:
+        """Translate untouched factory master data for a fresh English household.
+
+        This runs only during first-owner setup, before authenticated catalog writes
+        are possible. Later language changes never rewrite household-owned names.
+        """
+        if locale != "en":
+            return
+        timestamp = now_iso()
+        locations = {
+            "Vorratskammer": ("Pantry", "Dry goods and shelf-stable food"),
+            "Kühlschrank": ("Refrigerator", "Chilled food"),
+            "Tiefkühler": ("Freezer", "Frozen food and freezer stock"),
+            "Badezimmer": ("Bathroom", "Personal care and hygiene products"),
+        }
+        units = {
+            "Stück": ("Piece", "Pieces"),
+            "Packung": ("Package", "Packages"),
+            "Flasche": ("Bottle", "Bottles"),
+            "Dose": ("Can", "Cans"),
+            "Becher": ("Cup", "Cups"),
+            "Kilogramm": ("Kilogram", "Kilograms"),
+        }
+        groups = {
+            "Lebensmittel": "Food",
+            "Getränke": "Beverages",
+            "Kühlprodukte": "Chilled products",
+            "Tiefkühlprodukte": "Frozen food",
+            "Obst & Gemüse": "Fruit & vegetables",
+            "Haushalt & Pflege": "Household & personal care",
+        }
+        with self.connect() as conn:
+            for source, (name, description) in locations.items():
+                conn.execute(
+                    "UPDATE catalog_locations SET name = ?, description = ?, updated_at = ? "
+                    "WHERE name = ? AND NOT EXISTS (SELECT 1 FROM catalog_products)",
+                    (name, description, timestamp, source),
+                )
+            for source, (name, plural) in units.items():
+                conn.execute(
+                    "UPDATE catalog_quantity_units SET name = ?, name_plural = ?, updated_at = ? "
+                    "WHERE name = ? AND NOT EXISTS (SELECT 1 FROM catalog_products)",
+                    (name, plural, timestamp, source),
+                )
+            for source, name in groups.items():
+                conn.execute(
+                    "UPDATE catalog_product_groups SET name = ?, updated_at = ? "
+                    "WHERE name = ? AND NOT EXISTS (SELECT 1 FROM catalog_products)",
+                    (name, timestamp, source),
+                )
 
     def _backfill_catalog(self, conn: sqlite3.Connection) -> None:
         rows = conn.execute(
@@ -1033,6 +1093,25 @@ class Database:
                 """,
                 (key, value, timestamp),
             )
+
+    def get_user_locale(self, user_id: str) -> str:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT preferred_locale FROM users WHERE id = ?", (user_id,)
+            ).fetchone()
+        locale = str(row["preferred_locale"]) if row else "de"
+        return locale if locale in {"de", "en"} else "de"
+
+    def update_user_locale(self, user_id: str, preferred_locale: str) -> bool:
+        if preferred_locale not in {"de", "en"}:
+            raise ValueError("unsupported_locale")
+        with self.connect() as conn:
+            cursor = conn.execute(
+                "UPDATE users SET preferred_locale = ?, updated_at = ? "
+                "WHERE id = ? AND active = 1",
+                (preferred_locale, now_iso(), user_id),
+            )
+        return cursor.rowcount > 0
 
     def ensure_owner_identity(self, password_hash: str | None = None) -> dict[str, Any]:
         """Create the single-household owner boundary without changing domain data."""
@@ -1812,7 +1891,7 @@ class Database:
         return cursor.rowcount > 0
 
     def accept_household_invitation(
-        self, token: str, *, password_hash: str
+        self, token: str, *, password_hash: str, preferred_locale: str = "de"
     ) -> dict[str, Any] | None:
         token_hash = self._session_token_hash(token)
         timestamp = now_iso()
@@ -1843,15 +1922,16 @@ class Database:
             conn.execute(
                 """
                 INSERT INTO users(
-                    id, display_name, email, password_hash, active,
+                    id, display_name, email, password_hash, preferred_locale, active,
                     owner_setup_complete, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, 1, 1, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, 1, 1, ?, ?)
                 """,
                 (
                     user_id,
                     invitation["display_name"],
                     invitation["email"],
                     password_hash,
+                    preferred_locale,
                     timestamp,
                     timestamp,
                 ),
@@ -1880,6 +1960,7 @@ class Database:
             "display_name": str(invitation["display_name"]),
             "email": str(invitation["email"]),
             "password_hash": password_hash,
+            "preferred_locale": preferred_locale,
             "owner_setup_complete": 1,
             "household_id": str(invitation["household_id"]),
             "household_name": str(invitation["household_name"]),

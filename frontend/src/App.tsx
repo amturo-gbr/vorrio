@@ -35,8 +35,8 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
-import { startAuthentication, startRegistration } from '@simplewebauthn/browser'
-import { FormEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { FormEvent, lazy, ReactNode, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api, ApiError, ApiNetworkError } from './api'
 import type {
   AppStatus,
@@ -62,11 +62,20 @@ import type {
   SettingsData,
   TotpSetup,
 } from './types'
-import { ScannerScreen } from './features/scanner/ScannerScreen'
-import { CatalogScreen } from './features/catalog/CatalogScreen'
-import { ShoppingScreen } from './features/shopping/ShoppingScreen'
-import { LaunchReadinessPanel } from './features/settings/LaunchReadinessPanel'
 import { automaticExperienceSurface } from './experience'
+import { changeLocale, currentLocale, formatCurrency, formatDate, formatNumber, translate } from './i18n'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
+import type { SupportedLocale } from './types'
+
+const loadScannerScreen = () => import('./features/scanner/ScannerScreen')
+const loadCatalogScreen = () => import('./features/catalog/CatalogScreen')
+const loadShoppingScreen = () => import('./features/shopping/ShoppingScreen')
+const loadLaunchReadinessPanel = () => import('./features/settings/LaunchReadinessPanel')
+
+const ScannerScreen = lazy(() => loadScannerScreen().then((module) => ({ default: module.ScannerScreen })))
+const CatalogScreen = lazy(() => loadCatalogScreen().then((module) => ({ default: module.CatalogScreen })))
+const ShoppingScreen = lazy(() => loadShoppingScreen().then((module) => ({ default: module.ShoppingScreen })))
+const LaunchReadinessPanel = lazy(() => loadLaunchReadinessPanel().then((module) => ({ default: module.LaunchReadinessPanel })))
 
 const providerDefaults: Record<SettingsData['provider']['type'], { baseUrl: string; model: string }> = {
   cortecs: { baseUrl: 'https://api.cortecs.ai/v1', model: '' },
@@ -96,13 +105,9 @@ const apiTokenPresets: Record<'homeassistant' | 'scanner' | 'custom', { name: st
   custom: { name: 'Lokaler Dienst', scopes: ['status:read'] },
 }
 
-const euro = (value: number | null | undefined) =>
-  value == null
-    ? '–'
-    : new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value)
+const euro = (value: number | null | undefined) => formatCurrency(value)
 
-const quantity = (value: number) =>
-  new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 }).format(value)
+const quantity = (value: number) => formatNumber(value)
 
 const OFFLINE_AUTH_HINT_KEY = 'vorrio.offline-authenticated.v1'
 
@@ -124,12 +129,13 @@ const wasAuthenticatedOnDevice = () => {
 }
 
 const shortDate = (value: string | null | undefined) => {
-  if (!value) return 'Heute'
+  if (!value) return translate('Heute')
   const date = new Date(`${value}T12:00:00`)
-  return new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: 'short' }).format(date)
+  return formatDate(date, { day: '2-digit', month: 'short' })
 }
 
 function App() {
+  useTranslation()
   const [inviteToken, setInviteToken] = useState(() => new URLSearchParams(window.location.search).get('invite'))
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
   const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(null)
@@ -146,6 +152,27 @@ function App() {
   const [activeReceipt, setActiveReceipt] = useState<Receipt | null>(null)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+
+  useEffect(() => {
+    if (currentUser?.preferred_locale && currentUser.preferred_locale !== currentLocale()) {
+      void changeLocale(currentUser.preferred_locale)
+    }
+  }, [currentUser?.preferred_locale])
+
+  const updateLocale = useCallback(async (locale: SupportedLocale) => {
+    const previous = currentLocale()
+    await changeLocale(locale)
+    try {
+      const state = await api.updatePreferences(locale)
+      setCurrentUser(state.user)
+      void api.experience().then(setExperience).catch(() => undefined)
+      setMessage({ kind: 'success', text: translate('Sprache wurde gespeichert.') })
+    } catch (error) {
+      await changeLocale(previous)
+      setMessage({ kind: 'error', text: (error as Error).message })
+      throw error
+    }
+  }, [])
 
   const refresh = useCallback(async () => {
     const [nextStatus, nextReceipts] = await Promise.all([api.status(), api.receipts()])
@@ -168,7 +195,7 @@ function App() {
         if (error instanceof ApiNetworkError && wasAuthenticatedOnDevice()) {
           setAuthenticated(true)
           setOfflineMode(true)
-          setMessage({ kind: 'error', text: 'Offline-Modus: Scans werden nur lokal vorgemerkt und später bestätigt.' })
+          setMessage({ kind: 'error', text: translate('Offline-Modus: Scans werden nur lokal vorgemerkt und später bestätigt.') })
           return
         }
         setAuthenticated(false)
@@ -180,7 +207,7 @@ function App() {
     refresh().catch((error) => {
       if (error instanceof ApiNetworkError) setOfflineMode(true)
       setMessage({ kind: 'error', text: error instanceof ApiNetworkError
-        ? 'Offline-Modus: Scans werden nur lokal vorgemerkt und später bestätigt.'
+        ? translate('Offline-Modus: Scans werden nur lokal vorgemerkt und später bestätigt.')
         : error.message })
     })
   }, [authenticated, refresh])
@@ -193,7 +220,7 @@ function App() {
       if (automaticSurface === 'onboarding') setGuideOpen(true)
       else if (automaticSurface === 'release') setReleaseNotesOpen(true)
     }).catch((error) => {
-      setMessage({ kind: 'error', text: `Einführung konnte nicht geladen werden: ${(error as Error).message}` })
+      setMessage({ kind: 'error', text: translate('Einführung konnte nicht geladen werden: {{message}}', { message: (error as Error).message }) })
     })
   }, [authenticated, offlineMode])
 
@@ -236,7 +263,7 @@ function App() {
       setActiveReceipt(receipt)
       setScreen('review')
       if (receipt.duplicate) {
-        setMessage({ kind: 'success', text: 'Dieser Bon war schon vorhanden – vorhandene Prüfung geöffnet.' })
+        setMessage({ kind: 'success', text: translate('Dieser Bon war schon vorhanden – vorhandene Prüfung geöffnet.') })
       }
       await refresh()
     } catch (error) {
@@ -300,6 +327,7 @@ function App() {
         {message && <Toast {...message} onClose={() => setMessage(null)} />}
         {busy && <BusyOverlay />}
 
+        <Suspense fallback={<div className="inline-loading"><LoaderCircle className="spin" /> {translate('App wird geladen')}</div>}>
         {screen === 'home' && (
           <HomeScreen
             status={status}
@@ -327,6 +355,7 @@ function App() {
             version={experience?.current_version || status?.version || ''}
             onOpenGuide={() => setGuideOpen(true)}
             onOpenReleaseNotes={() => setReleaseNotesOpen(true)}
+            onLocaleChange={updateLocale}
             onIdentityChange={setCurrentUser}
             onSaved={async (text) => {
               setMessage({ kind: 'success', text })
@@ -358,15 +387,16 @@ function App() {
               setMessage({
                 kind: failed ? 'error' : 'success',
                 text: failed
-                  ? `${imported} Artikel übernommen, ${failed} bitte prüfen.`
+                  ? translate('{{imported}} Artikel übernommen, {{failed}} bitte prüfen.', { imported, failed })
                   : grocyFailed
-                    ? `${imported} Artikel sind in Vorrio. ${grocyFailed} Grocy-Exporte sind offen.`
-                    : `${imported} Artikel wurden in den Vorrio-Bestand übernommen.`,
+                    ? translate('{{imported}} Artikel sind in Vorrio. {{grocyFailed}} Grocy-Exporte sind offen.', { imported, grocyFailed })
+                    : translate('{{imported}} Artikel wurden in den Vorrio-Bestand übernommen.', { imported }),
               })
               await refresh()
             }}
           />
         )}
+        </Suspense>
 
         {screen !== 'review' && <BottomNav selected={screen} onSelect={setScreen} role={currentUser?.role || 'viewer'} />}
         {guideOpen && <OnboardingGuide
@@ -390,7 +420,7 @@ function Splash() {
   return (
     <main className="splash">
       <img src="/pwa-icon.png" alt="" />
-      <LoaderCircle className="spin" aria-label="App wird geladen" />
+      <LoaderCircle className="spin" aria-label={translate("App wird geladen")} />
     </main>
   )
 }
@@ -437,11 +467,12 @@ function Login({ identifierRequired, onSuccess }: { identifierRequired: boolean;
     setBusy(true)
     setError('')
     try {
+      const { startAuthentication } = await import('@simplewebauthn/browser')
       const begin = await api.beginPasskeyAuthentication()
       const credential = await startAuthentication({ optionsJSON: begin.options as never })
       onSuccess(await api.completePasskeyAuthentication(begin.challenge_id, credential))
     } catch (nextError) {
-      setError((nextError as Error).message || 'Passkey-Anmeldung wurde abgebrochen.')
+      setError((nextError as Error).message || translate('Passkey-Anmeldung wurde abgebrochen.'))
     } finally {
       setBusy(false)
     }
@@ -450,16 +481,17 @@ function Login({ identifierRequired, onSuccess }: { identifierRequired: boolean;
   return (
     <main className="login-shell">
       <section className="login-panel">
+        <LanguageSwitcher compact />
         <img className="login-icon" src="/pwa-icon.png" alt="" />
-        <h1>Vorrio</h1>
-        <p>Einkäufe, Vorräte und Produktwissen einfach im eigenen Haushalt verwalten.</p>
+        <h1>{translate("Vorrio")}</h1>
+        <p>{translate("Einkäufe, Vorräte und Produktwissen einfach im eigenen Haushalt verwalten.")}</p>
         <form onSubmit={submit}>
           {(identifierRequired || recoveryMode) && !mfaChallenge && <>
-            <label htmlFor="identifier">E-Mail</label>
+            <label htmlFor="identifier">{translate("E-Mail")}</label>
             <input id="identifier" type="email" value={identifier} onChange={(event) => setIdentifier(event.target.value)} autoComplete="username" autoFocus />
           </>}
           {!mfaChallenge && !recoveryMode && <>
-            <label htmlFor="password">{identifierRequired ? 'Passwort' : 'Haushalts-Passwort'}</label>
+            <label htmlFor="password">{translate(identifierRequired ? 'Passwort' : 'Haushalts-Passwort')}</label>
             <input
               id="password"
               type="password"
@@ -470,18 +502,18 @@ function Login({ identifierRequired, onSuccess }: { identifierRequired: boolean;
             />
           </>}
           {(mfaChallenge || recoveryMode) && <>
-            <label htmlFor="security-code">{recoveryMode ? 'Wiederherstellungscode' : 'Code aus der Authenticator-App'}</label>
+            <label htmlFor="security-code">{translate(recoveryMode ? 'Wiederherstellungscode' : 'Code aus der Authenticator-App')}</label>
             <input id="security-code" value={securityCode} onChange={(event) => setSecurityCode(event.target.value)} autoComplete={recoveryMode ? 'off' : 'one-time-code'} inputMode={recoveryMode ? 'text' : 'numeric'} autoFocus />
-            {mfaChallenge && <small className="login-helper">Alternativ funktioniert hier ein noch unbenutzter Wiederherstellungscode.</small>}
+            {mfaChallenge && <small className="login-helper">{translate("Alternativ funktioniert hier ein noch unbenutzter Wiederherstellungscode.")}</small>}
           </>}
           {error && <p className="field-error">{error}</p>}
           <button className="button primary full" disabled={busy || (recoveryMode ? !identifier || !securityCode : mfaChallenge ? !securityCode : !password || (identifierRequired && !identifier))}>
             {busy ? <LoaderCircle className="spin" /> : <Sparkles />}
-            {recoveryMode ? 'Konto wiederherstellen' : mfaChallenge ? 'Code bestätigen' : 'Anmelden'}
+            {translate(recoveryMode ? 'Konto wiederherstellen' : mfaChallenge ? 'Code bestätigen' : 'Anmelden')}
           </button>
-          {!mfaChallenge && !recoveryMode && typeof window.PublicKeyCredential !== 'undefined' && <button type="button" className="button tertiary full passkey-login" onClick={loginWithPasskey} disabled={busy || !window.isSecureContext}><KeyRound /> Mit Passkey anmelden</button>}
-          {!mfaChallenge && <button type="button" className="text-button" onClick={() => { setRecoveryMode(!recoveryMode); setSecurityCode(''); setError('') }}>{recoveryMode ? 'Zur normalen Anmeldung' : 'Wiederherstellungscode verwenden'}</button>}
-          {mfaChallenge && <button type="button" className="text-button" onClick={() => { setMfaChallenge(''); setSecurityCode(''); setError('') }}>Zurück</button>}
+          {!mfaChallenge && !recoveryMode && typeof window.PublicKeyCredential !== 'undefined' && <button type="button" className="button tertiary full passkey-login" onClick={loginWithPasskey} disabled={busy || !window.isSecureContext}><KeyRound /> {translate("Mit Passkey anmelden")}</button>}
+          {!mfaChallenge && <button type="button" className="text-button" onClick={() => { setRecoveryMode(!recoveryMode); setSecurityCode(''); setError('') }}>{translate(recoveryMode ? 'Zur normalen Anmeldung' : 'Wiederherstellungscode verwenden')}</button>}
+          {mfaChallenge && <button type="button" className="text-button" onClick={() => { setMfaChallenge(''); setSecurityCode(''); setError('') }}>{translate("Zurück")}</button>}
         </form>
       </section>
     </main>
@@ -509,7 +541,7 @@ function InvitationAccept({ token, onSuccess }: { token: string; onSuccess: (sta
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (password !== repeat) {
-      setError('Die Passwörter stimmen nicht überein.')
+      setError(translate('Die Passwörter stimmen nicht überein.'))
       return
     }
     setBusy(true)
@@ -526,20 +558,21 @@ function InvitationAccept({ token, onSuccess }: { token: string; onSuccess: (sta
   return (
     <main className="login-shell">
       <section className="login-panel invitation-panel">
+        <LanguageSwitcher compact />
         <img className="login-icon" src="/pwa-icon.png" alt="" />
-        <h1>Einladung zu Vorrio</h1>
-        {!invitation && !error && <div className="inline-loading"><LoaderCircle className="spin" /> Einladung wird geprüft…</div>}
+        <h1>{translate("Einladung zu Vorrio")}</h1>
+        {!invitation && !error && <div className="inline-loading"><LoaderCircle className="spin" /> {translate("Einladung wird geprüft…")}</div>}
         {invitation && <>
-          <p><strong>{invitation.display_name}</strong>, du wurdest zu <strong>{invitation.household_name}</strong> eingeladen.</p>
-          <div className="invitation-summary"><Mail /><span><strong>{invitation.email}</strong><small>Rolle: {roleLabels[invitation.role]}</small></span></div>
+          <p>{translate('{{name}}, du wurdest zu {{household}} eingeladen.', { name: invitation.display_name, household: invitation.household_name })}</p>
+          <div className="invitation-summary"><Mail /><span><strong>{invitation.email}</strong><small>{translate("Rolle:")} {roleLabels[invitation.role]}</small></span></div>
           <form onSubmit={submit}>
-            <label htmlFor="invite-password">Eigenes Passwort</label>
+            <label htmlFor="invite-password">{translate("Eigenes Passwort")}</label>
             <input id="invite-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={10} autoFocus />
-            <label htmlFor="invite-repeat">Passwort wiederholen</label>
+            <label htmlFor="invite-repeat">{translate("Passwort wiederholen")}</label>
             <input id="invite-repeat" type="password" value={repeat} onChange={(event) => setRepeat(event.target.value)} autoComplete="new-password" minLength={10} />
             {error && <p className="field-error">{error}</p>}
             <button className="button primary full" disabled={busy || password.length < 10 || repeat.length < 10}>
-              {busy ? <LoaderCircle className="spin" /> : <CheckCircle2 />} Konto erstellen
+              {busy ? <LoaderCircle className="spin" /> : <CheckCircle2 />} {translate("Konto erstellen")}
             </button>
           </form>
         </>}
@@ -559,7 +592,7 @@ function Setup({ onSuccess }: { onSuccess: (state: Awaited<ReturnType<typeof api
   const submit = async (event: FormEvent) => {
     event.preventDefault()
     if (password !== repeat) {
-      setError('Die Passwörter stimmen nicht überein.')
+      setError(translate('Die Passwörter stimmen nicht überein.'))
       return
     }
     setBusy(true)
@@ -577,20 +610,21 @@ function Setup({ onSuccess }: { onSuccess: (state: Awaited<ReturnType<typeof api
   return (
     <main className="login-shell">
       <section className="login-panel">
+        <LanguageSwitcher compact />
         <img className="login-icon" src="/pwa-icon.png" alt="" />
-        <h1>Fast geschafft</h1>
-        <p>Lege den ersten Owner und das Haushalts-Passwort für Vorrio fest.</p>
+        <h1>{translate("Fast geschafft")}</h1>
+        <p>{translate("Lege den ersten Owner und das Haushalts-Passwort für Vorrio fest.")}</p>
         <form onSubmit={submit}>
-          <label htmlFor="owner-name">Dein Name</label>
+          <label htmlFor="owner-name">{translate("Dein Name")}</label>
           <input id="owner-name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} autoComplete="name" minLength={2} autoFocus />
-          <label htmlFor="new-password">Neues Passwort</label>
+          <label htmlFor="new-password">{translate("Neues Passwort")}</label>
           <input id="new-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={10} />
-          <label htmlFor="repeat-password">Passwort wiederholen</label>
+          <label htmlFor="repeat-password">{translate("Passwort wiederholen")}</label>
           <input id="repeat-password" type="password" value={repeat} onChange={(event) => setRepeat(event.target.value)} autoComplete="new-password" minLength={10} />
           {error && <p className="field-error">{error}</p>}
           <button className="button primary full" disabled={busy || displayName.trim().length < 2 || password.length < 10 || repeat.length < 10}>
             {busy ? <LoaderCircle className="spin" /> : <CheckCircle2 />}
-            App einrichten
+            {translate("App einrichten")}
           </button>
         </form>
       </section>
@@ -617,16 +651,21 @@ function HomeScreen({
   const connected = Boolean(status)
   const connectionLabel = status?.grocy_enabled
     ? status.grocy_connected
-      ? `Eigener Katalog · Grocy verbunden`
-      : `Eigener Katalog · Grocy offline`
-    : `Eigener Katalog · ${status?.catalog.products || 0} ${(status?.catalog.products || 0) === 1 ? 'Produkt' : 'Produkte'}`
+      ? translate('Eigener Katalog · Grocy verbunden')
+      : translate('Eigener Katalog · Grocy offline')
+    : translate(
+      (status?.catalog.products || 0) === 1
+        ? 'Eigener Katalog · {{count}} Produkt'
+        : 'Eigener Katalog · {{count}} Produkte',
+      { count: status?.catalog.products || 0 },
+    )
 
   return (
     <div className="screen home-screen">
       <header className="brand-header">
         <div className="brand-lockup">
           <img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" />
-          <strong>Vorrio</strong>
+          <strong>{translate("Vorrio")}</strong>
         </div>
         <div className={`connection-state ${connected ? 'connected' : 'disconnected'}`}>
           <span />
@@ -637,17 +676,17 @@ function HomeScreen({
       <div className="home-workspace">
         <div className="home-capture-column">
           <section className="intro">
-            <h1>Einkauf übernehmen</h1>
-            <p>Bon fotografieren – Vorrio bereitet Bestand und Preise vor.</p>
+            <h1>{translate("Einkauf übernehmen")}</h1>
+            <p>{translate("Bon fotografieren – Vorrio bereitet Bestand und Preise vor.")}</p>
           </section>
 
-          {!readOnly ? <section className="capture-panel" aria-label="Bon erfassen">
+          {!readOnly ? <section className="capture-panel" aria-label={translate("Bon erfassen")}>
             <div className="scan-stage">
               <i className="corner top-left" />
               <i className="corner top-right" />
               <i className="corner bottom-left" />
               <i className="corner bottom-right" />
-              <img src="/assets/receipt-folded.png" alt="Gefalteter Kassenbon" />
+              <img src="/assets/receipt-folded.png" alt={translate('Gefalteter Kassenbon')} />
               <span className="camera-orb"><Camera /></span>
             </div>
             <input
@@ -672,27 +711,27 @@ function HomeScreen({
               }}
             />
             <button className="button primary full" onClick={() => cameraInput.current?.click()}>
-              <Camera /> Bon fotografieren
+              <Camera /> {translate("Bon fotografieren")}
             </button>
             <button className="button secondary full" onClick={() => uploadInput.current?.click()}>
-              <FileUp /> Bild oder PDF hochladen
+              <FileUp /> {translate("Bild oder PDF hochladen")}
             </button>
-          </section> : <section className="read-only-callout"><ShieldCheck /><div><strong>Nur ansehen</strong><p>Du kannst Vorräte, Preise, Listen und Bons lesen. Änderungen sind für diese Rolle gesperrt.</p></div></section>}
+          </section> : <section className="read-only-callout"><ShieldCheck /><div><strong>{translate("Nur ansehen")}</strong><p>{translate("Du kannst Vorräte, Preise, Listen und Bons lesen. Änderungen sind für diese Rolle gesperrt.")}</p></div></section>}
         </div>
 
         <section className="recent-section">
-        <h2>Letzte Einkäufe</h2>
+        <h2>{translate("Letzte Einkäufe")}</h2>
         {recent.length ? (
           <div className="purchase-list">
             {recent.map((receipt) => (
               <button className="purchase-row" key={receipt.id} onClick={() => onOpenReceipt(receipt.id)}>
                 <span className="purchase-icon"><PackageCheck /></span>
                 <span className="purchase-copy">
-                  <strong>{receipt.store_name || 'Einkauf'}</strong>
-                  <span>{shortDate(receipt.purchase_date)} · {receipt.item_count || 0} Artikel · {euro(receipt.total)}</span>
+                  <strong>{receipt.store_name || translate('Einkauf')}</strong>
+                  <span>{shortDate(receipt.purchase_date)} · {translate('{{count}} Artikel', { count: receipt.item_count || 0 })} · {euro(receipt.total)}</span>
                 </span>
                 <span className={`purchase-status ${receipt.status}`}>
-                  {receipt.status === 'imported' ? 'Übernommen' : receipt.review_count ? 'Prüfen' : 'Bereit'}
+                  {translate(receipt.status === 'imported' ? 'Übernommen' : receipt.review_count ? 'Prüfen' : 'Bereit')}
                 </span>
                 <ChevronRight />
               </button>
@@ -701,7 +740,7 @@ function HomeScreen({
         ) : (
           <div className="empty-row">
             <ReceiptText />
-            <span><strong>Noch kein Einkauf</strong>Dein erster fotografierter Bon erscheint hier.</span>
+            <span><strong>{translate("Noch kein Einkauf")}</strong>{translate("Dein erster fotografierter Bon erscheint hier.")}</span>
           </div>
         )}
         </section>
@@ -748,7 +787,7 @@ function ReviewScreen({
       const result = await api.importReceipt(receipt.id)
       onImported(result.receipt, result.imported, result.failed, result.grocy_failed)
     } catch (error) {
-      setImportError(error instanceof Error ? error.message : 'Die Übernahme ist fehlgeschlagen')
+      setImportError(error instanceof Error ? error.message : translate('Die Übernahme ist fehlgeschlagen'))
     } finally {
       setBusy(false)
     }
@@ -757,19 +796,19 @@ function ReviewScreen({
   return (
     <div className="review-screen">
       <header className="review-header">
-        <button className="icon-button" onClick={onBack} aria-label="Zurück"><ArrowLeft /></button>
-        <h1>Einkauf prüfen</h1>
+        <button className="icon-button" onClick={onBack} aria-label={translate("Zurück")}><ArrowLeft /></button>
+        <h1>{translate("Einkauf prüfen")}</h1>
         <span className="header-spacer" />
       </header>
       <div className="receipt-edge" aria-hidden="true" />
       <section className="review-summary">
-        <p>{items.length} Artikel erkannt · {receipt.store_name || 'Geschäft offen'}</p>
+        <p>{translate('{{count}} Artikel erkannt', { count: items.length })} · {receipt.store_name || translate('Geschäft offen')}</p>
         <div className="review-counts">
-          {imported > 0 && <strong className="imported"><CheckCircle2 /> {imported} übernommen</strong>}
+          {imported > 0 && <strong className="imported"><CheckCircle2 /> {imported} {translate("übernommen")}</strong>}
           {imported > 0 && (ready > 0 || review > 0) && <i />}
-          {ready > 0 && <strong className="ready"><CheckCircle2 /> {ready} bereit</strong>}
+          {ready > 0 && <strong className="ready"><CheckCircle2 /> {ready} {translate("bereit")}</strong>}
           {ready > 0 && review > 0 && <i />}
-          {review > 0 && <strong className="needs-review"><AlertCircle /> {review} prüfen</strong>}
+          {review > 0 && <strong className="needs-review"><AlertCircle /> {review} {translate("prüfen")}</strong>}
         </div>
       </section>
 
@@ -779,34 +818,34 @@ function ReviewScreen({
         ))}
         {items.length > 4 && (
           <button className="show-all" onClick={() => setExpanded((value) => !value)}>
-            {expanded ? 'Weniger anzeigen' : `Alle ${items.length} Artikel anzeigen`}
+            {expanded ? translate('Weniger anzeigen') : translate('Alle {{count}} Artikel anzeigen', { count: items.length })}
             <ChevronDown className={expanded ? 'rotated' : ''} />
           </button>
         )}
       </section>
 
       <section className="import-bar">
-        <div className="total-line"><span>Bon-Gesamt</span><strong>{euro(receipt.total)}</strong></div>
+        <div className="total-line"><span>{translate("Bon-Gesamt")}</span><strong>{euro(receipt.total)}</strong></div>
         {Math.abs(adjustment) >= 0.01 && (
           <p className="adjustment-note">
-            <strong>{euro(itemValue)} Warenwert</strong>
+            <strong>{euro(itemValue)} {translate("Warenwert")}</strong>
             <span>
               {adjustment > 0
-                ? `${euro(adjustment)} Pfand/Bonposten bleiben außerhalb des Vorrats.`
-                : `${euro(Math.abs(adjustment))} Rabatte/Bonposten sind im Gesamtbetrag verrechnet.`}
+                ? translate('{{amount}} Pfand/Bonposten bleiben außerhalb des Vorrats.', { amount: euro(adjustment) })
+                : translate('{{amount}} Rabatte/Bonposten sind im Gesamtbetrag verrechnet.', { amount: euro(Math.abs(adjustment)) })}
             </span>
           </p>
         )}
         {readOnly ? (
-          <div className="read-only-callout compact"><ShieldCheck /><span><strong>Nur ansehen</strong><small>Zuordnen und Übernehmen sind für diese Rolle gesperrt.</small></span></div>
+          <div className="read-only-callout compact"><ShieldCheck /><span><strong>{translate("Nur ansehen")}</strong><small>{translate("Zuordnen und Übernehmen sind für diese Rolle gesperrt.")}</small></span></div>
         ) : (
           <button className={`button primary full ${allImported ? 'complete' : ''}`} disabled={!ready || busy} onClick={doImport}>
             {busy ? <LoaderCircle className="spin" /> : <CheckCircle2 />}
-            {allImported ? `${imported} Artikel im Vorrat` : `${ready} Artikel in den Vorrat`}
+            {allImported ? translate('{{count}} Artikel im Vorrat', { count: imported }) : translate('{{count}} Artikel in den Vorrat', { count: ready })}
           </button>
         )}
         {importError && <p className="field-error" role="alert">{importError}</p>}
-        <button className="text-button" onClick={onBack}>{allImported ? 'Zurück zur Übersicht' : 'Später fortsetzen'}</button>
+        <button className="text-button" onClick={onBack}>{translate(allImported ? 'Zurück zur Übersicht' : 'Später fortsetzen')}</button>
       </section>
 
       {mappingItem && !readOnly && (
@@ -835,27 +874,27 @@ function ReceiptItemRow({ item, readOnly, onMap }: { item: ReceiptItem; readOnly
     item.catalog_variant_name,
     packageLabel,
   ].filter(Boolean).join(' · ')
-  const productDetail = variantDetail || item.catalog_product_name || item.suggested_catalog_product_name || 'Noch nicht zugeordnet'
+  const productDetail = variantDetail || item.catalog_product_name || item.suggested_catalog_product_name || translate('Noch nicht zugeordnet')
   const detail = hasQuantityBreakdown
     ? `${productDetail} · ${quantity(item.quantity)} × ${euro(unitPrice)}`
     : productDetail
   const reasonFallback: Record<string, string> = {
-    barcode: 'Barcode stimmt exakt',
-    learned_store: 'Für dieses Geschäft gelernt',
-    confirmed_alias: 'Schon einmal bestätigt',
-    exact_name: 'Produktname stimmt exakt',
-    manual: 'Manuell zugeordnet',
-    fuzzy_name: `${Math.round(item.suggested_catalog_product_score || item.match_score || 0)} % ähnlich – bitte prüfen`,
-    unresolved: 'Noch nicht zugeordnet',
+    barcode: translate('Barcode stimmt exakt'),
+    learned_store: translate('Für dieses Geschäft gelernt'),
+    confirmed_alias: translate('Schon einmal bestätigt'),
+    exact_name: translate('Produktname stimmt exakt'),
+    manual: translate('Manuell zugeordnet'),
+    fuzzy_name: translate('{{percent}} % ähnlich – bitte prüfen', { percent: Math.round(item.suggested_catalog_product_score || item.match_score || 0) }),
+    unresolved: translate('Noch nicht zugeordnet'),
   }
   const evidenceLabel = imported
-    ? 'Im Vorrio-Bestand'
+    ? translate('Im Vorrio-Bestand')
     : item.match_evidence?.[0]?.label || reasonFallback[item.match_reason] || (
       item.suggested_catalog_product_name
-        ? `${Math.round(item.suggested_catalog_product_score || 0)} % ähnlich – bitte prüfen`
+        ? translate('{{percent}} % ähnlich – bitte prüfen', { percent: Math.round(item.suggested_catalog_product_score || 0) })
         : mapped
-          ? 'Produkt zugeordnet'
-          : 'Noch nicht zugeordnet'
+          ? translate('Produkt zugeordnet')
+          : translate('Noch nicht zugeordnet')
     )
   return (
     <button
@@ -882,7 +921,7 @@ function ReceiptItemRow({ item, readOnly, onMap }: { item: ReceiptItem; readOnly
         </span>
       </span>
       <span className="item-price">{euro(totalPrice)}</span>
-      {mapped ? <CheckCircle2 className="mapped-check" /> : <span className="map-action">{readOnly ? 'Offen' : item.suggested_catalog_product_name ? 'Prüfen' : 'Zuordnen'}</span>}
+      {mapped ? <CheckCircle2 className="mapped-check" /> : <span className="map-action">{translate(readOnly ? 'Offen' : item.suggested_catalog_product_name ? 'Prüfen' : 'Zuordnen')}</span>}
       {imported || readOnly ? <span aria-hidden="true" /> : <ChevronRight />}
     </button>
   )
@@ -922,11 +961,11 @@ function MissingMasterSuggestion({
       <div className="missing-master-heading">
         <Sparkles />
         <div>
-          <strong>„{value || 'Ohne Namen'}“ fehlt im Vorrio-Katalog</strong>
-          <small>Vorhandenen Wert oben wählen oder den Vorschlag bearbeiten und neu anlegen.</small>
+          <strong>„{value || 'Ohne Namen'}{translate("“ fehlt im Vorrio-Katalog")}</strong>
+          <small>{translate("Vorhandenen Wert oben wählen oder den Vorschlag bearbeiten und neu anlegen.")}</small>
         </div>
       </div>
-      <label>{label}-Vorschlag umbenennen<input value={value} onChange={(event) => onValueChange(event.target.value)} /></label>
+      <label>{label}{translate("-Vorschlag umbenennen")}<input value={value} onChange={(event) => onValueChange(event.target.value)} /></label>
       {children}
       <button
         type="button"
@@ -1166,9 +1205,9 @@ function ProductPicker({
 
   return (
     <div className="sheet-backdrop" role="presentation" onMouseDown={onClose}>
-      <section className="product-sheet" role="dialog" aria-modal="true" aria-label="Vorrio-Produkt zuordnen" onMouseDown={(event) => event.stopPropagation()}>
+      <section className="product-sheet" role="dialog" aria-modal="true" aria-label={translate("Vorrio-Produkt zuordnen")} onMouseDown={(event) => event.stopPropagation()}>
         <div className="sheet-handle" />
-        <header><div><h2>{creating ? (selectedCandidate ? 'Produktvorschlag übernehmen' : 'Neues Vorrio-Produkt') : 'Produkt zuordnen'}</h2><p>{item.raw_name}</p></div><button className="icon-button" onClick={onClose} aria-label="Zuordnung schließen"><X /></button></header>
+        <header><div><h2>{translate(creating ? (selectedCandidate ? 'Produktvorschlag übernehmen' : 'Neues Vorrio-Produkt') : 'Produkt zuordnen')}</h2><p>{item.raw_name}</p></div><button className="icon-button" onClick={onClose} aria-label={translate("Zuordnung schließen")}><X /></button></header>
         {error && <p className="field-error">{error}</p>}
         {creating && masterData && draft ? (
           <form className="product-create-form" onSubmit={createProduct}>
@@ -1178,17 +1217,17 @@ function ProductPicker({
                   <PackageSearch />
                   {selectedCandidate.image_url && <img src={selectedCandidate.image_url} alt="" onError={(event) => { event.currentTarget.style.display = 'none' }} />}
                 </span>
-                <span><small>Echter Treffer · {Math.round(selectedCandidate.score)} % passend</small><strong>{selectedCandidate.name}</strong><em>{[selectedCandidate.brand, selectedCandidate.quantity].filter(Boolean).join(' · ') || 'Keine weiteren Packungsdaten'}</em></span>
+                <span><small>{translate("Echter Treffer ·")} {Math.round(selectedCandidate.score)} {translate("% passend")}</small><strong>{selectedCandidate.name}</strong><em>{[selectedCandidate.brand, selectedCandidate.quantity].filter(Boolean).join(' · ') || translate('Keine weiteren Packungsdaten')}</em></span>
               </div>
             )}
-            <label>Produktname<input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} autoFocus /></label>
+            <label>{translate("Produktname")}<input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} autoFocus /></label>
             <div className="create-form-grid">
-              <label>Vorhandene Lagerorte ({masterData.locations.length})<select value={draft.location_id ?? ''} onChange={(event) => setDraft({ ...draft, location_id: event.target.value ? Number(event.target.value) : null, new_location_name: null })}><option value="">Bitte wählen</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-              <label>Vorhandene Einheiten ({masterData.quantity_units.length})<select value={draft.quantity_unit_id ?? ''} onChange={(event) => setDraft({ ...draft, quantity_unit_id: event.target.value ? Number(event.target.value) : null, new_quantity_unit_name: null })}><option value="">Bitte wählen</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+              <label>{translate("Vorhandene Lagerorte (")}{masterData.locations.length})<select value={draft.location_id ?? ''} onChange={(event) => setDraft({ ...draft, location_id: event.target.value ? Number(event.target.value) : null, new_location_name: null })}><option value="">{translate("Bitte wählen")}</option>{masterData.locations.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+              <label>{translate("Vorhandene Einheiten (")}{masterData.quantity_units.length})<select value={draft.quantity_unit_id ?? ''} onChange={(event) => setDraft({ ...draft, quantity_unit_id: event.target.value ? Number(event.target.value) : null, new_quantity_unit_name: null })}><option value="">{translate("Bitte wählen")}</option>{masterData.quantity_units.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
             </div>
             {missingMaster.location && (
               <MissingMasterSuggestion
-                label="Lagerort"
+                label={translate('Lagerort')}
                 value={missingMaster.location}
                 accepted={Boolean(draft.new_location_name)}
                 onValueChange={(next) => {
@@ -1198,13 +1237,13 @@ function ProductPicker({
                 onToggle={() => setDraft({ ...draft, location_id: null, new_location_name: draft.new_location_name ? null : missingMaster.location })}
               >
                 {draft.new_location_name && (
-                  <label className="freezer-choice"><input type="checkbox" checked={draft.new_location_is_freezer} onChange={(event) => setDraft({ ...draft, new_location_is_freezer: event.target.checked })} /> Als Gefrierstandort markieren</label>
+                  <label className="freezer-choice"><input type="checkbox" checked={draft.new_location_is_freezer} onChange={(event) => setDraft({ ...draft, new_location_is_freezer: event.target.checked })} /> {translate("Als Gefrierstandort markieren")}</label>
                 )}
               </MissingMasterSuggestion>
             )}
             {missingMaster.unit && (
               <MissingMasterSuggestion
-                label="Einheit"
+                label={translate('Einheit')}
                 value={missingMaster.unit}
                 accepted={Boolean(draft.new_quantity_unit_name)}
                 onValueChange={(next) => {
@@ -1215,12 +1254,12 @@ function ProductPicker({
               />
             )}
             <div className="create-form-grid">
-              <label>Vorhandene Produktgruppen ({masterData.product_groups.length})<select value={draft.product_group_id ?? ''} onChange={(event) => setDraft({ ...draft, product_group_id: event.target.value ? Number(event.target.value) : null, new_product_group_name: null })}><option value="">Keine Gruppe</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
-              <label>Haltbarkeit (Tage)<input type="number" min="0" max="3650" value={draft.default_best_before_days} onChange={(event) => setDraft({ ...draft, default_best_before_days: Number(event.target.value) })} /></label>
+              <label>{translate("Vorhandene Produktgruppen (")}{masterData.product_groups.length})<select value={draft.product_group_id ?? ''} onChange={(event) => setDraft({ ...draft, product_group_id: event.target.value ? Number(event.target.value) : null, new_product_group_name: null })}><option value="">{translate("Keine Gruppe")}</option>{masterData.product_groups.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}</select></label>
+              <label>{translate("Haltbarkeit (Tage)")}<input type="number" min="0" max="3650" value={draft.default_best_before_days} onChange={(event) => setDraft({ ...draft, default_best_before_days: Number(event.target.value) })} /></label>
             </div>
             {missingMaster.group && (
               <MissingMasterSuggestion
-                label="Produktgruppe"
+                label={translate('Produktgruppe')}
                 value={missingMaster.group}
                 accepted={Boolean(draft.new_product_group_name)}
                 onValueChange={(next) => {
@@ -1231,20 +1270,20 @@ function ProductPicker({
               />
             )}
             <p className="create-helper">
-              Vorhandene Vorrio-Werte werden niemals nur wegen einer Ähnlichkeit gewählt. Fehlende Vorschläge werden erst nach deiner sichtbaren Bestätigung angelegt. Erkannte Barcodes und Marken werden als Produktvariante gespeichert.
+              {translate("Vorhandene Vorrio-Werte werden niemals nur wegen einer Ähnlichkeit gewählt. Fehlende Vorschläge werden erst nach deiner sichtbaren Bestätigung angelegt. Erkannte Barcodes und Marken werden als Produktvariante gespeichert.")}
             </p>
-            <button className="button primary full" disabled={busy || !canCreate}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} {draft.new_location_name || draft.new_quantity_unit_name || draft.new_product_group_name ? 'Produkt & Stammdaten anlegen' : 'Anlegen & zuordnen'}</button>
-            <button type="button" className="text-button" onClick={() => { setCreating(false); setSelectedCandidate(null) }}>Zurück zur Suche</button>
+            <button className="button primary full" disabled={busy || !canCreate}>{busy ? <LoaderCircle className="spin" /> : <PackagePlus />} {translate(draft.new_location_name || draft.new_quantity_unit_name || draft.new_product_group_name ? 'Produkt & Stammdaten anlegen' : 'Anlegen & zuordnen')}</button>
+            <button type="button" className="text-button" onClick={() => { setCreating(false); setSelectedCandidate(null) }}>{translate("Zurück zur Suche")}</button>
           </form>
         ) : (
           <>
-            <label className="search-field"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Vorrio-Produkt suchen" autoFocus /></label>
+            <label className="search-field"><Search /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={translate("Vorrio-Produkt suchen")} autoFocus /></label>
             <section className="candidate-section">
               <div className="candidate-heading">
-                <div><Sparkles /><span><strong>Echte Produktvorschläge</strong><small>{candidateSearch?.ai_ranked ? 'Von deiner KI für diesen Einkauf sortiert' : 'Nach Bontext und Geschäft sortiert'}</small></span></div>
-                {candidateSearch?.cached && <small>zwischengespeichert</small>}
+                <div><Sparkles /><span><strong>{translate("Echte Produktvorschläge")}</strong><small>{translate(candidateSearch?.ai_ranked ? 'Von deiner KI für diesen Einkauf sortiert' : 'Nach Bontext und Geschäft sortiert')}</small></span></div>
+                {candidateSearch?.cached && <small>{translate("zwischengespeichert")}</small>}
               </div>
-              {candidateBusy && <div className="candidate-loading"><LoaderCircle className="spin" /><span><strong>Passende Produkte werden gesucht</strong><small>Reale Bilder und Packungsdaten, keine erfundenen Treffer.</small></span></div>}
+              {candidateBusy && <div className="candidate-loading"><LoaderCircle className="spin" /><span><strong>{translate("Passende Produkte werden gesucht")}</strong><small>{translate("Reale Bilder und Packungsdaten, keine erfundenen Treffer.")}</small></span></div>}
               {!candidateBusy && candidateSearch?.candidates.map((candidate) => (
                 <button
                   type="button"
@@ -1260,34 +1299,34 @@ function ProductPicker({
                   <span className="candidate-copy">
                     <span><strong>{candidate.name}</strong><em>{[candidate.brand, candidate.quantity].filter(Boolean).join(' · ') || 'Packungsdaten offen'}</em></span>
                     <span className="candidate-evidence">
-                      <small>{Math.round(candidate.score)} % passend</small>
-                      {candidate.store_match && <small>Geschäft passt</small>}
-                      {candidate.local_product_id && <small>Schon in Vorrio</small>}
+                      <small>{Math.round(candidate.score)} {translate("% passend")}</small>
+                      {candidate.store_match && <small>{translate("Geschäft passt")}</small>}
+                      {candidate.local_product_id && <small>{translate("Schon in Vorrio")}</small>}
                     </span>
-                    <small className="candidate-reason">{candidate.ai_reason || candidate.evidence[0]?.label || 'Bitte Produkt prüfen'}</small>
+                    <small className="candidate-reason">{candidate.ai_reason || candidate.evidence[0]?.label || translate('Bitte Produkt prüfen')}</small>
                   </span>
                   <ChevronRight />
                 </button>
               ))}
               {!candidateBusy && candidateSearch && !candidateSearch.candidates.length && (
-                <p className="candidate-empty">Keine verlässlichen externen Treffer. Du kannst weiterhin ein Vorrio-Produkt wählen oder neu anlegen.</p>
+                <p className="candidate-empty">{translate("Keine verlässlichen externen Treffer. Du kannst weiterhin ein Vorrio-Produkt wählen oder neu anlegen.")}</p>
               )}
               {candidateSearch?.warnings.map((warning) => <p className="candidate-warning" key={warning}>{warning}</p>)}
-              <p className="candidate-attribution">Produktdaten: Open Food Facts · Auswahl wird erst nach deiner Bestätigung gelernt.</p>
+              <p className="candidate-attribution">{translate("Produktdaten: Open Food Facts · Auswahl wird erst nach deiner Bestätigung gelernt.")}</p>
             </section>
             <div className="product-results">
               {item.suggested_catalog_product_id && item.suggested_catalog_product_name && (
                 <button className="suggested-product" onClick={() => choose({ id: item.suggested_catalog_product_id!, name: item.suggested_catalog_product_name! })}>
-                  <span><small>Vorschlag · {Math.round(item.suggested_catalog_product_score || 0)} % ähnlich</small>{item.suggested_catalog_product_name}</span><ChevronRight />
+                  <span><small>{translate("Vorschlag ·")} {Math.round(item.suggested_catalog_product_score || 0)} {translate("% ähnlich")}</small>{item.suggested_catalog_product_name}</span><ChevronRight />
                 </button>
               )}
-              {busy && <div className="inline-loading"><LoaderCircle className="spin" /> Suche Produkte…</div>}
+              {busy && <div className="inline-loading"><LoaderCircle className="spin" /> {translate("Suche Produkte…")}</div>}
               {!busy && products.map((product) => (
                 <button key={product.id} onClick={() => choose(product)}><span>{product.name}</span><ChevronRight /></button>
               ))}
-              {!busy && !products.length && <p className="no-results">Kein passendes Vorrio-Produkt gefunden.</p>}
+              {!busy && !products.length && <p className="no-results">{translate("Kein passendes Vorrio-Produkt gefunden.")}</p>}
             </div>
-            <button type="button" className="create-product-entry" onClick={() => openCreate()} disabled={busy}><PackagePlus /><span><strong>Neues Produkt anlegen</strong><small>Mit Lagerort, Einheit und Haltbarkeit</small></span><ChevronRight /></button>
+            <button type="button" className="create-product-entry" onClick={() => openCreate()} disabled={busy}><PackagePlus /><span><strong>{translate("Neues Produkt anlegen")}</strong><small>{translate("Mit Lagerort, Einheit und Haltbarkeit")}</small></span><ChevronRight /></button>
           </>
         )}
       </section>
@@ -1300,6 +1339,7 @@ function SettingsScreen({
   version,
   onOpenGuide,
   onOpenReleaseNotes,
+  onLocaleChange,
   onIdentityChange,
   onSaved,
   onLogout,
@@ -1308,6 +1348,7 @@ function SettingsScreen({
   version: string
   onOpenGuide: () => void
   onOpenReleaseNotes: () => void
+  onLocaleChange: (locale: SupportedLocale) => Promise<void>
   onIdentityChange: (user: AuthenticatedUser | null) => void
   onSaved: (text: string) => void
   onLogout: () => void
@@ -1332,7 +1373,7 @@ function SettingsScreen({
   const [reauthCode, setReauthCode] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
-  const [passkeyName, setPasskeyName] = useState('Mein Passkey')
+  const [passkeyName, setPasskeyName] = useState(() => translate('Mein Passkey'))
   const [members, setMembers] = useState<HouseholdMember[]>([])
   const [invitations, setInvitations] = useState<HouseholdInvitation[]>([])
   const [inviteName, setInviteName] = useState('')
@@ -1405,14 +1446,14 @@ function SettingsScreen({
 
   const enablePush = async () => {
     if (!notifications || !pushAvailable) {
-      setError('Push-Mitteilungen benötigen die installierte Vorrio-PWA über HTTPS.')
+      setError(translate('Push-Mitteilungen benötigen die installierte Vorrio-PWA über HTTPS.'))
       return
     }
     setBusy(true)
     setError('')
     try {
       const permission = await Notification.requestPermission()
-      if (permission !== 'granted') throw new Error('Mitteilungen wurden im Browser nicht erlaubt.')
+      if (permission !== 'granted') throw new Error(translate('Mitteilungen wurden im Browser nicht erlaubt.'))
       const registration = await navigator.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -1420,12 +1461,12 @@ function SettingsScreen({
       })
       const serialized = subscription.toJSON()
       if (!serialized.endpoint || !serialized.keys?.p256dh || !serialized.keys?.auth) {
-        throw new Error('Der Browser hat keine vollständige Push-Anmeldung geliefert.')
+        throw new Error(translate('Der Browser hat keine vollständige Push-Anmeldung geliefert.'))
       }
       const device = await api.registerPushSubscription({
         endpoint: serialized.endpoint,
         keys: { p256dh: serialized.keys.p256dh, auth: serialized.keys.auth },
-        device_name: 'Vorrio-Gerät',
+        device_name: translate('Vorrio-Gerät'),
       })
       const next = await api.saveNotificationPreferences({
         ...notifications.preferences,
@@ -1433,7 +1474,7 @@ function SettingsScreen({
       })
       setNotifications(next)
       setCurrentPushDeviceId(device.id)
-      onSaved('Dieses Gerät erhält jetzt Vorratsmeldungen.')
+      onSaved(translate('Dieses Gerät erhält jetzt Vorratsmeldungen.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1448,7 +1489,7 @@ function SettingsScreen({
     try {
       const next = await api.saveNotificationPreferences(notifications.preferences)
       setNotifications(next)
-      onSaved('Benachrichtigungen wurden gespeichert.')
+      onSaved(translate('Benachrichtigungen wurden gespeichert.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1462,9 +1503,9 @@ function SettingsScreen({
     setError('')
     try {
       const response = await api.testPushNotification(currentPushDeviceId)
-      if (!response.delivered) throw new Error('Der Push-Dienst hat die Testmeldung abgelehnt.')
+      if (!response.delivered) throw new Error(translate('Der Push-Dienst hat die Testmeldung abgelehnt.'))
       setNotifications(await api.notificationState())
-      onSaved('Testmeldung wurde an dieses Gerät gesendet.')
+      onSaved(translate('Testmeldung wurde an dieses Gerät gesendet.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1473,7 +1514,7 @@ function SettingsScreen({
   }
 
   const disablePushDevice = async () => {
-    if (!currentPushDeviceId || !window.confirm('Push-Mitteilungen auf diesem Gerät wirklich beenden?')) return
+    if (!currentPushDeviceId || !window.confirm(translate('Push-Mitteilungen auf diesem Gerät wirklich beenden?'))) return
     setBusy(true)
     setError('')
     try {
@@ -1484,7 +1525,7 @@ function SettingsScreen({
       const next = await api.notificationState()
       setNotifications(next)
       setCurrentPushDeviceId(null)
-      onSaved('Dieses Gerät wurde aus den Vorratsmeldungen entfernt.')
+      onSaved(translate('Dieses Gerät wurde aus den Vorratsmeldungen entfernt.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1500,7 +1541,7 @@ function SettingsScreen({
       setSecurity(next)
       setReauthPassword('')
       setReauthCode('')
-      onSaved('Identität bestätigt. Sicherheitsänderungen sind jetzt zehn Minuten freigegeben.')
+      onSaved(translate('Identität bestätigt. Sicherheitsänderungen sind jetzt zehn Minuten freigegeben.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1510,31 +1551,32 @@ function SettingsScreen({
 
   const addPasskey = async () => {
     if (!window.isSecureContext || typeof window.PublicKeyCredential === 'undefined') {
-      setError('Passkeys benötigen Vorrio über die private HTTPS-Adresse.')
+      setError(translate('Passkeys benötigen Vorrio über die private HTTPS-Adresse.'))
       return
     }
     setBusy(true)
     setError('')
     try {
+      const { startRegistration } = await import('@simplewebauthn/browser')
       const begin = await api.beginPasskeyRegistration()
       const credential = await startRegistration({ optionsJSON: begin.options as never })
-      await api.completePasskeyRegistration(begin.challenge_id, credential, passkeyName.trim() || 'Mein Passkey')
+      await api.completePasskeyRegistration(begin.challenge_id, credential, passkeyName.trim() || translate('Mein Passkey'))
       await refreshSecurity()
-      onSaved('Passkey wurde sicher hinzugefügt.')
+      onSaved(translate('Passkey wurde sicher hinzugefügt.'))
     } catch (nextError) {
-      setError((nextError as Error).message || 'Passkey-Einrichtung wurde abgebrochen.')
+      setError((nextError as Error).message || translate('Passkey-Einrichtung wurde abgebrochen.'))
     } finally {
       setBusy(false)
     }
   }
 
   const removePasskey = async (id: string) => {
-    if (!window.confirm('Diesen Passkey wirklich entfernen?')) return
+    if (!window.confirm(translate('Diesen Passkey wirklich entfernen?'))) return
     setBusy(true)
     setError('')
     try {
       setSecurity(await api.deletePasskey(id))
-      onSaved('Passkey wurde entfernt.')
+      onSaved(translate('Passkey wurde entfernt.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1564,7 +1606,7 @@ function SettingsScreen({
       setTotpSetup(null)
       setTotpCode('')
       await refreshSecurity()
-      onSaved('Authenticator-App ist jetzt aktiv.')
+      onSaved(translate('Authenticator-App ist jetzt aktiv.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1573,11 +1615,11 @@ function SettingsScreen({
   }
 
   const disableTotp = async () => {
-    if (!window.confirm('Authenticator-App wirklich deaktivieren? Passkeys und Wiederherstellungscodes bleiben bestehen.')) return
+    if (!window.confirm(translate('Authenticator-App wirklich deaktivieren? Passkeys und Wiederherstellungscodes bleiben bestehen.'))) return
     setBusy(true)
     try {
       setSecurity(await api.disableTotp())
-      onSaved('Authenticator-App wurde deaktiviert.')
+      onSaved(translate('Authenticator-App wurde deaktiviert.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1586,7 +1628,7 @@ function SettingsScreen({
   }
 
   const replaceRecoveryCodes = async () => {
-    if (security?.recovery_codes_remaining && !window.confirm('Alle bisherigen Wiederherstellungscodes werden sofort ungültig. Fortfahren?')) return
+    if (security?.recovery_codes_remaining && !window.confirm(translate('Alle bisherigen Wiederherstellungscodes werden sofort ungültig. Fortfahren?'))) return
     setBusy(true)
     setError('')
     try {
@@ -1603,15 +1645,15 @@ function SettingsScreen({
   const copyRecoveryCodes = async () => {
     try {
       await navigator.clipboard.writeText(recoveryCodes.join('\n'))
-      onSaved('Wiederherstellungscodes wurden kopiert.')
+      onSaved(translate('Wiederherstellungscodes wurden kopiert.'))
     } catch {
-      setError('Codes konnten nicht automatisch kopiert werden.')
+      setError(translate('Codes konnten nicht automatisch kopiert werden.'))
     }
   }
 
   const selectApiTokenPreset = (preset: 'homeassistant' | 'scanner' | 'custom') => {
     setApiTokenPreset(preset)
-    setApiTokenName(apiTokenPresets[preset].name)
+    setApiTokenName(translate(apiTokenPresets[preset].name))
     setSelectedApiTokenScopes(apiTokenPresets[preset].scopes)
     setFreshApiToken('')
   }
@@ -1632,7 +1674,7 @@ function SettingsScreen({
       const created = await api.createApiToken(apiTokenName.trim(), selectedApiTokenScopes, apiTokenExpiresDays)
       setFreshApiToken(created.token)
       setApiTokens(await api.apiTokens())
-      onSaved('API-Token erstellt. Der vollständige Wert wird nur jetzt angezeigt.')
+      onSaved(translate('API-Token erstellt. Der vollständige Wert wird nur jetzt angezeigt.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1643,20 +1685,20 @@ function SettingsScreen({
   const copyApiToken = async () => {
     try {
       await navigator.clipboard.writeText(freshApiToken)
-      onSaved('API-Token wurde kopiert.')
+      onSaved(translate('API-Token wurde kopiert.'))
     } catch {
-      setError('API-Token konnte nicht automatisch kopiert werden.')
+      setError(translate('API-Token konnte nicht automatisch kopiert werden.'))
     }
   }
 
   const revokeApiToken = async (token: ApiToken) => {
-    if (!window.confirm(`API-Token „${token.name}“ wirklich sofort sperren?`)) return
+    if (!window.confirm(translate('API-Token „{{name}}“ wirklich sofort sperren?', { name: token.name }))) return
     setBusy(true)
     setError('')
     try {
       await api.revokeApiToken(token.id)
       setApiTokens(await api.apiTokens())
-      onSaved('API-Token wurde sofort gesperrt.')
+      onSaved(translate('API-Token wurde sofort gesperrt.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1666,7 +1708,7 @@ function SettingsScreen({
 
   const changePassword = async () => {
     if (newPassword.length < 10 || newPassword !== repeatPassword) {
-      setError('Das neue Passwort braucht mindestens zehn Zeichen und beide Eingaben müssen übereinstimmen.')
+      setError(translate('Das neue Passwort braucht mindestens zehn Zeichen und beide Eingaben müssen übereinstimmen.'))
       return
     }
     setBusy(true)
@@ -1676,7 +1718,7 @@ function SettingsScreen({
       setNewPassword('')
       setRepeatPassword('')
       setSessions(await api.authSessions())
-      onSaved('Passwort geändert; alle anderen Sitzungen wurden beendet.')
+      onSaved(translate('Passwort geändert; alle anderen Sitzungen wurden beendet.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1707,7 +1749,7 @@ function SettingsScreen({
       setInviteName('')
       setInviteEmail('')
       await refreshFamily()
-      onSaved('Einmal-Einladung wurde erstellt und ist 72 Stunden gültig.')
+      onSaved(translate('Einmal-Einladung wurde erstellt und ist 72 Stunden gültig.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1718,19 +1760,19 @@ function SettingsScreen({
   const copyInviteLink = async () => {
     try {
       await navigator.clipboard.writeText(freshInviteLink)
-      onSaved('Einladungslink wurde kopiert.')
+      onSaved(translate('Einladungslink wurde kopiert.'))
     } catch {
-      setError('Link konnte nicht automatisch kopiert werden. Bitte markiere ihn manuell.')
+      setError(translate('Link konnte nicht automatisch kopiert werden. Bitte markiere ihn manuell.'))
     }
   }
 
   const revokeInvitation = async (invitation: HouseholdInvitation) => {
-    if (!window.confirm(`Einladung für ${invitation.display_name} wirklich zurückziehen?`)) return
+    if (!window.confirm(translate('Einladung für {{name}} wirklich zurückziehen?', { name: invitation.display_name }))) return
     setBusy(true)
     try {
       await api.revokeHouseholdInvitation(invitation.id)
       await refreshFamily()
-      onSaved('Einladung wurde zurückgezogen.')
+      onSaved(translate('Einladung wurde zurückgezogen.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1739,14 +1781,14 @@ function SettingsScreen({
   }
 
   const updateMember = async (member: HouseholdMember, role: HouseholdMember['role'], active: boolean) => {
-    const action = active ? 'ändern' : 'sperren'
-    if (!window.confirm(`${member.display_name} wirklich ${action}?`)) return
+    const action = translate(active ? 'ändern' : 'sperren')
+    if (!window.confirm(translate('{{name}} wirklich {{action}}?', { name: member.display_name, action }))) return
     setBusy(true)
     setError('')
     try {
       await api.updateHouseholdMember(member.id, role, active)
       await refreshFamily()
-      onSaved(active ? 'Rolle wurde aktualisiert.' : 'Zugang und aktive Sitzungen wurden gesperrt.')
+      onSaved(translate(active ? 'Rolle wurde aktualisiert.' : 'Zugang und aktive Sitzungen wurden gesperrt.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1763,7 +1805,7 @@ function SettingsScreen({
       setIdentity(auth.user)
       onIdentityChange(auth.user)
       await refreshFamily()
-      onSaved('Owner-Profil wurde lokal gespeichert.')
+      onSaved(translate('Owner-Profil wurde lokal gespeichert.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1773,8 +1815,8 @@ function SettingsScreen({
 
   const revokeSession = async (session: AuthSession) => {
     const question = session.current
-      ? 'Diese aktuelle Sitzung wirklich beenden?'
-      : `${session.device_name} wirklich abmelden?`
+      ? translate('Diese aktuelle Sitzung wirklich beenden?')
+      : translate('{{device}} wirklich abmelden?', { device: session.device_name })
     if (!window.confirm(question)) return
     setBusy(true)
     setError('')
@@ -1785,7 +1827,7 @@ function SettingsScreen({
         return
       }
       setSessions(await api.authSessions())
-      onSaved('Die ausgewählte Gerätesitzung wurde beendet.')
+      onSaved(translate('Die ausgewählte Gerätesitzung wurde beendet.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1794,13 +1836,13 @@ function SettingsScreen({
   }
 
   const revokeOthers = async () => {
-    if (!window.confirm('Alle anderen Browser und Geräte jetzt abmelden?')) return
+    if (!window.confirm(translate('Alle anderen Browser und Geräte jetzt abmelden?'))) return
     setBusy(true)
     setError('')
     try {
       const response = await api.revokeOtherAuthSessions()
       setSessions(await api.authSessions())
-      onSaved(response.revoked === 1 ? 'Eine andere Sitzung wurde beendet.' : `${response.revoked} andere Sitzungen wurden beendet.`)
+      onSaved(translate('{{count}} andere Sitzungen wurden beendet.', { count: response.revoked }))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1816,7 +1858,7 @@ function SettingsScreen({
     try {
       const saved = await api.saveSettings(settings)
       setSettings(saved)
-      onSaved('Einstellungen wurden sicher gespeichert.')
+      onSaved(translate('Einstellungen wurden sicher gespeichert.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1833,7 +1875,7 @@ function SettingsScreen({
       await api.saveSettings(settings)
       if (kind === 'grocy') await api.testGrocy()
       else await api.testProvider()
-      setResult(kind === 'grocy' ? 'Grocy ist erreichbar.' : 'KI-Anbieter ist erreichbar.')
+      setResult(translate(kind === 'grocy' ? 'Grocy ist erreichbar.' : 'KI-Anbieter ist erreichbar.'))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1842,14 +1884,14 @@ function SettingsScreen({
   }
 
   const migrateGrocyCatalog = async () => {
-    if (!settings || !window.confirm('Vorhandene Grocy-Stammdaten und Produkte jetzt zusätzlich in Vorrio übernehmen? In Grocy wird nichts verändert.')) return
+    if (!settings || !window.confirm(translate('Vorhandene Grocy-Stammdaten und Produkte jetzt zusätzlich in Vorrio übernehmen? In Grocy wird nichts verändert.'))) return
     setBusy(true)
     setError('')
     setResult('')
     try {
       await api.saveSettings(settings)
       const response = await api.importGrocyCatalog()
-      setResult(`${response.imported.products} Grocy-Produkte wurden in Vorrio abgeglichen. Vorhandene Einträge blieben erhalten.`)
+      setResult(translate('{{count}} Grocy-Produkte wurden in Vorrio abgeglichen. Vorhandene Einträge blieben erhalten.', { count: response.imported.products }))
     } catch (nextError) {
       setError((nextError as Error).message)
     } finally {
@@ -1869,242 +1911,260 @@ function SettingsScreen({
     <div className="screen settings-screen">
       {result && <Toast kind="success" text={result} onClose={() => setResult('')} />}
       {error && <Toast kind="error" text={error} onClose={() => setError('')} />}
-      <header className="page-header"><div><h1>Einstellungen</h1><p>Verbindungen und Datenschutz.</p></div></header>
+      <header className="page-header"><div><h1>{translate("Einstellungen")}</h1><p>{translate("Verbindungen und Datenschutz.")}</p></div></header>
       <form onSubmit={save}>
         <section className="settings-section help-version-section">
-          <div className="section-heading"><Info /><div><h2>Hilfe & Version</h2><p>Den roten Faden erneut ansehen oder die Änderungen dieser Version nachlesen.</p></div></div>
+          <div className="section-heading"><Info /><div><h2>{translate("Hilfe & Version")}</h2><p>{translate("Den roten Faden erneut ansehen oder die Änderungen dieser Version nachlesen.")}</p></div></div>
           <div className="help-version-card">
-            <span><strong>Vorrio {version ? `v${version}` : ''}</strong><small>Self-hosted · Local-first</small></span>
+            <span><strong>{translate("Vorrio")} {version ? `v${version}` : ''}</strong><small>{translate("Self-hosted · Local-first")}</small></span>
             <span className="help-version-actions">
-              <button type="button" onClick={onOpenGuide}>Einführung öffnen</button>
-              <button type="button" onClick={onOpenReleaseNotes}>Was ist neu?</button>
+              <button type="button" onClick={onOpenGuide}>{translate("Einführung öffnen")}</button>
+              <button type="button" onClick={onOpenReleaseNotes}>{translate("Was ist neu?")}</button>
             </span>
           </div>
         </section>
+        <section className="settings-section language-section">
+          <div className="section-heading"><Info /><div><h2>{translate("Sprache & Region")}</h2><p>{translate("Die Sprache gilt für dein Konto auf allen Geräten. Produktnamen, Bontexte, Währung und Zeitzone bleiben unverändert.")}</p></div></div>
+          <LanguageSwitcher
+            value={identity?.preferred_locale || currentLocale()}
+            onChange={async (locale) => {
+              await onLocaleChange(locale)
+              setIdentity((current) => current ? { ...current, preferred_locale: locale } : current)
+              if (identity?.role === 'owner' || identity?.role === 'admin') {
+                void api.apiTokenScopes().then(setApiTokenScopes).catch(() => undefined)
+              }
+              setPasskeyName((current) => ['Mein Passkey', 'My passkey'].includes(current)
+                ? translate('Mein Passkey')
+                : current)
+            }}
+          />
+        </section>
         <section className={`settings-section identity-section ${identity?.owner_setup_complete ? '' : 'needs-setup'}`}>
-          <div className="section-heading"><ShieldCheck /><div><h2>Konto & Sicherheit</h2><p>Dein persönlicher Zugang und alle aktiven Browser-Sitzungen.</p></div></div>
-          {!identity?.owner_setup_complete && <p className="identity-notice"><UserRound /> Benenne jetzt den bisherigen Haushaltszugang. Dein Passwort und alle Vorrio-Daten bleiben unverändert.</p>}
+          <div className="section-heading"><ShieldCheck /><div><h2>{translate("Konto & Sicherheit")}</h2><p>{translate("Dein persönlicher Zugang und alle aktiven Browser-Sitzungen.")}</p></div></div>
+          {!identity?.owner_setup_complete && <p className="identity-notice"><UserRound /> {translate("Benenne jetzt den bisherigen Haushaltszugang. Dein Passwort und alle Vorrio-Daten bleiben unverändert.")}</p>}
           <div className="identity-role"><span>{identity?.display_name || 'Owner einrichten'}</span><strong>{roleLabels[identity?.role || 'viewer']}</strong></div>
           {identity?.role === 'owner' && <>
-            <label>Name<input value={displayName} minLength={2} maxLength={100} autoComplete="name" onChange={(event) => setDisplayName(event.target.value)} /></label>
-            <label>Login-E-Mail<input type="email" value={email} maxLength={320} autoComplete="email" placeholder="Vor der ersten Einladung erforderlich" onChange={(event) => setEmail(event.target.value)} /></label>
-            <button type="button" className="button tertiary" onClick={saveOwner} disabled={busy || displayName.trim().length < 2}>Owner speichern</button>
+            <label>{translate("Name")}<input value={displayName} minLength={2} maxLength={100} autoComplete="name" onChange={(event) => setDisplayName(event.target.value)} /></label>
+            <label>{translate("Login-E-Mail")}<input type="email" value={email} maxLength={320} autoComplete="email" placeholder={translate("Vor der ersten Einladung erforderlich")} onChange={(event) => setEmail(event.target.value)} /></label>
+            <button type="button" className="button tertiary" onClick={saveOwner} disabled={busy || displayName.trim().length < 2}>{translate("Owner speichern")}</button>
           </>}
 
           {security && <div className="account-security">
             <div className="security-status-row">
-              <span className={security.recent_authentication ? 'security-ok' : 'security-pending'}><ShieldCheck /> {security.recent_authentication ? 'Identität bestätigt' : 'Bestätigung erforderlich'}</span>
-              <small>Sensible Änderungen bleiben nach Bestätigung zehn Minuten frei.</small>
+              <span className={security.recent_authentication ? 'security-ok' : 'security-pending'}><ShieldCheck /> {translate(security.recent_authentication ? 'Identität bestätigt' : 'Bestätigung erforderlich')}</span>
+              <small>{translate("Sensible Änderungen bleiben nach Bestätigung zehn Minuten frei.")}</small>
             </div>
             {!security.recent_authentication && <div className="reauth-box">
-              <h3>Sicherheitsänderungen freigeben</h3>
-              <label>Aktuelles Passwort<input type="password" value={reauthPassword} autoComplete="current-password" onChange={(event) => setReauthPassword(event.target.value)} /></label>
-              {security.totp_enabled && <label>Authenticator- oder Wiederherstellungscode<input value={reauthCode} autoComplete="one-time-code" inputMode="numeric" onChange={(event) => setReauthCode(event.target.value)} /></label>}
-              <button type="button" className="button tertiary" disabled={busy || !reauthPassword || (security.totp_enabled && !reauthCode)} onClick={confirmIdentity}>Identität bestätigen</button>
+              <h3>{translate("Sicherheitsänderungen freigeben")}</h3>
+              <label>{translate("Aktuelles Passwort")}<input type="password" value={reauthPassword} autoComplete="current-password" onChange={(event) => setReauthPassword(event.target.value)} /></label>
+              {security.totp_enabled && <label>{translate("Authenticator- oder Wiederherstellungscode")}<input value={reauthCode} autoComplete="one-time-code" inputMode="numeric" onChange={(event) => setReauthCode(event.target.value)} /></label>}
+              <button type="button" className="button tertiary" disabled={busy || !reauthPassword || (security.totp_enabled && !reauthCode)} onClick={confirmIdentity}>{translate("Identität bestätigen")}</button>
             </div>}
 
             <div className="security-method">
-              <div><h3><KeyRound /> Passkeys</h3><p>Mit Face ID, Touch ID, Windows Hello oder Sicherheitsschlüssel ohne Passwort anmelden.</p></div>
-              {security.passkeys.map((passkey) => <div className="passkey-row" key={passkey.id}><span><strong>{passkey.name}</strong><small>{passkey.backed_up ? 'Synchronisierter Passkey' : 'Gerätegebundener Passkey'} · angelegt {new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(new Date(passkey.created_at))}</small></span><button type="button" onClick={() => removePasskey(passkey.id)} disabled={busy || !security.recent_authentication}>Entfernen</button></div>)}
-              {!window.isSecureContext && <p className="security-note">Zum Einrichten bitte die private HTTPS-Adresse von Vorrio öffnen.</p>}
-              <label>Name für neuen Passkey<input value={passkeyName} maxLength={100} onChange={(event) => setPasskeyName(event.target.value)} /></label>
-              <button type="button" className="button tertiary" onClick={addPasskey} disabled={busy || !security.recent_authentication || !window.isSecureContext}><KeyRound /> Passkey hinzufügen</button>
+              <div><h3><KeyRound /> {translate("Passkeys")}</h3><p>{translate("Mit Face ID, Touch ID, Windows Hello oder Sicherheitsschlüssel ohne Passwort anmelden.")}</p></div>
+              {security.passkeys.map((passkey) => <div className="passkey-row" key={passkey.id}><span><strong>{passkey.name}</strong><small>{translate(passkey.backed_up ? 'Synchronisierter Passkey' : 'Gerätegebundener Passkey')} · {translate('angelegt am {{date}}', { date: formatDate(passkey.created_at, { dateStyle: 'medium' }) })}</small></span><button type="button" onClick={() => removePasskey(passkey.id)} disabled={busy || !security.recent_authentication}>{translate("Entfernen")}</button></div>)}
+              {!window.isSecureContext && <p className="security-note">{translate("Zum Einrichten bitte die private HTTPS-Adresse von Vorrio öffnen.")}</p>}
+              <label>{translate("Name für neuen Passkey")}<input value={passkeyName} maxLength={100} onChange={(event) => setPasskeyName(event.target.value)} /></label>
+              <button type="button" className="button tertiary" onClick={addPasskey} disabled={busy || !security.recent_authentication || !window.isSecureContext}><KeyRound /> {translate("Passkey hinzufügen")}</button>
             </div>
 
             <div className="security-method">
-              <div><h3>Authenticator-App</h3><p>Optionaler sechsstelliger Code zusätzlich zum Passwort.</p></div>
-              {!security.totp_enabled && !totpSetup && <button type="button" className="button tertiary" onClick={beginTotp} disabled={busy || !security.recent_authentication}>Einrichten</button>}
+              <div><h3>{translate("Authenticator-App")}</h3><p>{translate("Optionaler sechsstelliger Code zusätzlich zum Passwort.")}</p></div>
+              {!security.totp_enabled && !totpSetup && <button type="button" className="button tertiary" onClick={beginTotp} disabled={busy || !security.recent_authentication}>{translate("Einrichten")}</button>}
               {totpSetup && <div className="totp-setup">
-                <img src={totpSetup.qr_data_uri} alt="QR-Code für die Authenticator-App" />
-                <p>Scanne den QR-Code. Falls nötig, gib diesen Schlüssel manuell ein:</p>
+                <img src={totpSetup.qr_data_uri} alt={translate('QR-Code für die Authenticator-App')} />
+                <p>{translate("Scanne den QR-Code. Falls nötig, gib diesen Schlüssel manuell ein:")}</p>
                 <code>{totpSetup.secret}</code>
-                <label>Ersten sechsstelligen Code<input value={totpCode} inputMode="numeric" autoComplete="one-time-code" maxLength={8} onChange={(event) => setTotpCode(event.target.value)} /></label>
-                <button type="button" className="button tertiary" onClick={confirmTotp} disabled={busy || totpCode.replace(/\s/g, '').length !== 6}>Aktivieren</button>
+                <label>{translate("Ersten sechsstelligen Code")}<input value={totpCode} inputMode="numeric" autoComplete="one-time-code" maxLength={8} onChange={(event) => setTotpCode(event.target.value)} /></label>
+                <button type="button" className="button tertiary" onClick={confirmTotp} disabled={busy || totpCode.replace(/\s/g, '').length !== 6}>{translate("Aktivieren")}</button>
               </div>}
-              {security.totp_enabled && <div className="enabled-factor"><span><Check /> Aktiv</span><button type="button" onClick={disableTotp} disabled={busy || !security.recent_authentication}>Deaktivieren</button></div>}
+              {security.totp_enabled && <div className="enabled-factor"><span><Check /> {translate("Aktiv")}</span><button type="button" onClick={disableTotp} disabled={busy || !security.recent_authentication}>{translate("Deaktivieren")}</button></div>}
             </div>
 
             <div className="security-method">
-              <div><h3>Wiederherstellungscodes</h3><p>{security.recovery_codes_remaining} unbenutzte Einmalcodes. Offline und getrennt von Vorrio aufbewahren.</p></div>
-              {!identity?.email && <p className="security-note">Speichere eine Login-E-Mail, damit du einen Code bei der Kontowiederherstellung deinem Konto zuordnen kannst.</p>}
-              <button type="button" className="button tertiary" onClick={replaceRecoveryCodes} disabled={busy || !security.recent_authentication}>{security.recovery_codes_remaining ? 'Codes ersetzen' : 'Codes erstellen'}</button>
-              {recoveryCodes.length > 0 && <div className="recovery-codes"><strong>Nur jetzt sichtbar – sicher abspeichern</strong><div>{recoveryCodes.map((code) => <code key={code}>{code}</code>)}</div><button type="button" onClick={copyRecoveryCodes}>Alle kopieren</button></div>}
+              <div><h3>{translate("Wiederherstellungscodes")}</h3><p>{security.recovery_codes_remaining} {translate("unbenutzte Einmalcodes. Offline und getrennt von Vorrio aufbewahren.")}</p></div>
+              {!identity?.email && <p className="security-note">{translate("Speichere eine Login-E-Mail, damit du einen Code bei der Kontowiederherstellung deinem Konto zuordnen kannst.")}</p>}
+              <button type="button" className="button tertiary" onClick={replaceRecoveryCodes} disabled={busy || !security.recent_authentication}>{translate(security.recovery_codes_remaining ? 'Codes ersetzen' : 'Codes erstellen')}</button>
+              {recoveryCodes.length > 0 && <div className="recovery-codes"><strong>{translate("Nur jetzt sichtbar – sicher abspeichern")}</strong><div>{recoveryCodes.map((code) => <code key={code}>{code}</code>)}</div><button type="button" onClick={copyRecoveryCodes}>{translate("Alle kopieren")}</button></div>}
             </div>
 
             {(identity?.role === 'owner' || identity?.role === 'admin') && <div className="security-method api-token-method">
-              <div><h3><KeyRound /> API-Tokens</h3><p>Eigene, begrenzte Zugänge für Home Assistant, Handscanner und lokale Dienste – ohne dein Passwort weiterzugeben.</p></div>
+              <div><h3><KeyRound /> {translate("API-Tokens")}</h3><p>{translate("Eigene, begrenzte Zugänge für Home Assistant, Handscanner und lokale Dienste – ohne dein Passwort weiterzugeben.")}</p></div>
               {apiTokens.length > 0 && <div className="api-token-list">{apiTokens.map((token) => (
                 <div className="api-token-row" key={token.id}>
                   <span>
                     <strong>{token.name}</strong>
                     <code>vor_pat_{token.token_prefix}_…</code>
-                    <small>Gültig bis {new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(new Date(token.expires_at))}{token.last_used_at ? ` · zuletzt ${new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium' }).format(new Date(token.last_used_at))}` : ' · noch nie benutzt'}</small>
+                    <small>{translate('Gültig bis {{date}}', { date: formatDate(token.expires_at, { dateStyle: 'medium' }) })}{token.last_used_at
+                      ? translate(' · zuletzt {{date}}', { date: formatDate(token.last_used_at, { dateStyle: 'medium' }) })
+                      : translate(' · noch nie benutzt')}</small>
                     <span className="api-token-scope-chips">{token.scopes.map((scope) => <em key={scope}>{apiTokenScopes.find((item) => item.id === scope)?.label || scope}</em>)}</span>
                   </span>
-                  <button type="button" onClick={() => revokeApiToken(token)} disabled={busy || !security.recent_authentication}>Sperren</button>
+                  <button type="button" onClick={() => revokeApiToken(token)} disabled={busy || !security.recent_authentication}>{translate("Sperren")}</button>
                 </div>
               ))}</div>}
-              {!apiTokens.length && <p className="security-note">Noch kein API-Token angelegt.</p>}
+              {!apiTokens.length && <p className="security-note">{translate("Noch kein API-Token angelegt.")}</p>}
 
               <div className="api-token-builder">
-                <label>Vorlage<select value={apiTokenPreset} onChange={(event) => selectApiTokenPreset(event.target.value as 'homeassistant' | 'scanner' | 'custom')}>
-                  <option value="homeassistant">Home Assistant · nur lesen</option>
-                  <option value="scanner">Handscanner · Scanaktionen</option>
-                  <option value="custom">Eigene Auswahl</option>
+                <label>{translate("Vorlage")}<select value={apiTokenPreset} onChange={(event) => selectApiTokenPreset(event.target.value as 'homeassistant' | 'scanner' | 'custom')}>
+                  <option value="homeassistant">{translate("Home Assistant · nur lesen")}</option>
+                  <option value="scanner">{translate("Handscanner · Scanaktionen")}</option>
+                  <option value="custom">{translate("Eigene Auswahl")}</option>
                 </select></label>
-                <label>Name<input value={apiTokenName} minLength={2} maxLength={100} onChange={(event) => setApiTokenName(event.target.value)} /></label>
-                <label>Gültigkeit<select value={apiTokenExpiresDays} onChange={(event) => setApiTokenExpiresDays(Number(event.target.value))}>
-                  <option value={30}>30 Tage</option>
-                  <option value={90}>90 Tage</option>
-                  <option value={180}>180 Tage</option>
-                  <option value={365}>1 Jahr</option>
+                <label>{translate("Name")}<input value={apiTokenName} minLength={2} maxLength={100} onChange={(event) => setApiTokenName(event.target.value)} /></label>
+                <label>{translate("Gültigkeit")}<select value={apiTokenExpiresDays} onChange={(event) => setApiTokenExpiresDays(Number(event.target.value))}>
+                  <option value={30}>{translate("30 Tage")}</option>
+                  <option value={90}>{translate("90 Tage")}</option>
+                  <option value={180}>{translate("180 Tage")}</option>
+                  <option value={365}>{translate("1 Jahr")}</option>
                 </select></label>
-                <fieldset><legend>Berechtigungen</legend>{apiTokenScopes.map((scope) => <label className="api-token-scope" key={scope.id}>
+                <fieldset><legend>{translate("Berechtigungen")}</legend>{apiTokenScopes.map((scope) => <label className="api-token-scope" key={scope.id}>
                   <input type="checkbox" checked={selectedApiTokenScopes.includes(scope.id)} onChange={() => toggleApiTokenScope(scope.id)} />
                   <span><strong>{scope.label}</strong><small>{scope.description}</small></span>
                 </label>)}</fieldset>
-                <button type="button" className="button tertiary" onClick={createApiToken} disabled={busy || !security.recent_authentication || apiTokenName.trim().length < 2 || !selectedApiTokenScopes.length}>Token erstellen</button>
+                <button type="button" className="button tertiary" onClick={createApiToken} disabled={busy || !security.recent_authentication || apiTokenName.trim().length < 2 || !selectedApiTokenScopes.length}>{translate("Token erstellen")}</button>
               </div>
 
-              {freshApiToken && <div className="fresh-api-token"><strong>Nur jetzt sichtbar – direkt kopieren</strong><p>Lege den Wert als Secret im Zielsystem ab. Vorrio kann ihn später nicht erneut anzeigen.</p><textarea readOnly value={freshApiToken} aria-label="Neuer API-Token" /><button type="button" onClick={copyApiToken}>Token kopieren</button></div>}
+              {freshApiToken && <div className="fresh-api-token"><strong>{translate("Nur jetzt sichtbar – direkt kopieren")}</strong><p>{translate("Lege den Wert als Secret im Zielsystem ab. Vorrio kann ihn später nicht erneut anzeigen.")}</p><textarea readOnly value={freshApiToken} aria-label={translate("Neuer API-Token")} /><button type="button" onClick={copyApiToken}>{translate("Token kopieren")}</button></div>}
             </div>}
 
             <div className="security-method password-change">
-              <div><h3>Passwort ändern</h3><p>Danach werden alle anderen Vorrio-Sitzungen automatisch beendet.</p></div>
-              <label>Neues Passwort<input type="password" minLength={10} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label>
-              <label>Passwort wiederholen<input type="password" minLength={10} autoComplete="new-password" value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} /></label>
-              <button type="button" className="button tertiary" onClick={changePassword} disabled={busy || !security.recent_authentication || newPassword.length < 10 || newPassword !== repeatPassword}>Passwort ändern</button>
+              <div><h3>{translate("Passwort ändern")}</h3><p>{translate("Danach werden alle anderen Vorrio-Sitzungen automatisch beendet.")}</p></div>
+              <label>{translate("Neues Passwort")}<input type="password" minLength={10} autoComplete="new-password" value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label>
+              <label>{translate("Passwort wiederholen")}<input type="password" minLength={10} autoComplete="new-password" value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} /></label>
+              <button type="button" className="button tertiary" onClick={changePassword} disabled={busy || !security.recent_authentication || newPassword.length < 10 || newPassword !== repeatPassword}>{translate("Passwort ändern")}</button>
             </div>
           </div>}
 
-          <div className="session-heading"><MonitorSmartphone /><div><h3>Angemeldete Geräte</h3><p>Jede Sitzung läuft serverseitig und kann sofort widerrufen werden.</p></div></div>
+          <div className="session-heading"><MonitorSmartphone /><div><h3>{translate("Angemeldete Geräte")}</h3><p>{translate("Jede Sitzung läuft serverseitig und kann sofort widerrufen werden.")}</p></div></div>
           <div className="session-list">
             {sessions.map((session) => (
               <div className="session-row" key={session.id}>
-                <div><strong>{session.device_name}</strong><small>{session.current ? 'Dieses Gerät' : `Zuletzt aktiv ${new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(session.last_seen_at))}`}</small></div>
-                <button type="button" onClick={() => revokeSession(session)} disabled={busy} aria-label={`${session.device_name} abmelden`}><LogOut /></button>
+                <div><strong>{session.device_name}</strong><small>{session.current ? translate('Dieses Gerät') : translate('Zuletzt aktiv {{date}}', { date: formatDate(session.last_seen_at, { dateStyle: 'medium', timeStyle: 'short' }) })}</small></div>
+                <button type="button" onClick={() => revokeSession(session)} disabled={busy} aria-label={translate('{{device}} abmelden', { device: session.device_name })}><LogOut /></button>
               </div>
             ))}
           </div>
-          {sessions.some((session) => !session.current) && <button type="button" className="button tertiary revoke-others" onClick={revokeOthers} disabled={busy}>Andere Geräte abmelden</button>}
+          {sessions.some((session) => !session.current) && <button type="button" className="button tertiary revoke-others" onClick={revokeOthers} disabled={busy}>{translate("Andere Geräte abmelden")}</button>}
         </section>
 
         {notifications && <section className="settings-section notification-section">
-          <div className="section-heading"><BellRing /><div><h2>Vorratsmeldungen</h2><p>Einmal melden, wenn etwas knapp wird oder bald abläuft – bis sich der Zustand wieder normalisiert.</p></div></div>
-          {!pushAvailable && <p className="notification-hint"><Bell /> Öffne die installierte Vorrio-PWA über die private HTTPS-Adresse. Erst dann darf iPhone, Android oder der Desktop Push-Mitteilungen empfangen.</p>}
+          <div className="section-heading"><BellRing /><div><h2>{translate("Vorratsmeldungen")}</h2><p>{translate("Einmal melden, wenn etwas knapp wird oder bald abläuft – bis sich der Zustand wieder normalisiert.")}</p></div></div>
+          {!pushAvailable && <p className="notification-hint"><Bell /> {translate("Öffne die installierte Vorrio-PWA über die private HTTPS-Adresse. Erst dann darf iPhone, Android oder der Desktop Push-Mitteilungen empfangen.")}</p>}
           {pushAvailable && !currentPushDeviceId && <div className="push-onboarding">
-            <span><strong>Auf diesem Gerät aktivieren</strong><small>Vorrio fragt erst nach deinem Klick nach der Browser-Erlaubnis.</small></span>
-            <button type="button" className="button tertiary" onClick={enablePush} disabled={busy}><Bell /> Mitteilungen erlauben</button>
+            <span><strong>{translate("Auf diesem Gerät aktivieren")}</strong><small>{translate("Vorrio fragt erst nach deinem Klick nach der Browser-Erlaubnis.")}</small></span>
+            <button type="button" className="button tertiary" onClick={enablePush} disabled={busy}><Bell /> {translate("Mitteilungen erlauben")}</button>
           </div>}
           {currentPushDeviceId && <div className="push-device-current">
-            <span className="push-device-status"><Check /> <span><strong>Dieses Gerät ist bereit</strong><small>Push-Verbindung aktiv</small></span></span>
-            <span className="push-device-actions"><button type="button" onClick={testPush} disabled={busy}>Test senden</button><button type="button" onClick={disablePushDevice} disabled={busy}>Entfernen</button></span>
+            <span className="push-device-status"><Check /> <span><strong>{translate("Dieses Gerät ist bereit")}</strong><small>{translate("Push-Verbindung aktiv")}</small></span></span>
+            <span className="push-device-actions"><button type="button" onClick={testPush} disabled={busy}>{translate("Test senden")}</button><button type="button" onClick={disablePushDevice} disabled={busy}>{translate("Entfernen")}</button></span>
           </div>}
 
           <div className="notification-options">
-            <label className="toggle-row"><span><strong>Benachrichtigungen verwenden</strong><small>Der Hauptschalter für dein Vorrio-Konto.</small></span><input type="checkbox" checked={notifications.preferences.push_enabled} disabled={!notifications.subscriptions.length} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, push_enabled: event.target.checked } })} /></label>
-            <label className="toggle-row"><span><strong>Mindestbestand</strong><small>Meldet erst beim Eintritt in „knapp“ und danach nicht erneut, bis aufgefüllt wurde.</small></span><input type="checkbox" checked={notifications.preferences.low_stock_enabled} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, low_stock_enabled: event.target.checked } })} /></label>
-            <label className="toggle-row"><span><strong>Haltbarkeit</strong><small>Lose mit Restbestand im gewählten Zeitfenster.</small></span><input type="checkbox" checked={notifications.preferences.expiry_enabled} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, expiry_enabled: event.target.checked } })} /></label>
-            {notifications.preferences.expiry_enabled && <label className="expiry-days">Wie früh warnen?<select value={notifications.preferences.expiry_days_before} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, expiry_days_before: Number(event.target.value) } })}><option value={0}>Am Ablauftag</option><option value={3}>3 Tage vorher</option><option value={7}>7 Tage vorher</option><option value={14}>14 Tage vorher</option><option value={30}>30 Tage vorher</option></select></label>}
+            <label className="toggle-row"><span><strong>{translate("Benachrichtigungen verwenden")}</strong><small>{translate("Der Hauptschalter für dein Vorrio-Konto.")}</small></span><input type="checkbox" checked={notifications.preferences.push_enabled} disabled={!notifications.subscriptions.length} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, push_enabled: event.target.checked } })} /></label>
+            <label className="toggle-row"><span><strong>{translate("Mindestbestand")}</strong><small>{translate("Meldet erst beim Eintritt in „knapp“ und danach nicht erneut, bis aufgefüllt wurde.")}</small></span><input type="checkbox" checked={notifications.preferences.low_stock_enabled} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, low_stock_enabled: event.target.checked } })} /></label>
+            <label className="toggle-row"><span><strong>{translate("Haltbarkeit")}</strong><small>{translate("Lose mit Restbestand im gewählten Zeitfenster.")}</small></span><input type="checkbox" checked={notifications.preferences.expiry_enabled} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, expiry_enabled: event.target.checked } })} /></label>
+            {notifications.preferences.expiry_enabled && <label className="expiry-days">{translate("Wie früh warnen?")}<select value={notifications.preferences.expiry_days_before} onChange={(event) => setNotifications({ ...notifications, preferences: { ...notifications.preferences, expiry_days_before: Number(event.target.value) } })}><option value={0}>{translate("Am Ablauftag")}</option><option value={3}>{translate("3 Tage vorher")}</option><option value={7}>{translate("7 Tage vorher")}</option><option value={14}>{translate("14 Tage vorher")}</option><option value={30}>{translate("30 Tage vorher")}</option></select></label>}
           </div>
           <div className="notification-summary">
-            <span><strong>{notifications.active_low_stock_events}</strong><small>knapp</small></span>
-            <span><strong>{notifications.active_expiry_events}</strong><small>ablaufnah</small></span>
-            <span><strong>{notifications.subscriptions.length}</strong><small>Geräte</small></span>
+            <span><strong>{notifications.active_low_stock_events}</strong><small>{translate("knapp")}</small></span>
+            <span><strong>{notifications.active_expiry_events}</strong><small>{translate("ablaufnah")}</small></span>
+            <span><strong>{notifications.subscriptions.length}</strong><small>{translate("Geräte")}</small></span>
           </div>
-          <button type="button" className="button tertiary notification-save" onClick={saveNotificationPreferences} disabled={busy}>Meldungen speichern</button>
-          <p className="notification-footnote">Auf iPhone und iPad funktioniert Push ab iOS/iPadOS 16.4 in der zum Home-Bildschirm hinzugefügten Vorrio-App.</p>
+          <button type="button" className="button tertiary notification-save" onClick={saveNotificationPreferences} disabled={busy}>{translate("Meldungen speichern")}</button>
+          <p className="notification-footnote">{translate("Auf iPhone und iPad funktioniert Push ab iOS/iPadOS 16.4 in der zum Home-Bildschirm hinzugefügten Vorrio-App.")}</p>
         </section>}
 
         {(identity?.role === 'owner' || identity?.role === 'admin') && <section className="settings-section family-section">
-          <div className="section-heading"><UserPlus /><div><h2>Familie & Rollen</h2><p>Einmal-Link erstellen, Mitglieder verwalten und Zugänge sofort sperren.</p></div></div>
-          {identity.role === 'owner' && !identity.email && <p className="identity-notice"><Mail /> Speichere zuerst deine eigene Login-E-Mail. Sobald mehrere Konten existieren, meldet sich jede Person mit E-Mail und eigenem Passwort an.</p>}
+          <div className="section-heading"><UserPlus /><div><h2>{translate("Familie & Rollen")}</h2><p>{translate("Einmal-Link erstellen, Mitglieder verwalten und Zugänge sofort sperren.")}</p></div></div>
+          {identity.role === 'owner' && !identity.email && <p className="identity-notice"><Mail /> {translate("Speichere zuerst deine eigene Login-E-Mail. Sobald mehrere Konten existieren, meldet sich jede Person mit E-Mail und eigenem Passwort an.")}</p>}
           <div className="member-list">
             {members.map((member) => (
               <div className={`member-row ${member.active ? '' : 'inactive'}`} key={member.id}>
-                <div className="member-summary"><span className="member-avatar">{member.display_name.slice(0, 1).toUpperCase()}</span><span><strong>{member.display_name}</strong><small>{member.email || 'Keine Login-E-Mail'} · {member.active_session_count} aktive {member.active_session_count === 1 ? 'Sitzung' : 'Sitzungen'}</small></span></div>
+                <div className="member-summary"><span className="member-avatar">{member.display_name.slice(0, 1).toUpperCase()}</span><span><strong>{member.display_name}</strong><small>{member.email || translate('Keine Login-E-Mail')} · {translate('{{count}} aktive Sitzungen', { count: member.active_session_count })}</small></span></div>
                 <div className="member-controls">
-                  {member.role === 'owner' ? <span className="role-chip">Owner</span> : <select
-                    aria-label={`Rolle von ${member.display_name}`}
+                  {member.role === 'owner' ? <span className="role-chip">{translate("Owner")}</span> : <select
+                    aria-label={translate('Rolle von {{name}}', { name: member.display_name })}
                     value={member.role}
                     disabled={busy || !member.active || (identity.role === 'admin' && member.role === 'admin')}
                     onChange={(event) => updateMember(member, event.target.value as HouseholdMember['role'], true)}
                   >
-                    {identity.role === 'owner' && <option value="admin">Admin</option>}
-                    <option value="member">Mitglied</option>
-                    <option value="viewer">Nur ansehen</option>
+                    {identity.role === 'owner' && <option value="admin">{translate("Admin")}</option>}
+                    <option value="member">{translate("Mitglied")}</option>
+                    <option value="viewer">{translate("Nur ansehen")}</option>
                   </select>}
-                  {member.role !== 'owner' && member.id !== identity.id && <button type="button" onClick={() => updateMember(member, member.role, !member.active)} disabled={busy || (identity.role === 'admin' && member.role === 'admin')}>{member.active ? 'Sperren' : 'Freigeben'}</button>}
+                  {member.role !== 'owner' && member.id !== identity.id && <button type="button" onClick={() => updateMember(member, member.role, !member.active)} disabled={busy || (identity.role === 'admin' && member.role === 'admin')}>{translate(member.active ? 'Sperren' : 'Freigeben')}</button>}
                 </div>
               </div>
             ))}
           </div>
 
           <div className="invite-builder">
-            <h3>Person einladen</h3>
-            <p>Der Link funktioniert einmal und läuft nach 72 Stunden ab.</p>
-            <label>Name<input value={inviteName} maxLength={100} onChange={(event) => setInviteName(event.target.value)} /></label>
-            <label>E-Mail<input type="email" value={inviteEmail} maxLength={320} autoComplete="off" onChange={(event) => setInviteEmail(event.target.value)} /></label>
-            <label>Rolle<select value={inviteRole} onChange={(event) => setInviteRole(event.target.value as Exclude<AuthenticatedUser['role'], 'owner'>)}>
-              {identity.role === 'owner' && <option value="admin">Admin</option>}
-              <option value="member">Mitglied</option>
-              <option value="viewer">Nur ansehen</option>
+            <h3>{translate("Person einladen")}</h3>
+            <p>{translate("Der Link funktioniert einmal und läuft nach 72 Stunden ab.")}</p>
+            <label>{translate("Name")}<input value={inviteName} maxLength={100} onChange={(event) => setInviteName(event.target.value)} /></label>
+            <label>{translate("E-Mail")}<input type="email" value={inviteEmail} maxLength={320} autoComplete="off" onChange={(event) => setInviteEmail(event.target.value)} /></label>
+            <label>{translate("Rolle")}<select value={inviteRole} onChange={(event) => setInviteRole(event.target.value as Exclude<AuthenticatedUser['role'], 'owner'>)}>
+              {identity.role === 'owner' && <option value="admin">{translate("Admin")}</option>}
+              <option value="member">{translate("Mitglied")}</option>
+              <option value="viewer">{translate("Nur ansehen")}</option>
             </select></label>
-            <button type="button" className="button tertiary" onClick={createInvitation} disabled={busy || !identity.email || inviteName.trim().length < 2 || !inviteEmail.trim()}>Einmal-Link erstellen</button>
-            {freshInviteLink && <div className="fresh-invite"><strong>Jetzt privat teilen</strong><p>Der vollständige Link wird nur dieses eine Mal angezeigt.</p><input readOnly value={freshInviteLink} aria-label="Neuer Einladungslink" /><button type="button" onClick={copyInviteLink}>Link kopieren</button></div>}
+            <button type="button" className="button tertiary" onClick={createInvitation} disabled={busy || !identity.email || inviteName.trim().length < 2 || !inviteEmail.trim()}>{translate("Einmal-Link erstellen")}</button>
+            {freshInviteLink && <div className="fresh-invite"><strong>{translate("Jetzt privat teilen")}</strong><p>{translate("Der vollständige Link wird nur dieses eine Mal angezeigt.")}</p><input readOnly value={freshInviteLink} aria-label={translate("Neuer Einladungslink")} /><button type="button" onClick={copyInviteLink}>{translate("Link kopieren")}</button></div>}
           </div>
 
-          {invitations.length > 0 && <div className="pending-invites"><h3>Offene Einladungen</h3>{invitations.map((invitation) => <div key={invitation.id}><span><strong>{invitation.display_name}</strong><small>{invitation.email} · {roleLabels[invitation.role]}</small></span><button type="button" onClick={() => revokeInvitation(invitation)} disabled={busy}>Zurückziehen</button></div>)}</div>}
+          {invitations.length > 0 && <div className="pending-invites"><h3>{translate("Offene Einladungen")}</h3>{invitations.map((invitation) => <div key={invitation.id}><span><strong>{invitation.display_name}</strong><small>{invitation.email} · {translate(roleLabels[invitation.role])}</small></span><button type="button" onClick={() => revokeInvitation(invitation)} disabled={busy}>{translate("Zurückziehen")}</button></div>)}</div>}
         </section>}
 
         {settings && <section className="settings-section connector-section">
-          <div className="section-heading"><Boxes /><div><h2>Grocy-Connector</h2><p>Optionaler Import und einseitiger Export. Vorrio bleibt die Hauptdatenbank.</p></div></div>
-          <label className="toggle-row"><span><strong>Grocy verwenden</strong><small>Kann jederzeit deaktiviert werden; Schlüssel und Zuordnungen bleiben erhalten.</small></span><input type="checkbox" checked={settings.grocy.enabled} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, enabled: event.target.checked } })} /></label>
-          <label>Grocy-Adresse<input value={settings.grocy.url} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, url: event.target.value } })} /></label>
-          <label>API-Key<input type="password" value={settings.grocy.api_key || ''} placeholder={settings.grocy.api_key_configured ? 'Gespeicherter Schlüssel bleibt erhalten' : 'GROCY-API-KEY'} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, api_key: event.target.value || null } })} /></label>
+          <div className="section-heading"><Boxes /><div><h2>{translate("Grocy-Connector")}</h2><p>{translate("Optionaler Import und einseitiger Export. Vorrio bleibt die Hauptdatenbank.")}</p></div></div>
+          <label className="toggle-row"><span><strong>{translate("Grocy verwenden")}</strong><small>{translate("Kann jederzeit deaktiviert werden; Schlüssel und Zuordnungen bleiben erhalten.")}</small></span><input type="checkbox" checked={settings.grocy.enabled} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, enabled: event.target.checked } })} /></label>
+          <label>{translate("Grocy-Adresse")}<input value={settings.grocy.url} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, url: event.target.value } })} /></label>
+          <label>{translate("API-Key")}<input type="password" value={settings.grocy.api_key || ''} placeholder={settings.grocy.api_key_configured ? translate('Gespeicherter Schlüssel bleibt erhalten') : 'GROCY-API-KEY'} onChange={(event) => setSettings({ ...settings, grocy: { ...settings.grocy, api_key: event.target.value || null } })} /></label>
           <div className="settings-actions">
-            <button type="button" className="button tertiary" onClick={() => test('grocy')} disabled={busy}>Verbindung prüfen</button>
-            <button type="button" className="button tertiary" onClick={migrateGrocyCatalog} disabled={busy || (!settings.grocy.api_key && !settings.grocy.api_key_configured)}>Katalog übernehmen</button>
+            <button type="button" className="button tertiary" onClick={() => test('grocy')} disabled={busy}>{translate("Verbindung prüfen")}</button>
+            <button type="button" className="button tertiary" onClick={migrateGrocyCatalog} disabled={busy || (!settings.grocy.api_key && !settings.grocy.api_key_configured)}>{translate("Katalog übernehmen")}</button>
           </div>
         </section>}
 
         {settings && <section className="settings-section provider-section">
-          <div className="section-heading"><Sparkles /><div><h2>KI-Anbieter</h2><p>Das Bonbild wird nur an den gewählten Anbieter gesendet.</p></div></div>
-          <label>Anbieter<select value={settings.provider.type} onChange={(event) => updateProvider(event.target.value as SettingsData['provider']['type'])}>
-            <option value="cortecs">Cortecs</option><option value="openai">OpenAI</option><option value="openrouter">OpenRouter</option><option value="ollama">Ollama lokal</option><option value="anthropic">Anthropic</option><option value="openai-compatible">Andere OpenAI-kompatible API</option>
+          <div className="section-heading"><Sparkles /><div><h2>{translate("KI-Anbieter")}</h2><p>{translate("Das Bonbild wird nur an den gewählten Anbieter gesendet.")}</p></div></div>
+          <label>{translate("Anbieter")}<select value={settings.provider.type} onChange={(event) => updateProvider(event.target.value as SettingsData['provider']['type'])}>
+            <option value="cortecs">{translate("Cortecs")}</option><option value="openai">{translate("OpenAI")}</option><option value="openrouter">{translate("OpenRouter")}</option><option value="ollama">{translate("Ollama lokal")}</option><option value="anthropic">{translate("Anthropic")}</option><option value="openai-compatible">{translate("Andere OpenAI-kompatible API")}</option>
           </select></label>
-          <label>Basis-URL<input value={settings.provider.base_url} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, base_url: event.target.value } })} /></label>
+          <label>{translate("Basis-URL")}<input value={settings.provider.base_url} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, base_url: event.target.value } })} /></label>
           {settings.provider.type === 'openai' ? (
             <>
-              <label>Vision-Modell<select
+              <label>{translate("Vision-Modell")}<select
                 value={openAiModels.some((model) => model.id === settings.provider.model) ? settings.provider.model : 'custom'}
                 onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, model: event.target.value === 'custom' ? '' : event.target.value } })}
               >
-                {openAiModels.map((model) => <option key={model.id} value={model.id}>{model.label}</option>)}
-                <option value="custom">Eigene Modellkennung</option>
+                {openAiModels.map((model) => <option key={model.id} value={model.id}>{translate(model.label)}</option>)}
+                <option value="custom">{translate("Eigene Modellkennung")}</option>
               </select></label>
               {!openAiModels.some((model) => model.id === settings.provider.model) && (
-                <label>Eigene Modellkennung<input value={settings.provider.model} placeholder="z. B. gpt-4.1-mini" onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, model: event.target.value } })} /></label>
+                <label>{translate("Eigene Modellkennung")}<input value={settings.provider.model} placeholder={translate("z. B. gpt-4.1-mini")} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, model: event.target.value } })} /></label>
               )}
-              <p className="model-helper">GPT-5.4 mini ist die ausgewogene Empfehlung für Bons. Das bisherige Modell bleibt gespeichert, bis du bewusst wechselst.</p>
+              <p className="model-helper">{translate("GPT-5.4 mini ist die ausgewogene Empfehlung für Bons. Das bisherige Modell bleibt gespeichert, bis du bewusst wechselst.")}</p>
             </>
           ) : (
-            <label>Vision-Modell<input value={settings.provider.model} placeholder="Modellkennung des Anbieters" onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, model: event.target.value } })} /></label>
+            <label>{translate("Vision-Modell")}<input value={settings.provider.model} placeholder={translate("Modellkennung des Anbieters")} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, model: event.target.value } })} /></label>
           )}
-          <label>API-Key<input type="password" value={settings.provider.api_key || ''} placeholder={settings.provider.api_key_configured ? 'Gespeicherter Schlüssel bleibt erhalten' : settings.provider.type === 'ollama' ? 'Für Ollama nicht erforderlich' : 'API-Key'} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, api_key: event.target.value || null } })} /></label>
-          <button type="button" className="button tertiary" onClick={() => test('provider')} disabled={busy}>Anbieter prüfen</button>
+          <label>{translate("API-Key")}<input type="password" value={settings.provider.api_key || ''} placeholder={settings.provider.api_key_configured ? translate('Gespeicherter Schlüssel bleibt erhalten') : settings.provider.type === 'ollama' ? translate('Für Ollama nicht erforderlich') : 'API-Key'} onChange={(event) => setSettings({ ...settings, provider: { ...settings.provider, api_key: event.target.value || null } })} /></label>
+          <button type="button" className="button tertiary" onClick={() => test('provider')} disabled={busy}>{translate("Anbieter prüfen")}</button>
         </section>}
 
         {settings && <section className="settings-section privacy-section">
-          <div className="section-heading"><CheckCircle2 /><div><h2>Datenschutz</h2><p>Du entscheidest, wie lange Bonbilder bleiben.</p></div></div>
-          <label className="toggle-row"><span><strong>Nach Analyse löschen</strong><small>Erkannte Daten und Zuordnungen bleiben erhalten.</small></span><input type="checkbox" checked={settings.privacy.delete_image_after_analysis} onChange={(event) => setSettings({ ...settings, privacy: { ...settings.privacy, delete_image_after_analysis: event.target.checked } })} /></label>
-          {!settings.privacy.delete_image_after_analysis && <label>Aufbewahrung in Tagen<input type="number" min="0" max="365" value={settings.privacy.retention_days} onChange={(event) => setSettings({ ...settings, privacy: { ...settings.privacy, retention_days: Number(event.target.value) } })} /></label>}
+          <div className="section-heading"><CheckCircle2 /><div><h2>{translate("Datenschutz")}</h2><p>{translate("Du entscheidest, wie lange Bonbilder bleiben.")}</p></div></div>
+          <label className="toggle-row"><span><strong>{translate("Nach Analyse löschen")}</strong><small>{translate("Erkannte Daten und Zuordnungen bleiben erhalten.")}</small></span><input type="checkbox" checked={settings.privacy.delete_image_after_analysis} onChange={(event) => setSettings({ ...settings, privacy: { ...settings.privacy, delete_image_after_analysis: event.target.checked } })} /></label>
+          {!settings.privacy.delete_image_after_analysis && <label>{translate("Aufbewahrung in Tagen")}<input type="number" min="0" max="365" value={settings.privacy.retention_days} onChange={(event) => setSettings({ ...settings, privacy: { ...settings.privacy, retention_days: Number(event.target.value) } })} /></label>}
         </section>}
 
         {identity?.role === 'owner' && security && <LaunchReadinessPanel recentAuthentication={security.recent_authentication} />}
 
-        {settings && <button className="button primary full" disabled={busy}>{busy ? <LoaderCircle className="spin" /> : <Check />} Einstellungen speichern</button>}
-        <button type="button" className="logout-button" onClick={onLogout}><LogOut /> Abmelden</button>
+        {settings && <button className="button primary full" disabled={busy}>{busy ? <LoaderCircle className="spin" /> : <Check />} {translate("Einstellungen speichern")}</button>}
+        <button type="button" className="logout-button" onClick={onLogout}><LogOut /> {translate("Abmelden")}</button>
       </form>
     </div>
   )
@@ -2122,22 +2182,29 @@ function visibleNavigation(role: AuthenticatedUser['role']) {
   return role === 'viewer' ? navigationItems.filter((item) => item.id !== 'scan') : navigationItems
 }
 
+function preloadScreen(screen: Screen) {
+  if (screen === 'scan') void loadScannerScreen()
+  if (screen === 'catalog') void loadCatalogScreen()
+  if (screen === 'history') void loadShoppingScreen()
+  if (screen === 'settings') void loadLaunchReadinessPanel()
+}
+
 function DesktopNav({ selected, onSelect, status, role }: { selected: Screen; onSelect: (screen: Screen) => void; status: AppStatus | null; role: AuthenticatedUser['role'] }) {
   return (
     <aside className="desktop-nav">
-      <button className="desktop-brand" onClick={() => onSelect('home')}><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>Vorrio</strong></button>
-      <nav aria-label="Hauptnavigation">
+      <button className="desktop-brand" onClick={() => onSelect('home')}><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>{translate("Vorrio")}</strong></button>
+      <nav aria-label={translate("Hauptnavigation")}>
         {visibleNavigation(role).map(({ id, label, icon: Icon }) => (
-          <button key={id} className={selected === id ? 'selected' : ''} onClick={() => onSelect(id)}><Icon /><span>{label}</span></button>
+          <button key={id} className={selected === id ? 'selected' : ''} onMouseEnter={() => preloadScreen(id)} onFocus={() => preloadScreen(id)} onClick={() => onSelect(id)}><Icon /><span>{translate(label)}</span></button>
         ))}
       </nav>
-      <div className="desktop-local-state"><span /><strong>Local-first</strong><small>{status ? `${status.catalog.products} ${status.catalog.products === 1 ? 'Produkt' : 'Produkte'} · v${status.version}` : 'Verbindung wird geprüft'}</small></div>
+      <div className="desktop-local-state"><span /><strong>{translate("Local-first")}</strong><small>{status ? `${translate('{{count}} Produkte', { count: status.catalog.products })} · v${status.version}` : translate('Verbindung wird geprüft')}</small></div>
     </aside>
   )
 }
 
 function BottomNav({ selected, onSelect, role }: { selected: Screen; onSelect: (screen: Screen) => void; role: AuthenticatedUser['role'] }) {
-  return <nav className="bottom-nav" aria-label="Hauptnavigation">{visibleNavigation(role).map(({ id, label, icon: Icon }) => <button key={id} className={`${selected === id ? 'selected' : ''} ${id === 'scan' ? 'scan-nav-item' : ''}`} onClick={() => onSelect(id)}><Icon /><span>{label}</span></button>)}</nav>
+  return <nav className="bottom-nav" aria-label={translate("Hauptnavigation")}>{visibleNavigation(role).map(({ id, label, icon: Icon }) => <button key={id} className={`${selected === id ? 'selected' : ''} ${id === 'scan' ? 'scan-nav-item' : ''}`} onTouchStart={() => preloadScreen(id)} onFocus={() => preloadScreen(id)} onClick={() => onSelect(id)}><Icon /><span>{translate(label)}</span></button>)}</nav>
 }
 
 function OnboardingGuide({
@@ -2169,56 +2236,56 @@ function OnboardingGuide({
   return <div className="experience-backdrop" role="presentation">
     <section className="experience-dialog onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
       <header className="experience-header">
-        <span className="experience-brand"><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>Vorrio</strong></span>
-        <span className="experience-step">Schritt {step + 1} von 3</span>
-        <button type="button" className="icon-button" onClick={onDismiss} aria-label="Einführung später fortsetzen"><X /></button>
+        <span className="experience-brand"><img className="brand-mark" src="/brand/vorrio-mark.png" alt="" aria-hidden="true" /><strong>{translate("Vorrio")}</strong></span>
+        <span className="experience-step">{translate("Schritt")} {step + 1} {translate("von 3")}</span>
+        <button type="button" className="icon-button" onClick={onDismiss} aria-label={translate("Einführung später fortsetzen")}><X /></button>
       </header>
-      <div className="experience-progress" aria-label={`Schritt ${step + 1} von 3`}><span style={{ width: `${((step + 1) / 3) * 100}%` }} /></div>
+      <div className="experience-progress" aria-label={translate('Schritt {{current}} von {{total}}', { current: step + 1, total: 3 })}><span style={{ width: `${((step + 1) / 3) * 100}%` }} /></div>
 
       <div className="experience-content">
         {step === 0 && <>
           <span className="experience-hero-icon"><Sparkles /></span>
-          <p className="experience-eyebrow">Willkommen</p>
-          <h1 id="onboarding-title">Dein Einkauf wird zum verlässlichen Vorrat.</h1>
-          <p className="experience-lead">Vorrio verbindet Bons, einzelne Produktscans und deinen aktuellen Bestand. Du prüfst jeden Vorschlag, bevor sich etwas ändert.</p>
-          <div className="journey-strip" aria-label="Vorrio Ablauf">
-            <span><ReceiptText /><strong>Einkauf</strong></span><ChevronRight />
-            <span><CheckCircle2 /><strong>Prüfen</strong></span><ChevronRight />
-            <span><Boxes /><strong>Vorrat</strong></span>
+          <p className="experience-eyebrow">{translate("Willkommen")}</p>
+          <h1 id="onboarding-title">{translate("Dein Einkauf wird zum verlässlichen Vorrat.")}</h1>
+          <p className="experience-lead">{translate("Vorrio verbindet Bons, einzelne Produktscans und deinen aktuellen Bestand. Du prüfst jeden Vorschlag, bevor sich etwas ändert.")}</p>
+          <div className="journey-strip" aria-label={translate("Vorrio Ablauf")}>
+            <span><ReceiptText /><strong>{translate("Einkauf")}</strong></span><ChevronRight />
+            <span><CheckCircle2 /><strong>{translate("Prüfen")}</strong></span><ChevronRight />
+            <span><Boxes /><strong>{translate("Vorrat")}</strong></span>
           </div>
         </>}
 
         {step === 1 && <>
-          <p className="experience-eyebrow">Zwei einfache Wege</p>
-          <h1 id="onboarding-title">Nimm immer den kürzesten Weg.</h1>
+          <p className="experience-eyebrow">{translate("Zwei einfache Wege")}</p>
+          <h1 id="onboarding-title">{translate("Nimm immer den kürzesten Weg.")}</h1>
           <div className="experience-choice-grid">
-            <article><span><ReceiptText /></span><div><strong>Ganzer Einkauf</strong><p>Bon fotografieren oder PDF hochladen. Vorrio erkennt Artikel und Preise und lässt dich alles prüfen.</p></div></article>
-            {!readOnly && <article><span><Barcode /></span><div><strong>Ein Produkt</strong><p>Barcode scannen, um gezielt einzulagern, zu verbrauchen, zu öffnen oder auf die Einkaufsliste zu setzen.</p></div></article>}
-            <article><span><Boxes /></span><div><strong>Nachsehen</strong><p>Unter „Vorrat“ findest du Mengen und Produktwissen, unter „Einkäufe“ Listen, Bons, Preise und Budget.</p></div></article>
+            <article><span><ReceiptText /></span><div><strong>{translate("Ganzer Einkauf")}</strong><p>{translate("Bon fotografieren oder PDF hochladen. Vorrio erkennt Artikel und Preise und lässt dich alles prüfen.")}</p></div></article>
+            {!readOnly && <article><span><Barcode /></span><div><strong>{translate("Ein Produkt")}</strong><p>{translate("Barcode scannen, um gezielt einzulagern, zu verbrauchen, zu öffnen oder auf die Einkaufsliste zu setzen.")}</p></div></article>}
+            <article><span><Boxes /></span><div><strong>{translate("Nachsehen")}</strong><p>{translate("Unter „Vorrat“ findest du Mengen und Produktwissen, unter „Einkäufe“ Listen, Bons, Preise und Budget.")}</p></div></article>
           </div>
         </>}
 
         {step === 2 && <>
           <span className="experience-hero-icon safe"><ShieldCheck /></span>
-          <p className="experience-eyebrow">Du behältst die Kontrolle</p>
-          <h1 id="onboarding-title">Vorschlag zuerst. Änderung erst nach Bestätigung.</h1>
+          <p className="experience-eyebrow">{translate("Du behältst die Kontrolle")}</p>
+          <h1 id="onboarding-title">{translate("Vorschlag zuerst. Änderung erst nach Bestätigung.")}</h1>
           <ul className="experience-checklist">
-            <li><Check /> KI- und Datenbanktreffer werden sichtbar erklärt.</li>
-            <li><Check /> Unklare Produkte bleiben zur Prüfung offen.</li>
-            <li><Check /> Deine Daten bleiben in deiner eigenen Vorrio-Installation.</li>
+            <li><Check /> {translate("KI- und Datenbanktreffer werden sichtbar erklärt.")}</li>
+            <li><Check /> {translate("Unklare Produkte bleiben zur Prüfung offen.")}</li>
+            <li><Check /> {translate("Deine Daten bleiben in deiner eigenen Vorrio-Installation.")}</li>
           </ul>
           <div className="experience-start-actions">
-            {readOnly ? <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('catalog')}><Boxes /> Vorrat ansehen</button> : <>
-              <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('home')}><Camera /> Ersten Bon erfassen</button>
-              <button type="button" className="button secondary full" disabled={busy} onClick={() => onComplete('scan')}><Barcode /> Produkt scannen</button>
+            {readOnly ? <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('catalog')}><Boxes /> {translate("Vorrat ansehen")}</button> : <>
+              <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('home')}><Camera /> {translate("Ersten Bon erfassen")}</button>
+              <button type="button" className="button secondary full" disabled={busy} onClick={() => onComplete('scan')}><Barcode /> {translate("Produkt scannen")}</button>
             </>}
           </div>
         </>}
       </div>
 
       {step < 2 && <footer className="experience-footer">
-        {step > 0 ? <button type="button" className="text-button" onClick={() => setStep((current) => current - 1)}>Zurück</button> : <button type="button" className="text-button" onClick={onDismiss}>Später</button>}
-        <button type="button" className="button primary" onClick={() => setStep((current) => current + 1)}>Weiter <ChevronRight /></button>
+        {step > 0 ? <button type="button" className="text-button" onClick={() => setStep((current) => current - 1)}>{translate("Zurück")}</button> : <button type="button" className="text-button" onClick={onDismiss}>{translate("Später")}</button>}
+        <button type="button" className="button primary" onClick={() => setStep((current) => current + 1)}>{translate("Weiter")} <ChevronRight /></button>
       </footer>}
     </section>
   </div>
@@ -2251,11 +2318,11 @@ function ReleaseNotesDialog({
   return <div className="experience-backdrop" role="presentation">
     <section className="experience-dialog release-dialog" role="dialog" aria-modal="true" aria-labelledby="release-title">
       <header className="experience-header">
-        <span className="release-badge"><Sparkles /> Aktualisiert</span>
-        <button type="button" className="icon-button" onClick={onDismiss} aria-label="Versionshinweise später lesen"><X /></button>
+        <span className="release-badge"><Sparkles /> {translate("Aktualisiert")}</span>
+        <button type="button" className="icon-button" onClick={onDismiss} aria-label={translate("Versionshinweise später lesen")}><X /></button>
       </header>
       <div className="experience-content">
-        <p className="experience-eyebrow">Neu in Vorrio {experience.release.version}</p>
+        <p className="experience-eyebrow">{translate("Neu in Vorrio")} {experience.release.version}</p>
         <h1 id="release-title">{experience.release.title}</h1>
         <p className="experience-lead">{experience.release.summary}</p>
         <ul className="release-highlights">
@@ -2263,19 +2330,19 @@ function ReleaseNotesDialog({
         </ul>
       </div>
       <footer className="release-footer">
-        <button type="button" className="text-button" onClick={onDismiss}>Später lesen</button>
-        <button type="button" className="button primary" disabled={busy} onClick={onAcknowledge}>{busy ? <LoaderCircle className="spin" /> : <Check />} Verstanden</button>
+        <button type="button" className="text-button" onClick={onDismiss}>{translate("Später lesen")}</button>
+        <button type="button" className="button primary" disabled={busy} onClick={onAcknowledge}>{busy ? <LoaderCircle className="spin" /> : <Check />} {translate("Verstanden")}</button>
       </footer>
     </section>
   </div>
 }
 
 function BusyOverlay() {
-  return <div className="busy-overlay"><div><LoaderCircle className="spin" /><strong>Bon wird gelesen</strong><span>Artikel und Preise werden vorbereitet.</span></div></div>
+  return <div className="busy-overlay"><div><LoaderCircle className="spin" /><strong>{translate("Bon wird gelesen")}</strong><span>{translate("Artikel und Preise werden vorbereitet.")}</span></div></div>
 }
 
 function Toast({ kind, text, onClose }: { kind: 'success' | 'error'; text: string; onClose: () => void }) {
-  return <div className={`toast ${kind}`} role={kind === 'error' ? 'alert' : 'status'}>{kind === 'success' ? <CheckCircle2 /> : <AlertCircle />}<span>{text}</span><button onClick={onClose} aria-label="Meldung schließen"><X /></button></div>
+  return <div className={`toast ${kind}`} role={kind === 'error' ? 'alert' : 'status'}>{kind === 'success' ? <CheckCircle2 /> : <AlertCircle />}<span>{text}</span><button onClick={onClose} aria-label={translate("Meldung schließen")}><X /></button></div>
 }
 
 export default App

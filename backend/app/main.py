@@ -85,6 +85,7 @@ from .schemas import (
     HouseholdMemberResponse,
     HouseholdMemberUpdateInput,
     OwnerProfileUpdateInput,
+    UserPreferencesUpdateInput,
     SessionRevocationResponse,
     BarcodeLookupResponse,
     CatalogProductResponse,
@@ -273,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.21",
+    version="0.8.22",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -389,24 +390,47 @@ app.openapi = custom_openapi
 SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30
 RECENT_AUTH_SECONDS = 10 * 60
 API_TOKEN_SCOPES = {
-    "status:read": ("Status lesen", "Instanz-, Katalog- und Connectorstatus lesen."),
-    "catalog:read": ("Katalog lesen", "Produkte, Barcodes und Stammdaten lesen."),
-    "stock:read": ("Vorrat lesen", "Aktuelle Mengen und Zählhistorie lesen."),
-    "shopping:read": ("Einkaufsliste lesen", "Liste und Auffüllvorschläge lesen."),
-    "shopping:write": ("Einkaufsliste ändern", "Einträge erzeugen, ändern und abhaken."),
-    "scans:read": ("Scans lesen", "Scanentwürfe und unbekannte Codes lesen."),
-    "scans:write": ("Scans ausführen", "Codes auflösen und bestätigte Scanaktionen ausführen."),
+    "de": {
+        "status:read": ("Status lesen", "Instanz-, Katalog- und Connectorstatus lesen."),
+        "catalog:read": ("Katalog lesen", "Produkte, Barcodes und Stammdaten lesen."),
+        "stock:read": ("Vorrat lesen", "Aktuelle Mengen und Zählhistorie lesen."),
+        "shopping:read": ("Einkaufsliste lesen", "Liste und Auffüllvorschläge lesen."),
+        "shopping:write": ("Einkaufsliste ändern", "Einträge erzeugen, ändern und abhaken."),
+        "scans:read": ("Scans lesen", "Scanentwürfe und unbekannte Codes lesen."),
+        "scans:write": ("Scans ausführen", "Codes auflösen und bestätigte Scanaktionen ausführen."),
+    },
+    "en": {
+        "status:read": ("Read status", "Read instance, catalog and connector status."),
+        "catalog:read": ("Read catalog", "Read products, barcodes and master data."),
+        "stock:read": ("Read stock", "Read current quantities and stock-count history."),
+        "shopping:read": ("Read shopping list", "Read the list and replenishment suggestions."),
+        "shopping:write": ("Change shopping list", "Create, change and check off entries."),
+        "scans:read": ("Read scans", "Read scan drafts and unknown codes."),
+        "scans:write": ("Execute scans", "Resolve codes and execute confirmed scan actions."),
+    },
 }
 
 CURRENT_RELEASE = {
-    "version": "0.8.21",
-    "title": "Aktuelle HTTP-Testbasis",
-    "summary": "Vorrio verwendet den von Starlette vorgesehenen, weiter gepflegten HTTPX2-Client für ausgehende Verbindungen und die vollständige Testreise.",
-    "highlights": [
-        "Die veraltete Testclient-Kompatibilität ist vollständig entfernt",
-        "KI-, Produktdaten- und Grocy-Verbindungen nutzen denselben gepflegten HTTP-Client",
-        "REST-Vertrag und Nutzerdaten bleiben unverändert",
-    ],
+    "de": {
+        "version": "0.8.22",
+        "title": "Vorrio spricht Deutsch und Englisch",
+        "summary": "Die gesamte PWA folgt jetzt deiner persönlichen Sprachwahl – einschließlich Login, Scanner, Einstellungen, Fehlermeldungen und Push-Mitteilungen.",
+        "highlights": [
+            "Deutsch und Englisch mit persönlicher, geräteübergreifender Sprachwahl",
+            "Lokalisierte Zahlen, Datumsangaben, API-Fehler und Benachrichtigungen",
+            "Automatische Vollständigkeitsprüfung schützt neue Funktionen vor fehlenden Übersetzungen",
+        ],
+    },
+    "en": {
+        "version": "0.8.22",
+        "title": "Vorrio now speaks German and English",
+        "summary": "The entire PWA now follows your personal language choice, including sign-in, scanner, settings, errors and push notifications.",
+        "highlights": [
+            "German and English with a personal language choice synced across devices",
+            "Localized numbers, dates, API errors and notifications",
+            "Automated completeness checks protect new features from missing translations",
+        ],
+    },
 }
 
 
@@ -433,6 +457,7 @@ def _public_user(principal: dict[str, Any]) -> dict[str, Any]:
         "household_id": str(principal["household_id"]),
         "household_name": str(principal["household_name"]),
         "owner_setup_complete": bool(principal["owner_setup_complete"]),
+        "preferred_locale": database.get_user_locale(str(principal["user_id"])),
     }
 
 
@@ -448,7 +473,10 @@ def _experience_state(user_id: str) -> dict[str, Any]:
         "release_notes_pending": bool(
             onboarding_completed and last_acknowledged_version != app.version
         ),
-        "release": {**CURRENT_RELEASE, "version": app.version},
+        "release": {
+            **CURRENT_RELEASE[database.get_user_locale(user_id)],
+            "version": app.version,
+        },
     }
 
 
@@ -1050,6 +1078,8 @@ async def setup(payload: SetupRequest, request: Request) -> dict[str, Any]:
     password_hash = hash_password(payload.password)
     database.put_setting("auth.password_hash", password_hash)
     identity = database.ensure_owner_identity(password_hash)
+    database.update_user_locale(str(identity["user_id"]), payload.preferred_locale)
+    database.localize_seeded_master_data(payload.preferred_locale)
     if payload.display_name:
         identity = database.update_owner_profile(
             str(identity["user_id"]),
@@ -1477,6 +1507,45 @@ async def update_owner_profile(
     }
 
 
+@app.patch(
+    "/api/v1/auth/preferences",
+    tags=["Authentication"],
+    summary="Update personal interface preferences",
+    description=(
+        "Stores the signed-in user's supported BCP 47 interface locale. "
+        "The preference is personal and does not alter household product data, "
+        "currency or installation timezone."
+    ),
+    response_model=AuthenticationResponse,
+)
+async def update_user_preferences(
+    payload: UserPreferencesUpdateInput,
+    request: Request,
+    principal: dict[str, Any] = Depends(require_auth),
+) -> dict[str, Any]:
+    if not database.update_user_locale(
+        str(principal["user_id"]), payload.preferred_locale
+    ):
+        raise HTTPException(status_code=404, detail="Benutzerkonto nicht gefunden")
+    database.add_audit_event(
+        category="identity",
+        action="user_locale_update",
+        outcome="success",
+        source_hash=request_source_fingerprint(request, config.secret_key),
+        details={
+            "user_id": principal["user_id"],
+            "preferred_locale": payload.preferred_locale,
+        },
+    )
+    return {
+        "authenticated": True,
+        "needs_setup": False,
+        "needs_owner_setup": not bool(principal["owner_setup_complete"]),
+        "identifier_required": database.active_user_count() > 1,
+        "user": _public_user(principal),
+    }
+
+
 def _require_member_manager(principal: dict[str, Any]) -> None:
     if principal["role"] not in {"owner", "admin"}:
         raise HTTPException(status_code=403, detail="Nur Owner und Admins verwalten Mitglieder")
@@ -1672,7 +1741,9 @@ async def accept_household_invitation(
     request: Request,
 ) -> dict[str, Any]:
     identity = database.accept_household_invitation(
-        token, password_hash=hash_password(payload.password)
+        token,
+        password_hash=hash_password(payload.password),
+        preferred_locale=payload.preferred_locale,
     )
     if not identity:
         raise HTTPException(status_code=410, detail="Diese Einladung ist nicht mehr gültig")
@@ -1770,9 +1841,10 @@ async def api_token_scopes(
 ) -> list[dict[str, str]]:
     if principal["role"] not in {"owner", "admin"}:
         raise HTTPException(status_code=403, detail="Nur Owner und Admins verwalten API-Tokens")
+    locale = database.get_user_locale(str(principal["user_id"]))
     return [
         {"id": scope, "label": label, "description": description}
-        for scope, (label, description) in API_TOKEN_SCOPES.items()
+        for scope, (label, description) in API_TOKEN_SCOPES[locale].items()
     ]
 
 

@@ -5,7 +5,7 @@ necessary but does not by itself publish a repository or container.
 
 ## 1. Source and identity
 
-- [ ] The repository is created as `amturo/vorrio` with no generated README or
+- [ ] The repository is created as `amturo-gbr/vorrio` with no generated README or
   license that could conflict with this source tree.
 - [ ] The default branch is `main` and the repository description, topics and
   AGPL-3.0-or-later license are visible.
@@ -41,14 +41,23 @@ necessary but does not by itself publish a repository or container.
   supports them.
 - [ ] Discussions, issue templates and the support/security routes point users
   to the correct channel.
+- [ ] The static project website renders at 1440 px desktop and 390 px mobile,
+  all published links work signed out and every screenshot uses synthetic data.
+- [ ] German and English complete the same signed-out, onboarding, receipt,
+  scanner, catalog, shopping, settings, error and mobile-layout journey; the
+  automated i18n contract reports no missing or bypassed copy.
+- [ ] Amturo's legally approved imprint and website privacy notice are present
+  on the deployed origin before public announcement.
 
 ## 4. First GHCR publication
 
 - [ ] Push `main` and wait for the CI workflow to pass.
-- [ ] Create and push the signed release tag `v0.8.21` only after CI passes.
+- [ ] Create and push the signed release tag `v0.8.22` only after CI passes and
+  the private release rehearsal is ready for its immutable candidate.
 - [ ] Confirm that the release workflow builds `linux/amd64` and `linux/arm64`,
   publishes provenance/SBOM attestations and signs the immutable digest.
-- [ ] Change the GHCR package visibility to public and link it to the public
+- [ ] Keep the first GHCR package private for the second-machine rehearsal;
+  then change its visibility to public and link it to the public
   repository if GitHub did not inherit those settings automatically.
 - [ ] Pull the versioned image on a second machine and complete first setup with
   a fresh volume.
@@ -73,6 +82,8 @@ necessary but does not by itself publish a repository or container.
 - [ ] Record the released digest, CI run and SBOM artifact in the release notes.
 - [ ] Announce only after installation, signature verification and first-login
   recovery have all passed.
+- [ ] Activate the website's GitHub Sponsors action only after the receiving
+  Amturo profile, sponsorship wording and bookkeeping process are approved.
 
 The maintainer checks every box against public or synthetic data. A private
 household installation is never used as release evidence and does not need a

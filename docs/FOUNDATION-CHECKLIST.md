@@ -244,6 +244,16 @@ public release.
 - one HTTP client for tests plus AI, product-data and Grocy requests;
 - unchanged REST and persistence contracts verified by the full release gate.
 
+## Shipped in 0.8.22
+
+- complete German and English PWA flows, validation, API-error presentation,
+  release notes and Web Push copy;
+- personal persisted language selection across setup, invitations and devices;
+- localized number/date/EUR formatting plus explicit preservation of household
+  product, receipt, currency and timezone data;
+- German and English manifests and project website entry points;
+- automated translation coverage, suspicious-copy and localized backend tests.
+
 ## P1 – identity hardening and automation
 
 - optional OIDC for installations that deliberately choose an external IdP;

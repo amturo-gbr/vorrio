@@ -47,16 +47,26 @@ The workflow files prepare this process; no public image exists until the
 Amturo repository is created and an authorized maintainer pushes the first
 tag.
 
+## Private release rehearsal
+
+The first repository and GHCR package stay private. CI runs with the same
+workflow used for the public project, and an authenticated maintainer pulls the
+versioned image onto a second machine with a fresh volume. Only after the
+source audit, clean installation, upgrade/recovery checks and signed-image
+verification pass are repository and package visibility changed separately to
+public. Private household data and the deployed household database are never
+part of this rehearsal.
+
 ## Verify a future public image
 
 Replace the example owner/repository and version with the published values:
 
 ```bash
-docker pull ghcr.io/amturo/vorrio:0.8.21
+docker pull ghcr.io/amturo-gbr/vorrio:0.8.22
 cosign verify \
-  --certificate-identity-regexp '^https://github.com/amturo/vorrio/.github/workflows/release.yml@refs/tags/v' \
+  --certificate-identity-regexp '^https://github.com/amturo-gbr/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo/vorrio:0.8.21
+  ghcr.io/amturo-gbr/vorrio:0.8.22
 ```
 
 Pin production deployments to a version or digest. `latest` is convenient for

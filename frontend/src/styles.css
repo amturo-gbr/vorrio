@@ -5233,6 +5233,53 @@ select:focus-visible {
   cursor: pointer;
 }
 
+.language-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #4b514d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.language-switcher > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.language-switcher svg {
+  width: 18px;
+  height: 18px;
+  color: var(--green);
+}
+
+.language-switcher select {
+  width: min(100%, 180px);
+  min-height: 44px;
+  padding: 0 38px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+}
+
+.login-panel > .language-switcher.compact {
+  justify-content: flex-end;
+  margin: -12px -8px 14px 0;
+}
+
+.login-panel > .language-switcher.compact > span {
+  display: none;
+}
+
+.login-panel > .language-switcher.compact select {
+  width: auto;
+  min-width: 118px;
+}
+
 .experience-backdrop {
   position: fixed;
   z-index: 90;
