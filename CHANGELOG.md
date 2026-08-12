@@ -23,6 +23,11 @@
   KiB unnoticed.
 - Switched all repository, support, installation, signing and container
   references to the canonical `amturo-gbr/vorrio` project identity.
+- Completed the English synthetic screenshot set, prevented the English
+  project page from silently reusing German product views and preserved full
+  screenshots without edge cropping across desktop, tablet and mobile.
+- Kept all five scanner actions aligned at narrow desktop widths and added
+  responsive website QA evidence for the final English launch surface.
 
 - Replaced the receipt-shaped product mark with the final Vorrio identity in
   the PWA header, desktop navigation and first-run guide, including transparent

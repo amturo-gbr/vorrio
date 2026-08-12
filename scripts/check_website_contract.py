@@ -63,6 +63,21 @@ def main() -> None:
     if german_copy.search(english_text):
         failures.append("index-en.html: probable untranslated German copy remains")
 
+    german_product_images = {
+        "assets/scanner-desktop.png",
+        "assets/receipt-review-mobile.jpg",
+        "assets/scanner-entry-mobile.jpg",
+        "assets/stock-count-desktop.png",
+        "assets/shopping-list-desktop.jpg",
+        "assets/catalog-editor-mobile.png",
+    }
+    reused_german_images = german_product_images.intersection(parsers["en"].links)
+    if reused_german_images:
+        failures.append(
+            "index-en.html: German product screenshots reused: "
+            + ", ".join(sorted(reused_german_images))
+        )
+
     if failures:
         raise SystemExit("\n".join(failures))
     print("Website contract is valid (German and English, local assets resolved)")
