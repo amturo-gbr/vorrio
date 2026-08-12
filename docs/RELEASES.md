@@ -32,7 +32,9 @@ settings and GHCR visibility, is maintained in the
   reachability justification and be reviewed again on dependency or input-
   format changes.
 - Third-party GitHub Actions are pinned to full commit SHAs. Dependabot proposes
-  weekly npm, Python, Docker and Actions updates for review.
+  weekly grouped npm, Python, Docker and Actions minor/patch updates for review;
+  major upgrades remain deliberate maintainer work so compatibility changes do
+  not flood or bypass the release process.
 - A `vMAJOR.MINOR.PATCH` tag must match `frontend/package.json` exactly.
 - A tag publishes `linux/amd64` and `linux/arm64` images to GHCR with OCI
   labels, BuildKit provenance and SBOM attestation, then keylessly signs the
