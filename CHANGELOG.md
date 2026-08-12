@@ -4,6 +4,9 @@
 
 ## 0.8.21 – 2026-08-12
 
+- Made `make check` install locked frontend dependencies with `npm ci`, so CI
+  and release gates work from a clean checkout without a pre-existing
+  `node_modules` directory.
 - Migrated Starlette's test client and Vorrio's outbound AI, product-data and
   Grocy requests from the deprecated `httpx` compatibility path to the
   maintained `httpx2` package.

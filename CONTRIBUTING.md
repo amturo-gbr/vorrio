@@ -13,8 +13,9 @@ matches and no hidden stock changes.
 5. Run `make check` before submitting a change.
 
 The Make targets run the Python tooling in the project image. Docker is the
-only backend development dependency required on the host; Node.js is used for
-the standalone frontend production build included in `make check`.
+only backend development dependency required on the host. Node.js and npm are
+used for the standalone frontend checks; `make check` installs the exact locked
+dependencies with `npm ci`, so the gate is reproducible from a clean checkout.
 
 ## Definition of done
 

@@ -1,4 +1,4 @@
-.PHONY: api-docs api-docs-check backend-test acceptance-test docs-check external-path-test frontend-build frontend-test image pwa-check release-package-check check
+.PHONY: api-docs api-docs-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image pwa-check release-package-check check
 
 CHECK_IMAGE ?= vorrio:check
 
@@ -53,10 +53,13 @@ external-path-test: image
 		-e PUBLIC_EXPOSURE_ACKNOWLEDGED=true \
 		$(CHECK_IMAGE) /app/scripts/external_path_smoke.py
 
-frontend-build:
+frontend-deps:
+	cd frontend && npm ci
+
+frontend-build: frontend-deps
 	cd frontend && npm run build
 
-frontend-test:
+frontend-test: frontend-deps
 	cd frontend && npm test
 
 pwa-check:
