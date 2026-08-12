@@ -212,6 +212,27 @@ class AuthenticationResponse(BaseModel):
     user: AuthenticatedUserResponse | None = None
 
 
+class ReleaseNoteResponse(BaseModel):
+    version: str
+    title: str
+    summary: str
+    highlights: list[str]
+
+
+class ExperienceStateResponse(BaseModel):
+    current_version: str
+    onboarding_completed: bool
+    onboarding_required: bool
+    last_acknowledged_version: str | None = None
+    release_notes_pending: bool
+    release: ReleaseNoteResponse
+
+
+class ExperienceUpdateInput(BaseModel):
+    complete_onboarding: bool = False
+    acknowledge_current_version: bool = False
+
+
 class AuthSessionResponse(BaseModel):
     id: str
     device_name: str

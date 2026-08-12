@@ -69,6 +69,14 @@ class Database:
                     updated_at TEXT NOT NULL
                 );
 
+                CREATE TABLE IF NOT EXISTS user_experience (
+                    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                    onboarding_completed_at TEXT,
+                    last_acknowledged_version TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+
                 CREATE TABLE IF NOT EXISTS household_memberships (
                     id TEXT PRIMARY KEY,
                     household_id TEXT NOT NULL REFERENCES households(id) ON DELETE CASCADE,
@@ -623,6 +631,7 @@ class Database:
                 """
             )
             self._ensure_columns(conn)
+            self._initialize_user_experience_migration(conn)
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_receipts_fingerprint "
                 "ON receipts(receipt_fingerprint)"
@@ -633,6 +642,37 @@ class Database:
             self._backfill_aliases(conn)
             self._seed_catalog_master_data(conn)
             self._backfill_catalog(conn)
+
+    def _initialize_user_experience_migration(self, conn: sqlite3.Connection) -> None:
+        """Mark users present at feature rollout as already introduced.
+
+        Fresh databases receive only the migration marker; users created later still
+        receive the first-run guide. Existing installations see the release notes
+        once without being mistaken for brand-new households.
+        """
+        marker = conn.execute(
+            "SELECT value FROM app_settings WHERE key = 'migration.user_experience_0_8_19'"
+        ).fetchone()
+        if marker:
+            return
+        timestamp = now_iso()
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO user_experience(
+                user_id, onboarding_completed_at, last_acknowledged_version,
+                created_at, updated_at
+            )
+            SELECT id, ?, '0.8.18', ?, ? FROM users
+            """,
+            (timestamp, timestamp, timestamp),
+        )
+        conn.execute(
+            """
+            INSERT INTO app_settings(key, value, updated_at)
+            VALUES ('migration.user_experience_0_8_19', 'complete', ?)
+            """,
+            (timestamp,),
+        )
 
     def _ensure_columns(self, conn: sqlite3.Connection) -> None:
         columns: dict[str, dict[str, str]] = {
@@ -1111,6 +1151,66 @@ class Database:
                     """
                 ).fetchone()[0]
             )
+
+    def get_user_experience(self, user_id: str) -> dict[str, Any]:
+        with self.connect() as conn:
+            row = conn.execute(
+                """
+                SELECT onboarding_completed_at, last_acknowledged_version,
+                       created_at, updated_at
+                FROM user_experience
+                WHERE user_id = ?
+                """,
+                (user_id,),
+            ).fetchone()
+        if row:
+            return dict(row)
+        return {
+            "onboarding_completed_at": None,
+            "last_acknowledged_version": None,
+            "created_at": None,
+            "updated_at": None,
+        }
+
+    def update_user_experience(
+        self,
+        user_id: str,
+        *,
+        complete_onboarding: bool = False,
+        acknowledged_version: str | None = None,
+    ) -> dict[str, Any]:
+        timestamp = now_iso()
+        current = self.get_user_experience(user_id)
+        onboarding_completed_at = current["onboarding_completed_at"]
+        if complete_onboarding and not onboarding_completed_at:
+            onboarding_completed_at = timestamp
+        last_acknowledged_version = (
+            acknowledged_version
+            if acknowledged_version is not None
+            else current["last_acknowledged_version"]
+        )
+        created_at = current["created_at"] or timestamp
+        with self.connect() as conn:
+            conn.execute(
+                """
+                INSERT INTO user_experience(
+                    user_id, onboarding_completed_at, last_acknowledged_version,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    onboarding_completed_at = excluded.onboarding_completed_at,
+                    last_acknowledged_version = excluded.last_acknowledged_version,
+                    updated_at = excluded.updated_at
+                """,
+                (
+                    user_id,
+                    onboarding_completed_at,
+                    last_acknowledged_version,
+                    created_at,
+                    timestamp,
+                ),
+            )
+        return self.get_user_experience(user_id)
 
     def update_owner_profile(
         self, user_id: str, *, display_name: str, email: str | None

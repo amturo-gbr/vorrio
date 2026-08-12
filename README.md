@@ -9,7 +9,7 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.18
+## What works in 0.8.19
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;
@@ -91,6 +91,8 @@ The project is maintained by **Amturo UG** and licensed under
   installation erasure;
 - an isolated launch journey plus pinned base images, image vulnerability
   scanning, CycloneDX SBOM and prepared keyless signed GHCR releases.
+- a three-step first-login guide that explains the receipt, scan, stock and
+  shopping workflow, plus personal one-time release notes after an upgrade;
 - a repeatable public-launch checklist for repository, package, signature,
   documentation and post-release verification.
 
@@ -115,6 +117,9 @@ docker compose up -d --build
 Open `http://localhost:9380`, name the first Owner, create the household password, configure an
 analysis provider, and scan the first receipt or package. Live camera scanning
 requires HTTPS; manual entry and hardware scanners work on a LAN HTTP address.
+Vorrio opens a short product guide after each account's first login. After a
+container upgrade, each user sees the installed release highlights once; both
+surfaces remain available under **Einstellungen → Hilfe & Version**.
 
 After the first signed public image exists, `docker-compose.release.yml` pulls
 `ghcr.io/amturo/vorrio` instead of building locally. Portainer users can paste
@@ -219,6 +224,7 @@ required permission as `x-vorrio-required-scope`.
 ## Documentation
 
 - [Architecture](ARCHITECTURE.md)
+- [Getting started and update notes](docs/GETTING-STARTED.md)
 - [Installation](docs/INSTALLATION.md)
 - [Deployment profiles and URLs](docs/DEPLOYMENT-PROFILES.md)
 - [Configuration](docs/CONFIGURATION.md)

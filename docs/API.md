@@ -73,6 +73,8 @@ submitting a change.
 | `DELETE` | `/api/v1/catalog/variants/{variant_id}` | Catalog | Delete an unused product variant | no |
 | `POST` | `/api/v1/catalog/variants/{variant_id}/barcodes` | Catalog | Attach a barcode to a product variant | no |
 | `DELETE` | `/api/v1/catalog/variants/{variant_id}/barcodes/{barcode}` | Catalog | Detach a barcode from a product variant | no |
+| `GET` | `/api/v1/experience` | Experience | Read personal onboarding and release-note state | no |
+| `PUT` | `/api/v1/experience` | Experience | Complete onboarding or acknowledge the current release | no |
 | `GET` | `/api/v1/grocy/master-data` | Legacy Grocy | Read Grocy master data | yes |
 | `GET` | `/api/v1/grocy/products` | Legacy Grocy | Search Grocy products | yes |
 | `GET` | `/api/v1/insights/budget` | Insights | Summarize the household budget from confirmed receipts | no |

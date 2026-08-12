@@ -302,6 +302,17 @@ class PrivacyService:
                 },
                 "preferences": {
                     "application": public_settings,
+                    "experience": _rows(
+                        conn,
+                        """
+                        SELECT x.user_id, x.onboarding_completed_at,
+                               x.last_acknowledged_version, x.created_at, x.updated_at
+                        FROM user_experience x
+                        JOIN household_memberships m ON m.user_id = x.user_id
+                        WHERE m.household_id = ?
+                        """,
+                        (household_id,),
+                    ),
                     "notifications": _rows(
                         conn,
                         """
@@ -547,7 +558,7 @@ class PrivacyService:
             "catalog_external_refs", "catalog_product_variants", "catalog_aliases",
             "catalog_product_mappings", "catalog_products", "catalog_locations",
             "catalog_quantity_units", "catalog_product_groups", "product_aliases",
-            "product_mappings", "household_memberships", "users", "households",
+            "product_mappings", "user_experience", "household_memberships", "users", "households",
             "auth_attempts", "audit_events", "app_settings",
         )
         with self.database.connect() as conn:

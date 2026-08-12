@@ -1920,6 +1920,65 @@
         "title": "ErrorResponse",
         "type": "object"
       },
+      "ExperienceStateResponse": {
+        "properties": {
+          "current_version": {
+            "title": "Current Version",
+            "type": "string"
+          },
+          "last_acknowledged_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Acknowledged Version"
+          },
+          "onboarding_completed": {
+            "title": "Onboarding Completed",
+            "type": "boolean"
+          },
+          "onboarding_required": {
+            "title": "Onboarding Required",
+            "type": "boolean"
+          },
+          "release": {
+            "$ref": "#/components/schemas/ReleaseNoteResponse"
+          },
+          "release_notes_pending": {
+            "title": "Release Notes Pending",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "current_version",
+          "onboarding_completed",
+          "onboarding_required",
+          "release_notes_pending",
+          "release"
+        ],
+        "title": "ExperienceStateResponse",
+        "type": "object"
+      },
+      "ExperienceUpdateInput": {
+        "properties": {
+          "acknowledge_current_version": {
+            "default": false,
+            "title": "Acknowledge Current Version",
+            "type": "boolean"
+          },
+          "complete_onboarding": {
+            "default": false,
+            "title": "Complete Onboarding",
+            "type": "boolean"
+          }
+        },
+        "title": "ExperienceUpdateInput",
+        "type": "object"
+      },
       "ExportPreviewResponse": {
         "properties": {
           "counts": {
@@ -4893,6 +4952,37 @@
         "title": "RecoveryLoginInput",
         "type": "object"
       },
+      "ReleaseNoteResponse": {
+        "properties": {
+          "highlights": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Highlights",
+            "type": "array"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "title",
+          "summary",
+          "highlights"
+        ],
+        "title": "ReleaseNoteResponse",
+        "type": "object"
+      },
       "RetentionPreviewResponse": {
         "properties": {
           "cutoff": {
@@ -6619,7 +6709,7 @@
     },
     "summary": "Self-hosted household inventory and receipt API",
     "title": "Vorrio REST API",
-    "version": "0.8.18"
+    "version": "0.8.19"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -10604,6 +10694,136 @@
         "summary": "Detach a barcode from a product variant",
         "tags": [
           "Catalog"
+        ]
+      }
+    },
+    "/api/v1/experience": {
+      "get": {
+        "operationId": "get_experience_api_v1_experience_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          }
+        ],
+        "summary": "Read personal onboarding and release-note state",
+        "tags": [
+          "Experience"
+        ]
+      },
+      "put": {
+        "operationId": "update_experience_api_v1_experience_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExperienceUpdateInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExperienceStateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Instance or workflow conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Configured upstream service failed"
+          }
+        },
+        "security": [
+          {
+            "householdSession": []
+          }
+        ],
+        "summary": "Complete onboarding or acknowledge the current release",
+        "tags": [
+          "Experience"
         ]
       }
     },

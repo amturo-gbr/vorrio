@@ -90,6 +90,8 @@ from .schemas import (
     CatalogProductResponse,
     ConnectionTestResponse,
     ErrorResponse,
+    ExperienceStateResponse,
+    ExperienceUpdateInput,
     GrocyCatalogImportResponse,
     GrocyProductResponse,
     GrocyProductCreateInput,
@@ -271,7 +273,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.18",
+    version="0.8.19",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -396,6 +398,17 @@ API_TOKEN_SCOPES = {
     "scans:write": ("Scans ausführen", "Codes auflösen und bestätigte Scanaktionen ausführen."),
 }
 
+CURRENT_RELEASE = {
+    "version": "0.8.19",
+    "title": "Einfach ankommen und sicher aktualisieren",
+    "summary": "Vorrio erklärt den roten Faden beim ersten Einstieg und zeigt neue Funktionen nach einem Update genau einmal.",
+    "highlights": [
+        "Kurze Einführung in Bon, Scanner, Vorrat und Einkaufsliste",
+        "Persönliche Versionshinweise nach einem echten Update",
+        "Einführung und Neuigkeiten jederzeit in den Einstellungen öffnen",
+    ],
+}
+
 
 def _api_token_required_scope(path: str, method: str) -> str | None:
     if path == "/api/v1/status" and method == "GET":
@@ -420,6 +433,22 @@ def _public_user(principal: dict[str, Any]) -> dict[str, Any]:
         "household_id": str(principal["household_id"]),
         "household_name": str(principal["household_name"]),
         "owner_setup_complete": bool(principal["owner_setup_complete"]),
+    }
+
+
+def _experience_state(user_id: str) -> dict[str, Any]:
+    stored = database.get_user_experience(user_id)
+    onboarding_completed = bool(stored["onboarding_completed_at"])
+    last_acknowledged_version = stored["last_acknowledged_version"]
+    return {
+        "current_version": app.version,
+        "onboarding_completed": onboarding_completed,
+        "onboarding_required": not onboarding_completed,
+        "last_acknowledged_version": last_acknowledged_version,
+        "release_notes_pending": bool(
+            onboarding_completed and last_acknowledged_version != app.version
+        ),
+        "release": {**CURRENT_RELEASE, "version": app.version},
     }
 
 
@@ -1054,6 +1083,53 @@ async def me(principal: dict[str, Any] = Depends(require_auth)) -> dict[str, Any
         "identifier_required": database.active_user_count() > 1,
         "user": _public_user(principal),
     }
+
+
+@app.get(
+    "/api/v1/experience",
+    tags=["Experience"],
+    summary="Read personal onboarding and release-note state",
+    response_model=ExperienceStateResponse,
+)
+async def get_experience(
+    principal: dict[str, Any] = Depends(require_auth),
+) -> dict[str, Any]:
+    return _experience_state(str(principal["user_id"]))
+
+
+@app.put(
+    "/api/v1/experience",
+    tags=["Experience"],
+    summary="Complete onboarding or acknowledge the current release",
+    response_model=ExperienceStateResponse,
+)
+async def update_experience(
+    payload: ExperienceUpdateInput,
+    request: Request,
+    principal: dict[str, Any] = Depends(require_auth),
+) -> dict[str, Any]:
+    if not payload.complete_onboarding and not payload.acknowledge_current_version:
+        raise HTTPException(status_code=422, detail="Keine Änderung ausgewählt")
+    database.update_user_experience(
+        str(principal["user_id"]),
+        complete_onboarding=payload.complete_onboarding,
+        acknowledged_version=(
+            app.version if payload.acknowledge_current_version else None
+        ),
+    )
+    database.add_audit_event(
+        category="experience",
+        action="experience_update",
+        outcome="success",
+        source_hash=request_source_fingerprint(request, config.secret_key),
+        details={
+            "user_id": principal["user_id"],
+            "onboarding_completed": payload.complete_onboarding,
+            "release_acknowledged": payload.acknowledge_current_version,
+            "version": app.version if payload.acknowledge_current_version else None,
+        },
+    )
+    return _experience_state(str(principal["user_id"]))
 
 
 @app.get(

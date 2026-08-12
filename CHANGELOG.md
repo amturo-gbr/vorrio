@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.8.19 – 2026-08-12
+
+- Added a responsive three-step first-login guide covering receipts, product
+  scans, stock, shopping and the review-before-write safety model.
+- Added per-user, server-side onboarding completion and release acknowledgement
+  so the experience remains consistent across phone and desktop.
+- Added clean one-time "Was ist neu?" notes after the running container version
+  changes, with both the guide and current notes reopenable from Settings.
+- Preserved the intended rollout for existing installations: current users see
+  release notes, while accounts created after the migration receive onboarding.
+- Included experience preferences in portable export, complete erasure, the
+  versioned REST API, OpenAPI contract and regression coverage.
+
 ## 0.8.18 – 2026-08-12
 
 - Added private product-photo capture and file upload from the product editor.

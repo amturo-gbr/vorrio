@@ -220,6 +220,14 @@ public release.
 - centered wide-screen dialogs while mobile stays a bottom-sheet workflow;
 - catalog onboarding copy that reflects whether Grocy is actually enabled.
 
+## Shipped in 0.8.19
+
+- first-login guide with one coherent receipt, scan, stock and shopping story;
+- per-user completion and release acknowledgement shared across devices;
+- once-per-version release notes after container updates;
+- permanently accessible **Hilfe & Version** controls in Settings;
+- export, erasure, audit, API and upgrade documentation for experience state.
+
 ## P1 – identity hardening and automation
 
 - optional OIDC for installations that deliberately choose an external IdP;

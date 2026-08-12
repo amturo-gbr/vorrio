@@ -289,6 +289,14 @@ than copying a browser cookie. See
 [identity architecture](docs/IDENTITY-SECURITY.md) and
 [mobile apps](docs/MOBILE-APPS.md).
 
+Version 0.8.19 adds a small `user_experience` record per account. The REST API
+returns first-run and current-release state without exposing it to automation
+tokens. Completing onboarding and acknowledging a release are explicit,
+idempotent writes with audit events. Existing users are migrated as introduced
+to 0.8.18 and therefore see the 0.8.19 notes once; later-created accounts begin
+with the product guide. The interface does not depend on browser storage, so a
+phone and desktop agree on the same state.
+
 ## Product-data enrichment
 
 Barcode lookup checks local variants first, then the Open Facts v3 endpoint with

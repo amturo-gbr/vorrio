@@ -1,6 +1,7 @@
 import type {
   AppStatus,
   AuthenticationState,
+  ExperienceState,
   AuthSession,
   ApiToken,
   ApiTokenCreated,
@@ -250,6 +251,12 @@ export const api = {
       body: JSON.stringify({ password }),
     }),
   logout: () => request('/api/v1/auth/logout', { method: 'POST' }),
+  experience: () => request<ExperienceState>('/api/v1/experience'),
+  updateExperience: (input: { complete_onboarding?: boolean; acknowledge_current_version?: boolean }) =>
+    request<ExperienceState>('/api/v1/experience', {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
   status: () => request<AppStatus>('/api/v1/status'),
   settings: () => request<SettingsData>('/api/v1/settings'),
   saveSettings: (settings: SettingsData) =>

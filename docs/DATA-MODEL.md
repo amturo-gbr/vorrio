@@ -126,6 +126,11 @@ transitions so periodic checks cannot spam an unchanged state.
 for retry and dead-device handling. The VAPID private key lives encrypted in
 `app_settings`; only its public key is returned to authenticated browsers.
 
+`user_experience` stores the first completed introduction timestamp and the
+last release version acknowledged by each user. It contains no browser
+identifier or secret. The API derives whether onboarding or release notes are
+pending from this record and the running application version.
+
 `household_budget_settings` stores one optional positive monthly limit in
 integer cents, the fixed EUR currency, warning percentage, last updating user
 and timestamps for the household. Removing a target deletes this setting only.

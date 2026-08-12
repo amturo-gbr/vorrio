@@ -147,6 +147,22 @@ confirmation after reconnection.
 Schema migrations run idempotently at startup. Never downgrade against the only
 copy of a migrated database; restore the matching backup instead.
 
+Vorrio does not silently replace its own container. Choose a pinned version or
+digest, back up `/data`, pull the new image and recreate the container. When the
+running application version changes, every account receives the new release
+highlights once after login. Acknowledgement is stored server-side, so it does
+not repeat on every browser. **Einstellungen → Hilfe & Version** can reopen the
+current notes and the product introduction at any time. The `latest` tag may be
+used for evaluation, but a pinned version remains the recommended household
+upgrade path because it makes rollback preparation and release-note review
+explicit.
+
+The 0.8.19 migration adds only per-user onboarding and version acknowledgement.
+Users that already exist during the first 0.8.19 startup are marked as familiar
+with the previous interface and receive the 0.8.19 release notes. Accounts made
+after that migration receive the three-step introduction. Catalog, receipts,
+stock, images, sessions and connector settings are unchanged.
+
 The 0.8.9 migration adds one household boundary, one Owner identity and hashed
 server-side browser sessions. An existing 0.8.8 signed login cookie is converted
 on its first request without logging the browser out. The current password hash

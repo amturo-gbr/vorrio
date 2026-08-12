@@ -20,6 +20,11 @@ excludes password hashes, raw or hashed session/invitation/API tokens, TOTP and
 recovery material, passkey keys/challenges, provider/connector keys, Web Push
 endpoints/keys and network-source fingerprints.
 
+Personal preferences include whether the introduction was completed and the
+last acknowledged Vorrio version. They contain no secret and are exported so a
+household can understand why a guide or release note appears. Complete erasure
+deletes these records with the account.
+
 This is a portable household-data export, not a disaster-recovery backup. A
 working restore still requires the complete `/data` volume and the matching
 `APP_SECRET_KEY`; see [Backup and restore](BACKUP-RESTORE.md).

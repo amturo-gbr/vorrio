@@ -13,6 +13,7 @@ import {
   ChevronRight,
   History,
   Home,
+  Info,
   KeyRound,
   FileUp,
   LoaderCircle,
@@ -44,6 +45,7 @@ import type {
   ApiTokenScopeId,
   AuthenticatedUser,
   AuthSession,
+  ExperienceState,
   CatalogProduct,
   CatalogProductCreateInput,
   GrocyMasterData,
@@ -64,6 +66,7 @@ import { ScannerScreen } from './features/scanner/ScannerScreen'
 import { CatalogScreen } from './features/catalog/CatalogScreen'
 import { ShoppingScreen } from './features/shopping/ShoppingScreen'
 import { LaunchReadinessPanel } from './features/settings/LaunchReadinessPanel'
+import { automaticExperienceSurface } from './experience'
 
 const providerDefaults: Record<SettingsData['provider']['type'], { baseUrl: string; model: string }> = {
   cortecs: { baseUrl: 'https://api.cortecs.ai/v1', model: '' },
@@ -135,6 +138,10 @@ function App() {
   const [identifierRequired, setIdentifierRequired] = useState(false)
   const [screen, setScreen] = useState<Screen>('home')
   const [status, setStatus] = useState<AppStatus | null>(null)
+  const [experience, setExperience] = useState<ExperienceState | null>(null)
+  const [guideOpen, setGuideOpen] = useState(false)
+  const [releaseNotesOpen, setReleaseNotesOpen] = useState(false)
+  const [experienceBusy, setExperienceBusy] = useState(false)
   const [receipts, setReceipts] = useState<Receipt[]>([])
   const [activeReceipt, setActiveReceipt] = useState<Receipt | null>(null)
   const [busy, setBusy] = useState(false)
@@ -177,6 +184,18 @@ function App() {
         : error.message })
     })
   }, [authenticated, refresh])
+
+  useEffect(() => {
+    if (!authenticated || offlineMode) return
+    api.experience().then((nextExperience) => {
+      setExperience(nextExperience)
+      const automaticSurface = automaticExperienceSurface(nextExperience)
+      if (automaticSurface === 'onboarding') setGuideOpen(true)
+      else if (automaticSurface === 'release') setReleaseNotesOpen(true)
+    }).catch((error) => {
+      setMessage({ kind: 'error', text: `Einführung konnte nicht geladen werden: ${(error as Error).message}` })
+    })
+  }, [authenticated, offlineMode])
 
   useEffect(() => {
     if (!offlineMode) return undefined
@@ -243,6 +262,37 @@ function App() {
 
   const readOnly = currentUser?.role === 'viewer'
 
+  const completeGuide = async (destination: Screen) => {
+    setExperienceBusy(true)
+    try {
+      const nextExperience = await api.updateExperience({
+        complete_onboarding: true,
+        acknowledge_current_version: true,
+      })
+      setExperience(nextExperience)
+      setGuideOpen(false)
+      setReleaseNotesOpen(false)
+      setScreen(readOnly && destination === 'scan' ? 'catalog' : destination)
+    } catch (error) {
+      setMessage({ kind: 'error', text: (error as Error).message })
+    } finally {
+      setExperienceBusy(false)
+    }
+  }
+
+  const acknowledgeRelease = async () => {
+    setExperienceBusy(true)
+    try {
+      const nextExperience = await api.updateExperience({ acknowledge_current_version: true })
+      setExperience(nextExperience)
+      setReleaseNotesOpen(false)
+    } catch (error) {
+      setMessage({ kind: 'error', text: (error as Error).message })
+    } finally {
+      setExperienceBusy(false)
+    }
+  }
+
   return (
     <main className="app-shell">
       <DesktopNav selected={screen} onSelect={setScreen} status={status} role={currentUser?.role || 'viewer'} />
@@ -274,6 +324,9 @@ function App() {
         {screen === 'settings' && (
           <SettingsScreen
             currentUser={currentUser}
+            version={experience?.current_version || status?.version || ''}
+            onOpenGuide={() => setGuideOpen(true)}
+            onOpenReleaseNotes={() => setReleaseNotesOpen(true)}
             onIdentityChange={setCurrentUser}
             onSaved={async (text) => {
               setMessage({ kind: 'success', text })
@@ -312,6 +365,18 @@ function App() {
         )}
 
         {screen !== 'review' && <BottomNav selected={screen} onSelect={setScreen} role={currentUser?.role || 'viewer'} />}
+        {guideOpen && <OnboardingGuide
+          readOnly={readOnly}
+          busy={experienceBusy}
+          onComplete={completeGuide}
+          onDismiss={() => setGuideOpen(false)}
+        />}
+        {releaseNotesOpen && experience && <ReleaseNotesDialog
+          experience={experience}
+          busy={experienceBusy}
+          onAcknowledge={acknowledgeRelease}
+          onDismiss={() => setReleaseNotesOpen(false)}
+        />}
       </div>
     </main>
   )
@@ -1228,11 +1293,17 @@ function ProductPicker({
 
 function SettingsScreen({
   currentUser,
+  version,
+  onOpenGuide,
+  onOpenReleaseNotes,
   onIdentityChange,
   onSaved,
   onLogout,
 }: {
   currentUser: AuthenticatedUser | null
+  version: string
+  onOpenGuide: () => void
+  onOpenReleaseNotes: () => void
   onIdentityChange: (user: AuthenticatedUser | null) => void
   onSaved: (text: string) => void
   onLogout: () => void
@@ -1795,6 +1866,16 @@ function SettingsScreen({
       {error && <Toast kind="error" text={error} onClose={() => setError('')} />}
       <header className="page-header"><div><h1>Einstellungen</h1><p>Verbindungen und Datenschutz.</p></div></header>
       <form onSubmit={save}>
+        <section className="settings-section help-version-section">
+          <div className="section-heading"><Info /><div><h2>Hilfe & Version</h2><p>Den roten Faden erneut ansehen oder die Änderungen dieser Version nachlesen.</p></div></div>
+          <div className="help-version-card">
+            <span><strong>Vorrio {version ? `v${version}` : ''}</strong><small>Self-hosted · Local-first</small></span>
+            <span className="help-version-actions">
+              <button type="button" onClick={onOpenGuide}>Einführung öffnen</button>
+              <button type="button" onClick={onOpenReleaseNotes}>Was ist neu?</button>
+            </span>
+          </div>
+        </section>
         <section className={`settings-section identity-section ${identity?.owner_setup_complete ? '' : 'needs-setup'}`}>
           <div className="section-heading"><ShieldCheck /><div><h2>Konto & Sicherheit</h2><p>Dein persönlicher Zugang und alle aktiven Browser-Sitzungen.</p></div></div>
           {!identity?.owner_setup_complete && <p className="identity-notice"><UserRound /> Benenne jetzt den bisherigen Haushaltszugang. Dein Passwort und alle Vorrio-Daten bleiben unverändert.</p>}
@@ -2052,6 +2133,136 @@ function DesktopNav({ selected, onSelect, status, role }: { selected: Screen; on
 
 function BottomNav({ selected, onSelect, role }: { selected: Screen; onSelect: (screen: Screen) => void; role: AuthenticatedUser['role'] }) {
   return <nav className="bottom-nav" aria-label="Hauptnavigation">{visibleNavigation(role).map(({ id, label, icon: Icon }) => <button key={id} className={`${selected === id ? 'selected' : ''} ${id === 'scan' ? 'scan-nav-item' : ''}`} onClick={() => onSelect(id)}><Icon /><span>{label}</span></button>)}</nav>
+}
+
+function OnboardingGuide({
+  readOnly,
+  busy,
+  onComplete,
+  onDismiss,
+}: {
+  readOnly: boolean
+  busy: boolean
+  onComplete: (destination: Screen) => void
+  onDismiss: () => void
+}) {
+  const [step, setStep] = useState(0)
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onDismiss()
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [onDismiss])
+
+  return <div className="experience-backdrop" role="presentation">
+    <section className="experience-dialog onboarding-dialog" role="dialog" aria-modal="true" aria-labelledby="onboarding-title">
+      <header className="experience-header">
+        <span className="experience-brand"><ReceiptText /><strong>Vorrio</strong></span>
+        <span className="experience-step">Schritt {step + 1} von 3</span>
+        <button type="button" className="icon-button" onClick={onDismiss} aria-label="Einführung später fortsetzen"><X /></button>
+      </header>
+      <div className="experience-progress" aria-label={`Schritt ${step + 1} von 3`}><span style={{ width: `${((step + 1) / 3) * 100}%` }} /></div>
+
+      <div className="experience-content">
+        {step === 0 && <>
+          <span className="experience-hero-icon"><Sparkles /></span>
+          <p className="experience-eyebrow">Willkommen</p>
+          <h1 id="onboarding-title">Dein Einkauf wird zum verlässlichen Vorrat.</h1>
+          <p className="experience-lead">Vorrio verbindet Bons, einzelne Produktscans und deinen aktuellen Bestand. Du prüfst jeden Vorschlag, bevor sich etwas ändert.</p>
+          <div className="journey-strip" aria-label="Vorrio Ablauf">
+            <span><ReceiptText /><strong>Einkauf</strong></span><ChevronRight />
+            <span><CheckCircle2 /><strong>Prüfen</strong></span><ChevronRight />
+            <span><Boxes /><strong>Vorrat</strong></span>
+          </div>
+        </>}
+
+        {step === 1 && <>
+          <p className="experience-eyebrow">Zwei einfache Wege</p>
+          <h1 id="onboarding-title">Nimm immer den kürzesten Weg.</h1>
+          <div className="experience-choice-grid">
+            <article><span><ReceiptText /></span><div><strong>Ganzer Einkauf</strong><p>Bon fotografieren oder PDF hochladen. Vorrio erkennt Artikel und Preise und lässt dich alles prüfen.</p></div></article>
+            {!readOnly && <article><span><Barcode /></span><div><strong>Ein Produkt</strong><p>Barcode scannen, um gezielt einzulagern, zu verbrauchen, zu öffnen oder auf die Einkaufsliste zu setzen.</p></div></article>}
+            <article><span><Boxes /></span><div><strong>Nachsehen</strong><p>Unter „Vorrat“ findest du Mengen und Produktwissen, unter „Einkäufe“ Listen, Bons, Preise und Budget.</p></div></article>
+          </div>
+        </>}
+
+        {step === 2 && <>
+          <span className="experience-hero-icon safe"><ShieldCheck /></span>
+          <p className="experience-eyebrow">Du behältst die Kontrolle</p>
+          <h1 id="onboarding-title">Vorschlag zuerst. Änderung erst nach Bestätigung.</h1>
+          <ul className="experience-checklist">
+            <li><Check /> KI- und Datenbanktreffer werden sichtbar erklärt.</li>
+            <li><Check /> Unklare Produkte bleiben zur Prüfung offen.</li>
+            <li><Check /> Deine Daten bleiben in deiner eigenen Vorrio-Installation.</li>
+          </ul>
+          <div className="experience-start-actions">
+            {readOnly ? <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('catalog')}><Boxes /> Vorrat ansehen</button> : <>
+              <button type="button" className="button primary full" disabled={busy} onClick={() => onComplete('home')}><Camera /> Ersten Bon erfassen</button>
+              <button type="button" className="button secondary full" disabled={busy} onClick={() => onComplete('scan')}><Barcode /> Produkt scannen</button>
+            </>}
+          </div>
+        </>}
+      </div>
+
+      {step < 2 && <footer className="experience-footer">
+        {step > 0 ? <button type="button" className="text-button" onClick={() => setStep((current) => current - 1)}>Zurück</button> : <button type="button" className="text-button" onClick={onDismiss}>Später</button>}
+        <button type="button" className="button primary" onClick={() => setStep((current) => current + 1)}>Weiter <ChevronRight /></button>
+      </footer>}
+    </section>
+  </div>
+}
+
+function ReleaseNotesDialog({
+  experience,
+  busy,
+  onAcknowledge,
+  onDismiss,
+}: {
+  experience: ExperienceState
+  busy: boolean
+  onAcknowledge: () => void
+  onDismiss: () => void
+}) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onDismiss()
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [onDismiss])
+
+  return <div className="experience-backdrop" role="presentation">
+    <section className="experience-dialog release-dialog" role="dialog" aria-modal="true" aria-labelledby="release-title">
+      <header className="experience-header">
+        <span className="release-badge"><Sparkles /> Aktualisiert</span>
+        <button type="button" className="icon-button" onClick={onDismiss} aria-label="Versionshinweise später lesen"><X /></button>
+      </header>
+      <div className="experience-content">
+        <p className="experience-eyebrow">Neu in Vorrio {experience.release.version}</p>
+        <h1 id="release-title">{experience.release.title}</h1>
+        <p className="experience-lead">{experience.release.summary}</p>
+        <ul className="release-highlights">
+          {experience.release.highlights.map((highlight) => <li key={highlight}><CheckCircle2 /><span>{highlight}</span></li>)}
+        </ul>
+      </div>
+      <footer className="release-footer">
+        <button type="button" className="text-button" onClick={onDismiss}>Später lesen</button>
+        <button type="button" className="button primary" disabled={busy} onClick={onAcknowledge}>{busy ? <LoaderCircle className="spin" /> : <Check />} Verstanden</button>
+      </footer>
+    </section>
+  </div>
 }
 
 function BusyOverlay() {

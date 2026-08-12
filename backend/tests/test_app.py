@@ -126,6 +126,10 @@ class AppFlowTests(unittest.TestCase):
                 json={"password": "sicheres-test-passwort", "display_name": "Owner Test"},
             )
             self.assertEqual(setup.status_code, 200)
+            self.assertEqual(client.put(
+                "/api/v1/experience",
+                json={"complete_onboarding": True, "acknowledge_current_version": True},
+            ).status_code, 200)
             export_product = database.create_catalog_product(name="Export Testprodukt")
             product_image_file = (
                 config.data_dir / "product-images" / f"{export_product['id']}.webp"
@@ -185,6 +189,11 @@ class AppFlowTests(unittest.TestCase):
                 self.assertEqual(manifest["receipt_files_included"], 1)
                 self.assertIn("data/catalog.json", archive.namelist())
                 self.assertIn("data/receipts.json", archive.namelist())
+                preferences = json.loads(archive.read("data/preferences.json"))
+                self.assertEqual(
+                    preferences["experience"][0]["last_acknowledged_version"],
+                    app.version,
+                )
                 self.assertTrue(any(name.startswith("receipt-files/privacy-receipt") for name in archive.namelist()))
                 self.assertIn(
                     f"product-images/{export_product['id']}.webp",
@@ -749,6 +758,63 @@ class AppFlowTests(unittest.TestCase):
             actions = {event["action"] for event in events}
             self.assertIn("owner_profile_update", actions)
             self.assertIn("session_revoke", actions)
+
+    def test_personal_onboarding_and_release_notes_are_acknowledged_once(self) -> None:
+        with TestClient(app) as client:
+            setup = client.post(
+                "/api/v1/auth/setup",
+                json={"password": "sicheres-test-passwort", "display_name": "Owner Test"},
+            )
+            self.assertEqual(setup.status_code, 200)
+
+            first = client.get("/api/v1/experience")
+            self.assertEqual(first.status_code, 200)
+            self.assertTrue(first.json()["onboarding_required"])
+            self.assertFalse(first.json()["release_notes_pending"])
+            self.assertEqual(first.json()["release"]["version"], app.version)
+
+            empty_update = client.put("/api/v1/experience", json={})
+            self.assertEqual(empty_update.status_code, 422)
+
+            completed = client.put(
+                "/api/v1/experience",
+                json={
+                    "complete_onboarding": True,
+                    "acknowledge_current_version": True,
+                },
+            )
+            self.assertEqual(completed.status_code, 200)
+            self.assertTrue(completed.json()["onboarding_completed"])
+            self.assertFalse(completed.json()["onboarding_required"])
+            self.assertFalse(completed.json()["release_notes_pending"])
+            self.assertEqual(completed.json()["last_acknowledged_version"], app.version)
+
+            with patch.object(app, "version", "0.8.20"):
+                upgraded = client.get("/api/v1/experience")
+                self.assertTrue(upgraded.json()["release_notes_pending"])
+                self.assertEqual(upgraded.json()["release"]["version"], "0.8.20")
+                acknowledged = client.put(
+                    "/api/v1/experience",
+                    json={"acknowledge_current_version": True},
+                )
+                self.assertFalse(acknowledged.json()["release_notes_pending"])
+                self.assertEqual(
+                    acknowledged.json()["last_acknowledged_version"], "0.8.20"
+                )
+
+            with database.connect() as conn:
+                exported_experience = conn.execute(
+                    "SELECT onboarding_completed_at, last_acknowledged_version FROM user_experience"
+                ).fetchone()
+                self.assertIsNotNone(exported_experience["onboarding_completed_at"])
+                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.20")
+                actions = {
+                    row[0]
+                    for row in conn.execute(
+                        "SELECT action FROM audit_events WHERE category = 'experience'"
+                    ).fetchall()
+                }
+            self.assertIn("experience_update", actions)
 
     def test_single_use_family_invitation_login_and_role_enforcement(self) -> None:
         with TestClient(app) as owner:
@@ -1824,7 +1890,7 @@ class AppFlowTests(unittest.TestCase):
     def test_openapi_contract_is_versioned_and_scoped_token_authenticated(self) -> None:
         schema = app.openapi()
         self.assertEqual(schema["openapi"], "3.1.0")
-        self.assertEqual(schema["info"]["version"], "0.8.18")
+        self.assertEqual(schema["info"]["version"], "0.8.19")
         self.assertIn("/api/v1/privacy/export", schema["paths"])
         self.assertIn("/api/v1/operations/overview", schema["paths"])
         self.assertIn("/api/v1/catalog/products", schema["paths"])
@@ -2486,6 +2552,43 @@ class AppFlowTests(unittest.TestCase):
         self.assertIn("Tiefkühler", prompt)
         self.assertIn("Tiefkühlprodukte", prompt)
         self.assertIn("Wenn keiner passt", prompt)
+
+    def test_existing_users_receive_release_notes_while_later_users_receive_onboarding(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            local = Database(Path(directory) / "experience-migration.db")
+            local.initialize()
+            with local.connect() as conn:
+                conn.execute(
+                    "DELETE FROM app_settings WHERE key = 'migration.user_experience_0_8_19'"
+                )
+            existing = local.ensure_owner_identity(hash_password("existing-password"))
+
+            local.initialize()
+
+            migrated = local.get_user_experience(str(existing["user_id"]))
+            self.assertIsNotNone(migrated["onboarding_completed_at"])
+            self.assertEqual(migrated["last_acknowledged_version"], "0.8.18")
+
+            later_user_id = "later-user"
+            timestamp = now_iso()
+            with local.connect() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO users(
+                        id, display_name, password_hash, owner_setup_complete,
+                        created_at, updated_at
+                    ) VALUES (?, 'Later User', ?, 1, ?, ?)
+                    """,
+                    (
+                        later_user_id,
+                        hash_password("later-password"),
+                        timestamp,
+                        timestamp,
+                    ),
+                )
+            later = local.get_user_experience(later_user_id)
+            self.assertIsNone(later["onboarding_completed_at"])
+            self.assertIsNone(later["last_acknowledged_version"])
 
 
 class GrocyClientTests(unittest.IsolatedAsyncioTestCase):

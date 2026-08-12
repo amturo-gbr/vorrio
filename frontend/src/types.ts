@@ -22,6 +22,22 @@ export interface AuthenticationState {
   user: AuthenticatedUser | null
 }
 
+export interface ReleaseNote {
+  version: string
+  title: string
+  summary: string
+  highlights: string[]
+}
+
+export interface ExperienceState {
+  current_version: string
+  onboarding_completed: boolean
+  onboarding_required: boolean
+  last_acknowledged_version: string | null
+  release_notes_pending: boolean
+  release: ReleaseNote
+}
+
 export interface AuthSession {
   id: string
   device_name: string

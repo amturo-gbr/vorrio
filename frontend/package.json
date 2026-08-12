@@ -1,7 +1,7 @@
 {
   "name": "vorrio-web",
   "private": true,
-  "version": "0.8.18",
+  "version": "0.8.19",
   "description": "Responsive self-hosted household inventory and shopping PWA",
   "license": "AGPL-3.0-or-later",
   "homepage": "https://github.com/amturo/vorrio#readme",

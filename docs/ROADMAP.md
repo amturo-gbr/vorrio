@@ -194,6 +194,15 @@
 - centered desktop dialogs with unchanged mobile bottom sheets;
 - connector-aware catalog guidance and live non-mutating Grocy verification.
 
+## 0.8.19 – guided first run and release communication
+
+- concise responsive product introduction after each account's first login;
+- one clear receipt-to-review-to-stock story plus the package-scan alternative;
+- per-user server-side completion shared across devices;
+- one-time current-release highlights after an installed version changes;
+- manual **Hilfe & Version** entry for reopening both surfaces;
+- portable export, erasure, audit, REST/OpenAPI and regression coverage.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.
