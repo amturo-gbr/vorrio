@@ -213,6 +213,12 @@
 - clear transient UI feedback on logout and subsequent login;
 - repeated desktop/mobile browser UAT and full release-gate verification.
 
+## 0.8.21 – maintained HTTP client
+
+- replace Starlette's deprecated `httpx` test fallback with `httpx2`;
+- use the same maintained client for AI, product-data and Grocy connections;
+- repeat the complete release gate without changing the REST or data contract.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.

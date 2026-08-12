@@ -34,5 +34,5 @@ charitable donation, and Vorrio does not promise donation receipts. Public copy
 uses “support” or “sponsorship”. Amturo UG records payouts and applicable taxes
 through its normal accounting process.
 
-No payment link is active in 0.8.20. Funding configuration is added only after
+No payment link is active in 0.8.21. Funding configuration is added only after
 the receiving Amturo account, legal copy and bookkeeping process are ready.

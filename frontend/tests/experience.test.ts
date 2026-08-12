@@ -4,13 +4,13 @@ import { automaticExperienceSurface } from '../src/experience.ts'
 import type { ExperienceState } from '../src/types.ts'
 
 const state = (overrides: Partial<ExperienceState>): ExperienceState => ({
-  current_version: '0.8.20',
+  current_version: '0.8.21',
   onboarding_completed: true,
   onboarding_required: false,
-  last_acknowledged_version: '0.8.20',
+  last_acknowledged_version: '0.8.21',
   release_notes_pending: false,
   release: {
-    version: '0.8.20',
+    version: '0.8.21',
     title: 'Test',
     summary: 'Test',
     highlights: [],

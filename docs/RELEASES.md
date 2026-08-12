@@ -52,11 +52,11 @@ tag.
 Replace the example owner/repository and version with the published values:
 
 ```bash
-docker pull ghcr.io/amturo/vorrio:0.8.20
+docker pull ghcr.io/amturo/vorrio:0.8.21
 cosign verify \
   --certificate-identity-regexp '^https://github.com/amturo/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo/vorrio:0.8.20
+  ghcr.io/amturo/vorrio:0.8.21
 ```
 
 Pin production deployments to a version or digest. `latest` is convenient for

@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+## 0.8.21 – 2026-08-12
+
+- Migrated Starlette's test client and Vorrio's outbound AI, product-data and
+  Grocy requests from the deprecated `httpx` compatibility path to the
+  maintained `httpx2` package.
+- Removed the remaining non-blocking `StarletteDeprecationWarning` without
+  suppressing warnings or carrying two HTTP client implementations.
+- Kept the REST contract, stored household data and connector behavior
+  unchanged while repeating the complete release gate.
+
 ## 0.8.20 – 2026-08-12
 
 - Renamed the 24-hour operations metric from errors to rejected actions so

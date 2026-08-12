@@ -273,7 +273,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.20",
+    version="0.8.21",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -399,13 +399,13 @@ API_TOKEN_SCOPES = {
 }
 
 CURRENT_RELEASE = {
-    "version": "0.8.20",
-    "title": "Verständlicher Betrieb, vollständig geprüft",
-    "summary": "Vorrio unterscheidet erwartete Sicherheits- und Validierungsstopps klar von echten Fehlern und prüft Familienkonten als zusammenhängende Release-Reise.",
+    "version": "0.8.21",
+    "title": "Aktuelle HTTP-Testbasis",
+    "summary": "Vorrio verwendet den von Starlette vorgesehenen, weiter gepflegten HTTPX2-Client für ausgehende Verbindungen und die vollständige Testreise.",
     "highlights": [
-        "Abgewiesene Eingaben werden nicht mehr als Serverfehler bezeichnet",
-        "Familienrollen, Passkey, TOTP und Recovery gehören jetzt zum Release-Gate",
-        "Owner-E-Mail und Meldungen bleiben nach Speichern und Login sofort aktuell",
+        "Die veraltete Testclient-Kompatibilität ist vollständig entfernt",
+        "KI-, Produktdaten- und Grocy-Verbindungen nutzen denselben gepflegten HTTP-Client",
+        "REST-Vertrag und Nutzerdaten bleiben unverändert",
     ],
 }
 

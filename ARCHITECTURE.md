@@ -20,6 +20,8 @@ One Docker container contains:
 
 - a React and Vite PWA;
 - a FastAPI application with an OpenAPI 3.1 contract;
+- one HTTPX2 client for ASGI tests and outbound provider, product-data and
+  Grocy requests;
 - SQLite in the persistent `/data` volume;
 - optional retained receipt files below `/data/receipts`.
 

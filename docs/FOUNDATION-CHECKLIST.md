@@ -238,6 +238,12 @@ public release.
 - clean logout/login state without stale toasts or dialogs;
 - repeated desktop and narrow-mobile browser verification.
 
+## Shipped in 0.8.21
+
+- Starlette's maintained `httpx2` test-client path without warning suppression;
+- one HTTP client for tests plus AI, product-data and Grocy requests;
+- unchanged REST and persistence contracts verified by the full release gate.
+
 ## P1 – identity hardening and automation
 
 - optional OIDC for installations that deliberately choose an external IdP;

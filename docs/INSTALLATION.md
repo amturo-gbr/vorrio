@@ -157,6 +157,12 @@ used for evaluation, but a pinned version remains the recommended household
 upgrade path because it makes rollback preparation and release-note review
 explicit.
 
+Version 0.8.21 changes only the maintained HTTP client dependency used by
+tests and outbound connectors. It adds no schema migration, rewrites no
+household data and leaves the versioned REST contract unchanged. After the
+normal container replacement, verify the configured AI provider and optional
+Grocy connection once from Settings.
+
 The 0.8.19 migration adds only per-user onboarding and version acknowledgement.
 Users that already exist during the first 0.8.19 startup are marked as familiar
 with the previous interface and receive the 0.8.19 release notes. Accounts made

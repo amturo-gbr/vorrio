@@ -4,7 +4,7 @@ from datetime import date
 from typing import Any
 from urllib.parse import quote
 
-import httpx
+import httpx2 as httpx
 
 from .outbound_urls import normalize_connector_url
 
