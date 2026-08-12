@@ -28,6 +28,9 @@
   screenshots without edge cropping across desktop, tablet and mobile.
 - Kept all five scanner actions aligned at narrow desktop widths and added
   responsive website QA evidence for the final English launch surface.
+- Replaced the network-sensitive Grype and Syft Action installers with official
+  digest-pinned scanner containers, while retaining a fail-closed High/Critical
+  gate and an uploaded CycloneDX CI artifact.
 
 - Replaced the receipt-shaped product mark with the final Vorrio identity in
   the PWA header, desktop navigation and first-run guide, including transparent

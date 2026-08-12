@@ -8,6 +8,7 @@ frontend/dist/
 frontend/*.tsbuildinfo
 frontend/vite.config.js
 frontend/vite.config.d.ts
+.playwright-cli/
 backend/__pycache__/
 backend/.pytest_cache/
 .venv/

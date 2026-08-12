@@ -14,6 +14,7 @@ class WebsiteParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
         self.html_lang = ""
+        self.viewport = ""
         self.links: list[str] = []
         self.alternates: set[str] = set()
         self.text: list[str] = []
@@ -22,6 +23,8 @@ class WebsiteParser(HTMLParser):
         values = dict(attrs)
         if tag == "html":
             self.html_lang = values.get("lang") or ""
+        if tag == "meta" and values.get("name") == "viewport":
+            self.viewport = values.get("content") or ""
         if tag in {"a", "link", "script", "img"}:
             target = values.get("href") or values.get("src")
             if target:
@@ -45,6 +48,10 @@ def main() -> None:
         parsers[locale] = parser
         if parser.html_lang != locale:
             failures.append(f"{page.name}: html lang must be {locale}")
+        if not {"width=device-width", "initial-scale=1"}.issubset(
+            {value.strip() for value in parser.viewport.split(",")}
+        ):
+            failures.append(f"{page.name}: responsive viewport contract is missing")
         if not {"de", "en", "x-default"}.issubset(parser.alternates):
             failures.append(f"{page.name}: missing de/en/x-default alternate links")
         for target in parser.links:
@@ -77,6 +84,17 @@ def main() -> None:
             "index-en.html: German product screenshots reused: "
             + ", ".join(sorted(reused_german_images))
         )
+
+    css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
+    responsive_css = {
+        "320 px minimum viewport": r"body\s*\{[^}]*min-width:\s*320px",
+        "bounded page shell": r"\.shell\s*\{[^}]*width:\s*min\(100%,\s*var\(--shell\)\)",
+        "390 px layout breakpoint": r"@media\s*\(max-width:\s*390px\)",
+        "responsive media": r"img\s*\{[^}]*max-width:\s*100%",
+    }
+    for label, pattern in responsive_css.items():
+        if not re.search(pattern, css, re.DOTALL):
+            failures.append(f"styles.css: missing {label}")
 
     if failures:
         raise SystemExit("\n".join(failures))

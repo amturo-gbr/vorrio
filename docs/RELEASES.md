@@ -27,7 +27,9 @@ settings and GHCR visibility, is maintained in the
 
 - Runtime and build base images are pinned by digest.
 - CI builds the production Dockerfile, fails for fixed High/Critical findings
-  through Grype and creates a CycloneDX JSON SBOM through Syft. Any VEX
+  through a digest-pinned official Grype container and creates a CycloneDX JSON
+  SBOM through a digest-pinned official Syft container. This avoids runtime
+  installer lookups while keeping the scanner and SBOM toolchain immutable. Any VEX
   suppression must live in `security/vex.openvex.json`, include a technical
   reachability justification and be reviewed again on dependency or input-
   format changes.

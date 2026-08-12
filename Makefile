@@ -1,9 +1,28 @@
-.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image pwa-check release-package-check website-check check
+.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image image-scan sbom pwa-check release-package-check website-check check
 
 CHECK_IMAGE ?= vorrio:check
+GRYPE_IMAGE ?= anchore/grype:v0.110.0@sha256:af65fbc0c664691067788fe95ff88760b435543e45595eb2ca6f102fc476fbe1
+SYFT_IMAGE ?= anchore/syft:v1.42.3@sha256:5999d209a342e55e9edf70bf8930fb5b86d8f2a783fa401178372c50e21b1d36
+SBOM_FILE ?= vorrio-sbom.cdx.json
 
 image:
 	docker build -t $(CHECK_IMAGE) .
+
+image-scan:
+	docker run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$(CURDIR):/workspace:ro" \
+		$(GRYPE_IMAGE) $(CHECK_IMAGE) \
+		--fail-on high --only-fixed \
+		--vex /workspace/security/vex.openvex.json \
+		--output table
+
+sbom:
+	docker run --rm \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v "$(CURDIR):/output" \
+		$(SYFT_IMAGE) $(CHECK_IMAGE) \
+		--output cyclonedx-json=/output/$(SBOM_FILE)
 
 api-docs: image
 	docker run --rm --entrypoint python \
