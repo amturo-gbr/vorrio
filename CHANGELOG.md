@@ -31,6 +31,12 @@
 - Replaced the network-sensitive Grype and Syft Action installers with official
   digest-pinned scanner containers, while retaining a fail-closed High/Critical
   gate and an uploaded CycloneDX CI artifact.
+- Added a full-history, redacted and digest-pinned Gitleaks gate to CI and tag
+  releases, expanded publishable-file credential detection and enforced Amturo
+  UG as the canonical developer identity across project metadata.
+- Hardened the manual published-image smoke input, added a seven-day Dependabot
+  supply-chain cooldown and completed clean npm, Python, container, release-
+  asset and static OWASP reviews before public visibility.
 
 - Replaced the receipt-shaped product mark with the final Vorrio identity in
   the PWA header, desktop navigation and first-run guide, including transparent

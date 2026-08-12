@@ -1,8 +1,9 @@
-.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image image-scan sbom pwa-check release-package-check website-check check
+.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image image-scan sbom pwa-check release-package-check secret-scan website-check check
 
 CHECK_IMAGE ?= vorrio:check
 GRYPE_IMAGE ?= anchore/grype:v0.110.0@sha256:af65fbc0c664691067788fe95ff88760b435543e45595eb2ca6f102fc476fbe1
 SYFT_IMAGE ?= anchore/syft:v1.42.3@sha256:5999d209a342e55e9edf70bf8930fb5b86d8f2a783fa401178372c50e21b1d36
+GITLEAKS_IMAGE ?= zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
 SBOM_FILE ?= vorrio-sbom.cdx.json
 
 image:
@@ -96,4 +97,10 @@ website-check:
 release-package-check:
 	python3 scripts/check_release_package.py
 
-check: backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check backend-i18n-check website-check release-package-check api-docs-check
+secret-scan:
+	docker run --rm \
+		-v "$(CURDIR):/repository:ro" \
+		-w /repository \
+		$(GITLEAKS_IMAGE) git . --redact=100 --no-banner
+
+check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check backend-i18n-check website-check release-package-check api-docs-check

@@ -13,6 +13,8 @@ necessary but does not by itself publish a repository or container.
   `SECURITY.md`, support material and the changelog render correctly.
 - [ ] No receipt, database, `.env`, API key, cookie, private hostname, LAN
   address, personal path or generated local artifact is staged.
+- [ ] The full-history secret scan and release-package identity contract pass
+  with no unexplained allowlist entry.
 - [ ] GitHub private vulnerability reporting is enabled before issues are
   opened to the public.
 
@@ -39,6 +41,8 @@ necessary but does not by itself publish a repository or container.
 - [ ] Dependabot security and version updates are enabled.
 - [ ] Secret scanning and push protection are enabled where the GitHub plan
   supports them.
+- [ ] Dependency update proposals use the seven-day cooldown and remain grouped
+  by ecosystem; major upgrades require deliberate maintainer review.
 - [ ] Discussions, issue templates and the support/security routes point users
   to the correct channel.
 - [ ] The static project website renders at 1440 px desktop and 390 px mobile,

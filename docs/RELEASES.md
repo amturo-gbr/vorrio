@@ -26,6 +26,9 @@ settings and GHCR visibility, is maintained in the
 ## Container assurance
 
 - Runtime and build base images are pinned by digest.
+- CI checks the complete Git history with the digest-pinned Gitleaks CLI before
+  building. Only the exact synthetic `YOUR_TOKEN` documentation placeholder is
+  allowlisted; findings remain fully redacted in logs.
 - CI builds the production Dockerfile, fails for fixed High/Critical findings
   through a digest-pinned official Grype container and creates a CycloneDX JSON
   SBOM through a digest-pinned official Syft container. This avoids runtime
@@ -47,9 +50,9 @@ settings and GHCR visibility, is maintained in the
   before logging in and publishing, so a tag cannot rely only on a previous
   branch run.
 
-The workflow files prepare this process; no public image exists until the
-Amturo repository is created and an authorized maintainer pushes the first
-tag.
+The private 0.8.22 rehearsal produced the first signed image, SBOM and release
+assets. None of them are public until an authorized Amturo maintainer changes
+repository and package visibility separately after the launch gate passes.
 
 ## Private release rehearsal
 

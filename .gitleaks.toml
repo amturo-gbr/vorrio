@@ -1,0 +1,9 @@
+title = "Vorrio repository secret scanning"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Documented bearer-token placeholder"
+targetRules = ["curl-auth-header"]
+stopwords = ["YOUR_TOKEN"]

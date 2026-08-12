@@ -253,6 +253,12 @@ public release.
   product, receipt, currency and timezone data;
 - German and English manifests and project website entry points;
 - automated translation coverage, suspicious-copy and localized backend tests.
+- full-history secret scanning in CI and tag releases with a digest-pinned
+  scanner plus a narrowly scoped documentation-placeholder allowlist;
+- enforced Amturo UG developer identity and rejection of private artifacts and
+  common credential formats;
+- a fresh-runner installation proof against the private signed GHCR image;
+- current npm, Python, production-image and static OWASP security reviews.
 
 ## P1 – identity hardening and automation
 

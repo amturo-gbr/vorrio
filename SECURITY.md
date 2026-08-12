@@ -1,9 +1,10 @@
 # Security policy
 
 Report vulnerabilities privately to the Amturo UG maintainers before opening a
-public issue. The public repository uses
-[GitHub private vulnerability reporting](https://github.com/amturo-gbr/vorrio/security/advisories/new);
-the maintainer must enable that repository setting before launch.
+public issue. During the private release rehearsal, use `info@amturo.de`. Before
+the repository becomes public, the maintainers enable
+[GitHub private vulnerability reporting](https://github.com/amturo-gbr/vorrio/security/advisories/new)
+and make it the preferred reporting channel.
 
 Do not include secrets, session cookies, receipt images, household addresses or
 database exports in a report. Use synthetic reproduction data.
@@ -12,6 +13,24 @@ database exports in a report. Use synthetic reproduction data.
 
 Only the latest 0.x release receives security fixes before the stable 1.0
 support policy is published.
+
+## Repository and release integrity
+
+The 0.8.22 pre-publication review covered every reachable Git commit, all
+tracked and unignored release files, the built runtime image, the attached
+CycloneDX SBOM and immutable-digest asset. It found no credential, private
+installation path or household data. The two scanner matches were the literal
+`YOUR_TOKEN` examples in the automation guide; only that exact documentation
+placeholder is allowlisted.
+
+`make check` now scans the complete Git history with a digest-pinned Gitleaks
+CLI image. The release-package contract independently blocks environment files,
+databases, key material, common provider tokens, credential-bearing URLs and
+personal macOS paths. It also enforces Amturo UG as the canonical
+developer/maintainer in the author file, notice, README,
+frontend repository metadata and OpenAPI contact. GitHub Actions checkouts use
+full history so a secret in an earlier commit cannot be hidden by a shallow
+clone.
 
 ## Security boundaries
 
@@ -95,7 +114,7 @@ statement.
 
 ## Internet exposure
 
-Version 0.8.18 includes the dedicated external-path application review. HTTPS
+Version 0.8.22 includes the dedicated external-path application review. HTTPS
 alone still does not make an installation safe: `public_https` refuses normal
 application traffic until canonical host/origin, trusted proxy, Secure-cookie,
 secret and explicit acknowledgement checks all pass. Private VPN/HTTPS remains

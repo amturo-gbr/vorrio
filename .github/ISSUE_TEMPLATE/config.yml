@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Private security report
-    url: https://github.com/amturo/vorrio/security/advisories/new
+    url: https://github.com/amturo-gbr/vorrio/security/advisories/new
     about: Report vulnerabilities privately without household data or credentials.
   - name: Support guide
-    url: https://github.com/amturo/vorrio/blob/main/SUPPORT.md
+    url: https://github.com/amturo-gbr/vorrio/blob/main/SUPPORT.md
     about: Installation questions, logs and the information needed for help.

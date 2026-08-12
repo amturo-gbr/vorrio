@@ -39,15 +39,30 @@ class WebsiteParser(HTMLParser):
 
 def main() -> None:
     failures: list[str] = []
-    pages = {"de": WEBSITE / "index.html", "en": WEBSITE / "index-en.html"}
+    pages = {
+        "de": WEBSITE / "index.html",
+        "en": WEBSITE / "index-en.html",
+        "de-imprint": WEBSITE / "impressum.html",
+        "en-imprint": WEBSITE / "imprint.html",
+        "de-privacy": WEBSITE / "datenschutz.html",
+        "en-privacy": WEBSITE / "privacy.html",
+    }
+    page_locales = {
+        "de": "de",
+        "en": "en",
+        "de-imprint": "de",
+        "en-imprint": "en",
+        "de-privacy": "de",
+        "en-privacy": "en",
+    }
     parsers: dict[str, WebsiteParser] = {}
 
     for locale, page in pages.items():
         parser = WebsiteParser()
         parser.feed(page.read_text(encoding="utf-8"))
         parsers[locale] = parser
-        if parser.html_lang != locale:
-            failures.append(f"{page.name}: html lang must be {locale}")
+        if parser.html_lang != page_locales[locale]:
+            failures.append(f"{page.name}: html lang must be {page_locales[locale]}")
         if not {"width=device-width", "initial-scale=1"}.issubset(
             {value.strip() for value in parser.viewport.split(",")}
         ):
@@ -62,7 +77,9 @@ def main() -> None:
             if not local_target.exists():
                 failures.append(f"{page.name}: missing local asset {parsed.path}")
 
-    english_text = " ".join(parsers["en"].text)
+    english_text = " ".join(parsers["en"].text).replace(
+        "Amturo UG (haftungsbeschränkt)", "Amturo UG"
+    )
     german_copy = re.compile(
         r"[ÄÖÜäöüß]|\b(?:Dein|Einkauf|Vorrat|Bons|Funktionen|Prinzipien|Unterstützen|"
         r"Zum Inhalt|Auf GitHub|Erfassen|Prüfen|Übernehmen|Haushalt|selbst gehostet)\b"
@@ -85,6 +102,49 @@ def main() -> None:
             + ", ".join(sorted(reused_german_images))
         )
 
+    expected_github = "https://github.com/amturo-gbr/vorrio"
+    for locale in ("de", "en"):
+        page_text = pages[locale].read_text(encoding="utf-8")
+        if expected_github not in page_text:
+            failures.append(f"{pages[locale].name}: canonical GitHub repository link is missing")
+        if "github.com/sponsors/" in page_text:
+            failures.append(f"{pages[locale].name}: inactive GitHub Sponsors link must not be published")
+
+    legal_source = "\n".join(
+        pages[key].read_text(encoding="utf-8")
+        for key in ("de-imprint", "en-imprint", "de-privacy", "en-privacy")
+    )
+    legal_markers = {
+        "full legal entity": "Amturo UG (haftungsbeschränkt)",
+        "commercial register": "HRB 12569",
+        "privacy contact": "info@amturo.de",
+        "privacy no-cookie statement": "keine Cookies",
+        "privacy hosting launch gate": "Vor Veröffentlichung zu ergänzen",
+    }
+    for label, marker in legal_markers.items():
+        if marker not in legal_source:
+            failures.append(f"legal pages: missing {label}")
+
+    implementation_source = "\n".join(
+        [
+            pages["de"].read_text(encoding="utf-8"),
+            pages["en"].read_text(encoding="utf-8"),
+            (WEBSITE / "script.js").read_text(encoding="utf-8"),
+        ]
+    ).lower()
+    tracking_markers = (
+        "googletagmanager",
+        "google-analytics",
+        "plausible.io",
+        "posthog",
+        "document.cookie",
+        "localstorage.",
+        "sessionstorage.",
+    )
+    for marker in tracking_markers:
+        if marker in implementation_source:
+            failures.append(f"website implementation: unexpected tracking/storage marker {marker}")
+
     css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
     responsive_css = {
         "320 px minimum viewport": r"body\s*\{[^}]*min-width:\s*320px",
@@ -98,7 +158,7 @@ def main() -> None:
 
     if failures:
         raise SystemExit("\n".join(failures))
-    print("Website contract is valid (German and English, local assets resolved)")
+    print("Website contract is valid (bilingual pages, legal data, local assets and no tracking)")
 
 
 if __name__ == "__main__":

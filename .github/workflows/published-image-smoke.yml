@@ -29,8 +29,14 @@ jobs:
         shell: bash
         env:
           IMAGE: ghcr.io/${{ github.repository }}:${{ inputs.image_tag }}
+          EXPECTED_VERSION: ${{ inputs.image_tag }}
         run: |
           set -Eeuo pipefail
+
+          if [[ ! "$EXPECTED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "image_tag must use MAJOR.MINOR.PATCH format" >&2
+            exit 2
+          fi
 
           data_dir="$(mktemp -d "$RUNNER_TEMP/vorrio-published-data.XXXXXX")"
           cookie_jar="$RUNNER_TEMP/vorrio-published-cookies.txt"
@@ -88,7 +94,7 @@ jobs:
           curl --fail --silent \
             --cookie "$cookie_jar" \
             http://127.0.0.1:9380/api/v1/status \
-            | jq --exit-status --arg expected "${{ inputs.image_tag }}" '.version == $expected' >/dev/null
+            | jq --exit-status --arg expected "$EXPECTED_VERSION" '.version == $expected' >/dev/null
 
           curl --fail --silent http://127.0.0.1:9380/ | grep --quiet '<div id="root"></div>'
           test "$(docker exec vorrio-published-smoke id -u)" != 0

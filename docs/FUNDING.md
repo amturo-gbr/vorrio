@@ -17,6 +17,14 @@ Suggested launch tiers:
 - Company sponsor: public acknowledgement, without product-control rights;
 - one-time thank-you contribution.
 
+## Verified current status
+
+Checked on 12 August 2026: `amturo-gbr/vorrio` is the canonical repository and
+is still private; the public `amturo-gbr` organization currently exposes no
+public repositories. Neither `@amturo-gbr` nor `@adrian-amturo` has applied to
+join GitHub Sponsors. No `.github/FUNDING.yml` exists, which is intentional
+while the receiver profile is inactive.
+
 Rewards must not delay security fixes or make essential self-hosted features
 exclusive. Sponsor logos and public names are opt-in.
 
