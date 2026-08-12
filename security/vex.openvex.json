@@ -13,6 +13,7 @@
         "description": "CPU denial of service in CPython html.parser.HTMLParser for attacker-controlled HTML"
       },
       "products": [
+        {"@id": "pkg:generic/python@3.14.7"},
         {"@id": "vorrio:ci"},
         {"@id": "vorrio:release"},
         {"@id": "vorrio:release-candidate"},
