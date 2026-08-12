@@ -1,0 +1,108 @@
+name: Published image installation smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: GHCR image tag to install and verify
+        required: true
+        default: 0.8.22
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  fresh-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4, pinned 2026-08-12
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and verify a fresh installation
+        shell: bash
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}:${{ inputs.image_tag }}
+        run: |
+          set -Eeuo pipefail
+
+          data_dir="$(mktemp -d "$RUNNER_TEMP/vorrio-published-data.XXXXXX")"
+          cookie_jar="$RUNNER_TEMP/vorrio-published-cookies.txt"
+
+          cleanup() {
+            result=$?
+            if [ "$result" -ne 0 ]; then
+              docker logs vorrio-published-smoke 2>/dev/null || true
+            fi
+            docker rm --force vorrio-published-smoke >/dev/null 2>&1 || true
+            rm -rf "$data_dir" "$cookie_jar"
+            trap - EXIT
+            exit "$result"
+          }
+          trap cleanup EXIT
+
+          chmod 0777 "$data_dir"
+          docker pull "$IMAGE"
+          secret="$(openssl rand -hex 32)"
+          docker run --detach \
+            --name vorrio-published-smoke \
+            --publish 127.0.0.1:9380:8080 \
+            --env APP_SECRET_KEY="$secret" \
+            --env DEPLOYMENT_PROFILE=lan \
+            --env TRUSTED_HOSTS=127.0.0.1,localhost \
+            --mount "type=bind,source=$data_dir,target=/data" \
+            "$IMAGE"
+
+          ready=false
+          for _ in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:9380/api/health >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = true
+
+          test "$(curl --fail --silent http://127.0.0.1:9380/api/health | jq -r .status)" = ok
+          test "$(curl --fail --silent http://127.0.0.1:9380/api/readiness | jq -r .status)" = ready
+          test "$(curl --fail --silent http://127.0.0.1:9380/api/v1/auth/state | jq -r .needs_setup)" = true
+
+          curl --fail --silent \
+            --cookie-jar "$cookie_jar" \
+            --header 'Content-Type: application/json' \
+            --data '{"password":"synthetic-published-image-password","display_name":"Release Smoke","preferred_locale":"en"}' \
+            http://127.0.0.1:9380/api/v1/auth/setup \
+            | jq --exit-status '.authenticated == true and .needs_setup == false' >/dev/null
+
+          curl --fail --silent \
+            --cookie "$cookie_jar" \
+            http://127.0.0.1:9380/api/v1/auth/me \
+            | jq --exit-status '.authenticated == true' >/dev/null
+
+          curl --fail --silent \
+            --cookie "$cookie_jar" \
+            http://127.0.0.1:9380/api/v1/status \
+            | jq --exit-status --arg expected "${{ inputs.image_tag }}" '.version == $expected' >/dev/null
+
+          curl --fail --silent http://127.0.0.1:9380/ | grep --quiet '<div id="root"></div>'
+          test "$(docker exec vorrio-published-smoke id -u)" != 0
+
+          healthy=false
+          for _ in $(seq 1 45); do
+            health_status="$(docker inspect --format '{{.State.Health.Status}}' vorrio-published-smoke)"
+            if [ "$health_status" = healthy ]; then
+              healthy=true
+              break
+            fi
+            test "$health_status" != unhealthy
+            sleep 2
+          done
+          test "$healthy" = true
+
+          echo "Published image ${IMAGE} passed the clean-install smoke test."
