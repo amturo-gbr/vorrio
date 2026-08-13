@@ -28,6 +28,11 @@
 - Prepared the static website for Vercel with hardened response headers,
   canonical multilingual URLs, updated hosting privacy disclosures and the
   `vorrio.app` / `vorrio.de` production-domain contract.
+- Added a bilingual public website roadmap that clearly separates today's
+  installable PWA from the planned native iOS and Android clients and sends
+  prioritization feedback to the canonical GitHub workflow.
+- Enforced the website's standard `hidden` state at author level so prepared
+  Stripe support controls cannot be revealed by the shared button styling.
 
 ## 0.8.22 – 2026-08-12
 
