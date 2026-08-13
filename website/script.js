@@ -62,3 +62,39 @@ copyButton?.addEventListener('click', async () => {
     copyButton.textContent = copyLabels.failed
   }
 })
+
+const stripeSupportLinks = window.VORRIO_SUPPORT_LINKS ?? {}
+const stripeSupportNote = document.querySelector('[data-stripe-support-note]')
+const stripeSupportPending = document.querySelector('[data-stripe-support-pending]')
+
+function validStripePaymentLink(value) {
+  if (typeof value !== 'string' || value.length === 0) return null
+
+  try {
+    const url = new URL(value)
+    const isLivePaymentLink =
+      url.protocol === 'https:' &&
+      url.hostname === 'buy.stripe.com' &&
+      !url.pathname.startsWith('/test_')
+    return isLivePaymentLink ? url.href : null
+  } catch {
+    return null
+  }
+}
+
+let activeStripeSupportLinks = 0
+
+document.querySelectorAll('[data-stripe-support-link]').forEach((link) => {
+  const linkName = link.getAttribute('data-stripe-support-link')
+  const paymentLink = validStripePaymentLink(stripeSupportLinks[linkName])
+  if (!paymentLink) return
+
+  link.setAttribute('href', paymentLink)
+  link.removeAttribute('hidden')
+  activeStripeSupportLinks += 1
+})
+
+if (activeStripeSupportLinks > 0) {
+  stripeSupportNote?.removeAttribute('hidden')
+  stripeSupportPending?.setAttribute('hidden', '')
+}

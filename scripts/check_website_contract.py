@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from html.parser import HTMLParser
 from pathlib import Path
@@ -69,6 +70,8 @@ def main() -> None:
             failures.append(f"{page.name}: responsive viewport contract is missing")
         if not {"de", "en", "x-default"}.issubset(parser.alternates):
             failures.append(f"{page.name}: missing de/en/x-default alternate links")
+        if 'rel="canonical" href="https://vorrio.app' not in page.read_text(encoding="utf-8"):
+            failures.append(f"{page.name}: canonical vorrio.app URL is missing")
         for target in parser.links:
             parsed = urlsplit(target)
             if parsed.scheme or parsed.netloc or target.startswith(("#", "mailto:")):
@@ -107,8 +110,43 @@ def main() -> None:
         page_text = pages[locale].read_text(encoding="utf-8")
         if expected_github not in page_text:
             failures.append(f"{pages[locale].name}: canonical GitHub repository link is missing")
-        if "github.com/sponsors/" in page_text:
-            failures.append(f"{pages[locale].name}: inactive GitHub Sponsors link must not be published")
+        if "GitHub Sponsors" in page_text or "github.com/sponsors/" in page_text:
+            failures.append(f"{pages[locale].name}: GitHub Sponsors must stay hidden")
+        for key in ("oneTime", "monthly"):
+            hidden_control = re.search(
+                rf"<a\b(?=[^>]*data-stripe-support-link=\"{key}\")(?=[^>]*\bhidden\b)[^>]*>",
+                page_text,
+                re.DOTALL,
+            )
+            if not hidden_control:
+                failures.append(
+                    f"{pages[locale].name}: {key} Stripe control must be hidden by default"
+                )
+
+    support_config = (WEBSITE / "support-config.js").read_text(encoding="utf-8")
+    for key in ("oneTime", "monthly"):
+        match = re.search(rf"{key}:\s*'([^']*)'", support_config)
+        if not match:
+            failures.append(f"support-config.js: missing {key} Payment Link slot")
+            continue
+        value = match.group(1)
+        if value:
+            parsed = urlsplit(value)
+            if (
+                parsed.scheme != "https"
+                or parsed.hostname != "buy.stripe.com"
+                or parsed.path.startswith("/test_")
+            ):
+                failures.append(
+                    f"support-config.js: {key} must be a live HTTPS buy.stripe.com Payment Link"
+                )
+    if re.search(r"\b(?:sk|pk|rk)_(?:test|live)_|\bwhsec_", support_config):
+        failures.append("support-config.js: Stripe API and webhook keys are forbidden")
+
+    support_script = (WEBSITE / "script.js").read_text(encoding="utf-8")
+    for marker in ("buy.stripe.com", "url.pathname.startsWith('/test_')"):
+        if marker not in support_script:
+            failures.append(f"script.js: missing Stripe activation guard {marker}")
 
     legal_source = "\n".join(
         pages[key].read_text(encoding="utf-8")
@@ -119,7 +157,8 @@ def main() -> None:
         "commercial register": "HRB 12569",
         "privacy contact": "info@amturo.de",
         "privacy no-cookie statement": "keine Cookies",
-        "privacy hosting launch gate": "Vor Veröffentlichung zu ergänzen",
+        "privacy hosting provider": "Vercel Inc.",
+        "privacy transfer safeguards": "EU-Standardvertragsklauseln",
     }
     for label, marker in legal_markers.items():
         if marker not in legal_source:
@@ -129,7 +168,8 @@ def main() -> None:
         [
             pages["de"].read_text(encoding="utf-8"),
             pages["en"].read_text(encoding="utf-8"),
-            (WEBSITE / "script.js").read_text(encoding="utf-8"),
+            support_config,
+            support_script,
         ]
     ).lower()
     tracking_markers = (
@@ -144,6 +184,25 @@ def main() -> None:
     for marker in tracking_markers:
         if marker in implementation_source:
             failures.append(f"website implementation: unexpected tracking/storage marker {marker}")
+
+    vercel_config = json.loads((WEBSITE / "vercel.json").read_text(encoding="utf-8"))
+    configured_headers = {
+        header["key"].lower(): header["value"]
+        for rule in vercel_config.get("headers", [])
+        for header in rule.get("headers", [])
+    }
+    for required_header in (
+        "content-security-policy",
+        "permissions-policy",
+        "referrer-policy",
+        "strict-transport-security",
+        "x-content-type-options",
+        "x-frame-options",
+    ):
+        if required_header not in configured_headers:
+            failures.append(f"vercel.json: missing security header {required_header}")
+    if "connect-src 'none'" not in configured_headers.get("content-security-policy", ""):
+        failures.append("vercel.json: CSP must keep outbound browser connections disabled")
 
     css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
     responsive_css = {

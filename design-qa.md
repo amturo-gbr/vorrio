@@ -122,7 +122,41 @@ longer acts as the product brand mark.
 - Website contract, documentation links, PWA contract and release package: passed.
 - German and English legal navigation and language switching: passed.
 - All six static HTML pages: HTTP 200.
-- Frontend tests: 12 passed, 0 failed; i18n: 747 keys used, 0 missing.
-- Production build and bundle limit: passed (initial JavaScript 421.0 KiB / 500 KiB).
+- Frontend tests: 13 passed, 0 failed; i18n: 750 keys used, 0 missing.
+- Production build and bundle limit: passed (initial JavaScript 352.7 KiB / 500 KiB).
+
+## Website QA — Stripe support preparation
+
+### Architecture
+
+- Stripe-hosted Payment Links are used instead of an embedded form or custom payment
+  API. The static page therefore needs no Stripe SDK, API key, webhook or backend.
+- Separate slots exist for a freely chosen one-time amount and an optional fixed
+  monthly sponsorship.
+- Empty, invalid and Stripe test URLs keep their controls hidden. Only live HTTPS
+  links on `buy.stripe.com` can activate the public controls.
+- No GitHub Sponsors wording or control remains in the German or English public page.
+
+### Privacy and security
+
+- `support-config.js` contains public link slots only; automated checks reject Stripe
+  API keys and webhook secrets.
+- No Stripe script, iframe or network request is loaded on the Vorrio website. Stripe
+  is contacted only after a visitor follows an activated external Payment Link.
+- German and English privacy pages now explain Stripe payment processing and remain
+  explicit that the controls are not yet active.
+
+### Verification
+
+- Website, documentation-link and release-package contracts: passed.
+- JavaScript syntax and empty-config activation gate: passed.
+- Frontend tests and production build: passed.
+- One-time EUR 10 and monthly EUR 5 Stripe sandbox payments: passed.
+- Declined-card handling and absence of a paid transaction: passed.
+- PDF invoice availability for one-time and monthly payments: passed.
+- Hosted customer portal, billing data, invoice history, payment-method update and
+  cancellation at period end: passed.
+- Full one-time payment refund with the final Dashboard state
+  `Zurückerstattet`: passed.
 
 final result: passed
