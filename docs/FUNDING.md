@@ -58,7 +58,7 @@ charitable donation, and Vorrio does not promise donation receipts. Public copy
 uses “support” or “sponsorship”. Amturo UG records payouts and applicable taxes
 through its normal accounting process.
 
-No live payment link is publicly active in 0.8.23. Stripe support is activated
+No live payment link is publicly active in 0.8.24. Stripe support is activated
 only after the receiving Amturo account, live Payment Links, legal copy and
 bookkeeping process are ready. Stripe secret keys never belong in `website/` or
 a browser bundle.

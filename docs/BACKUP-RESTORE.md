@@ -57,7 +57,7 @@ docker run --rm \
   --env APP_SECRET_KEY \
   --env APP_SECRET_KEY_NEW \
   --entrypoint python \
-  vorrio:0.8.23 /app/scripts/rotate_secret.py
+  vorrio:0.8.24 /app/scripts/rotate_secret.py
 ```
 
 4. update the normal deployment's `APP_SECRET_KEY` to the new value;

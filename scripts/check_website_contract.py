@@ -122,16 +122,8 @@ def main() -> None:
                 failures.append(f"{pages[locale].name}: roadmap marker {marker!r} is missing")
         if "GitHub Sponsors" in page_text or "github.com/sponsors/" in page_text:
             failures.append(f"{pages[locale].name}: GitHub Sponsors must stay hidden")
-        for key in ("oneTime", "monthly"):
-            hidden_control = re.search(
-                rf"<a\b(?=[^>]*data-stripe-support-link=\"{key}\")(?=[^>]*\bhidden\b)[^>]*>",
-                page_text,
-                re.DOTALL,
-            )
-            if not hidden_control:
-                failures.append(
-                    f"{pages[locale].name}: {key} Stripe control must be hidden by default"
-                )
+        if "data-stripe" in page_text or "support-config.js" in page_text:
+            failures.append(f"{pages[locale].name}: inactive payment integration must not ship")
 
     support_config = (WEBSITE / "support-config.js").read_text(encoding="utf-8")
     for key in ("oneTime", "monthly"):
@@ -154,9 +146,12 @@ def main() -> None:
         failures.append("support-config.js: Stripe API and webhook keys are forbidden")
 
     support_script = (WEBSITE / "script.js").read_text(encoding="utf-8")
-    for marker in ("buy.stripe.com", "url.pathname.startsWith('/test_')"):
-        if marker not in support_script:
-            failures.append(f"script.js: missing Stripe activation guard {marker}")
+    if "stripe" in support_script.lower():
+        failures.append("script.js: inactive payment integration must not ship")
+
+    vercel_ignore = (WEBSITE / ".vercelignore").read_text(encoding="utf-8").splitlines()
+    if "support-config.js" not in vercel_ignore:
+        failures.append(".vercelignore: local Stripe support config must not be deployed")
 
     legal_source = "\n".join(
         pages[key].read_text(encoding="utf-8")
@@ -173,6 +168,20 @@ def main() -> None:
     for label, marker in legal_markers.items():
         if marker not in legal_source:
             failures.append(f"legal pages: missing {label}")
+
+    public_copy = "\n".join(page.read_text(encoding="utf-8") for page in pages.values())
+    internal_or_inactive_markers = (
+        "Stripe",
+        "Wird vorbereitet:",
+        "In preparation:",
+        "vor der öffentlichen Ankündigung",
+        "before the public announcement",
+        "muss vor dem öffentlichen Start",
+        "Before the public launch",
+    )
+    for marker in internal_or_inactive_markers:
+        if marker in public_copy:
+            failures.append(f"public website: internal or inactive copy remains: {marker}")
 
     implementation_source = "\n".join(
         [

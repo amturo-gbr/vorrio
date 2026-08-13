@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.24 – 2026-08-13
+
+- Removed inactive Stripe controls, future-service disclosures and internal
+  launch-review notes from every public website page; contribution copy now
+  routes exclusively to the active GitHub workflow until payments launch.
+- Synchronized the bilingual navigation, roadmap, legal pages and public
+  deployment contract with the website already served at `vorrio.app`.
+
 ## 0.8.23 – 2026-08-13
 
 - Kept the compact German safety fallback embedded and split other official

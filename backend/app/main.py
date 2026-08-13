@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.23",
+    version="0.8.24",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.23",
-        "title": "Sprachen werden modular",
-        "summary": "Offizielle Sprachen werden jetzt als geprüfte Pakete bei Bedarf geladen und sicher für die Offline-Nutzung gespeichert.",
+        "version": "0.8.24",
+        "title": "Projektseite klarer und startbereit",
+        "summary": "Die öffentliche Vorrio-Seite trennt Mitmachen, künftige Finanzierung und Produktbetrieb jetzt eindeutig voneinander.",
         "highlights": [
-            "Deutsch und Englisch bleiben vollständig im selben Docker-Image enthalten",
-            "Ein zentrales Sprachregister bereitet weitere offizielle Sprachen vor",
-            "Der neue Datenvertrag prüft künftige Community-Übersetzungen ohne ausführbaren Code",
+            "Die öffentliche Projektseite verweist nur auf tatsächlich verfügbare Funktionen",
+            "Inaktive Zahlungsintegration und vorbereitende Hinweise werden nicht ausgeliefert",
+            "Impressum, Datenschutz, Roadmap und Community-Wege sind zweisprachig abgestimmt",
         ],
     },
     "en": {
-        "version": "0.8.23",
-        "title": "Languages become modular",
-        "summary": "Official languages are now loaded as reviewed packs when needed and stored safely for offline use.",
+        "version": "0.8.24",
+        "title": "A clearer, launch-ready project site",
+        "summary": "The public Vorrio site now clearly separates contributing, future funding and product operation.",
         "highlights": [
-            "German and English remain complete in the same Docker image",
-            "A central language registry prepares additional official languages",
-            "The new data contract validates future community translations without executable code",
+            "The public project site only points to capabilities that are actually available",
+            "Inactive payment integration and preparation notes are not shipped",
+            "Legal pages, privacy, roadmap and community routes are aligned in both languages",
         ],
     },
 }

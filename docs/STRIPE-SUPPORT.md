@@ -5,9 +5,12 @@ smallest integration that supports a static website: payment data stays on
 Stripe Checkout, the Vorrio website loads no Stripe JavaScript and no secret or
 publishable API key is required in the browser.
 
-## Prepared website contract
+## Public website boundary
 
-`website/support-config.js` contains two public URL slots:
+The public Vercel deployment contains no Stripe controls, Stripe copy or Stripe
+runtime code. `website/.vercelignore` excludes the local placeholder
+`website/support-config.js`, whose two empty URL slots are reserved for a later
+activation change:
 
 ```js
 window.VORRIO_SUPPORT_LINKS = Object.freeze({
@@ -16,10 +19,11 @@ window.VORRIO_SUPPORT_LINKS = Object.freeze({
 })
 ```
 
-Empty or invalid values keep the corresponding controls hidden. Only live HTTPS
-URLs on `buy.stripe.com` are accepted; `/test_...` links deliberately remain
-hidden. When at least one valid link is configured, the website shows that
-control and the Stripe processing notice automatically.
+The placeholder is not referenced by public HTML or JavaScript. Activating
+payments requires one reviewed change that adds the live controls and strict
+`https://buy.stripe.com/` URL validation, removes the Vercel exclusion, updates
+the privacy policy and verifies both languages. Test links must never be copied
+into public website files.
 
 Never put `sk_test_`, `sk_live_`, restricted keys or webhook secrets in this
 file, another file under `website/`, Git, screenshots or browser code.
@@ -40,8 +44,8 @@ Prepared on 13 August 2026:
   method updates and cancellation at the end of the billing period;
 - their test IDs and URLs are stored locally in `.env.stripe.local`, which is
   ignored by Git and must remain private;
-- `website/support-config.js` remains empty, so test links cannot appear on the
-  public website.
+- `website/support-config.js` remains empty and is excluded from Vercel, so test
+  links and inactive payment wording cannot appear on the public website.
 
 The setup script only accepts a restricted `rk_test_` key and refuses live
 mode. Re-running it must return the existing objects instead of creating
@@ -108,16 +112,18 @@ copy and accounting complexity.
 ## Test and activation sequence
 
 1. Create both links in Stripe test mode. **Prepared.**
-2. Keep `website/support-config.js` empty while testing the links directly;
-   Stripe `/test_...` URLs cannot activate public controls. **Verified.**
+2. Keep `website/support-config.js` empty and excluded from Vercel while testing
+   the links directly. **Verified.**
 3. Test successful one-time and monthly payments, a failed payment, PDF
    invoices, customer-portal access, recurring cancellation and a refund.
    **Verified in Stripe test mode.**
 4. Confirm the privacy text, terms and accounting process.
 5. Create or activate the live Payment Links.
-6. Copy only the two live `https://buy.stripe.com/...` URLs into the config.
-7. Run `make website-check` and inspect German and English pages.
-8. Test the public links in a signed-out browser before launch.
+6. Add only the two live `https://buy.stripe.com/...` URLs together with guarded
+   public controls and the corresponding German and English privacy disclosure.
+7. Remove `support-config.js` from `.vercelignore` only in that reviewed change.
+8. Run `make website-check` and inspect German and English pages.
+9. Test the public links in a signed-out browser before launch.
 
 The public website deliberately needs no Stripe API integration. Local API
 automation is used only for repeatable Stripe account setup; visitors still use

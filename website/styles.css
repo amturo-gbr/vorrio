@@ -1002,28 +1002,6 @@ h1 {
   gap: 14px;
 }
 
-.support-note {
-  margin: 28px 0 0;
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.55;
-}
-
-.project-status {
-  padding: 16px 18px;
-  margin: 18px 0 0;
-  border: 1px solid #cfe1d1;
-  border-radius: var(--radius-sm);
-  color: #31533b;
-  background: var(--green-soft);
-  font-size: 14px;
-  line-height: 1.55;
-}
-
-.project-status strong {
-  color: var(--green-dark);
-}
-
 .legal-main {
   min-height: 70vh;
   padding: 150px 0 112px;
