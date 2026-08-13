@@ -1,7 +1,10 @@
 # Localization
 
-Vorrio 0.8.22 ships a complete German and English interface. Language is a
-personal account preference, not a household-wide deployment setting.
+Vorrio ships a complete German and English interface. Language is a personal
+account preference, not a household-wide deployment setting. Starting with
+0.8.23, each official translation is also a versioned, data-only language pack.
+The small German safety fallback remains embedded; other catalogs load on
+demand.
 
 ## How the language is chosen
 
@@ -50,13 +53,26 @@ change.
 
 ## Implementation contract
 
-German source copy is the stable translation key and remains the fallback.
-English values live in `frontend/src/locales/en/translation.json`; the small
-German catalog in `frontend/src/locales/de/translation.json` contains only
-grammatical singular/plural inflections. `frontend/src/i18n.ts` owns locale
-detection, persistence, document language, localized manifest selection and
-number/date/currency formatters. React views must use `translate(...)` or
-`useTranslation()` for visible product copy.
+Every bundled language owns a `manifest.json` and `translation.json` below
+`frontend/src/locales/<locale>/`. The central registry in
+`frontend/src/locales/registry.ts` supplies the supported locale type, native
+label, direction, trust tier, completeness and catalog loader. The PWA embeds
+the small German safety fallback, loads another selected language before
+rendering and caches that immutable, content-hashed chunk for later offline
+starts. Other language chunks are not part of the eager service-worker
+precache. If a never-used pack cannot be fetched, the startup remains usable in
+German and the account preference is not overwritten.
+
+The original German sentence keys remain a compatibility fallback while they
+are migrated gradually. New product copy uses stable namespaced keys such as
+`language.interface_label`; CI prevents the number of legacy sentence keys
+from increasing. Stable keys must have both German and English values. React
+views must use `translate(...)` or `useTranslation()` for visible product copy.
+
+`frontend/src/i18n.ts` owns locale detection, persistence, document direction,
+localized manifest selection and number/date/currency formatters. The language
+switcher uses each pack's native name instead of translating language names
+through the currently active catalog.
 
 The database adds `users.preferred_locale` with a safe `de` default and a
 `de`/`en` check. Existing accounts are migrated to German without changing
@@ -72,13 +88,36 @@ npm test
 npm run build
 cd ..
 make pwa-check
+python3 scripts/validate_language_pack.py
 make api-docs-check
 ```
 
 `npm test` includes `scripts/check-i18n-contract.mjs`. The contract parses the
 TypeScript/TSX sources, fails for a missing or empty English key, requires
 German and English singular/plural forms for every count-aware message and
-flags likely visible German copy that bypasses the translation layer.
+flags likely visible German copy that bypasses the translation layer. The
+language-pack validator additionally rejects unexpected files, executable or
+HTML content, unknown keys, empty values, changed interpolation placeholders,
+invalid metadata and catalogs larger than 2 MiB.
+
+## Official and community packs
+
+Official packs are reviewed, complete and shipped inside the signed Vorrio
+container. Users select them directly under **Settings → Language & region**;
+there is no separate Docker image or deployment variable. The currently
+selected non-default chunk is downloaded from the user's own Vorrio
+installation, not a third-party service.
+
+The public data format for future community packs is defined in
+`language-packs/schema-v1.json`. A source pack contains only a manifest and a
+flat JSON catalog; scripts, HTML, CSS, binary files and install hooks are never
+allowed. Community contributions can already use the validator and normal
+GitHub review. Runtime installation from a package index remains disabled until
+Vorrio can verify an Amturo-controlled index, checksum, signature, compatible
+schema/application versions and completeness before exposing a language to
+users. Details and contribution steps live in `language-packs/README.md`.
+The contributor-facing issue, review, status and official-promotion workflow is
+maintained in [Translation community](TRANSLATION-COMMUNITY.md).
 
 ## Adding another language
 
@@ -86,11 +125,12 @@ Adding a language is an explicit product and API change, not only a catalog
 file. A contribution must update, together:
 
 1. frontend and backend `SupportedLocale` types plus locale detection;
-2. a complete reviewed translation catalog;
+2. a complete reviewed manifest and translation catalog;
 3. locale-aware server copy for release notes, token scopes and Push;
 4. a localized PWA manifest and public website entry point;
 5. setup, invitation, preference, formatting and notification tests;
-6. this document, OpenAPI, changelog and release notes.
+6. the language-pack validator, this document, OpenAPI, changelog and release
+   notes.
 
 Machine translation may prepare a draft, but a fluent reviewer must approve
 the complete user journey, especially security, deletion, stock movement and

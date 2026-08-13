@@ -8,6 +8,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = {
+    ".github/CODEOWNERS",
+    ".github/ISSUE_TEMPLATE/language_request.yml",
+    ".github/PULL_REQUEST_TEMPLATE/language_pack.md",
     ".env.example",
     "AUTHORS.md",
     "CHANGELOG.md",
@@ -23,13 +26,24 @@ REQUIRED_FILES = {
     "docs/API.md",
     "docs/INSTALLATION.md",
     "docs/PUBLIC-LAUNCH-CHECKLIST.md",
+    "docs/STRIPE-SUPPORT.md",
+    "docs/TRANSLATION-COMMUNITY.md",
     "docs/api/openapi.json",
+    "frontend/src/locales/de/manifest.json",
+    "frontend/src/locales/en/manifest.json",
+    "language-packs/README.md",
+    "language-packs/schema-v1.json",
+    "scripts/create_language_pack.py",
+    "scripts/check_translation_community.py",
     "website/datenschutz.html",
+    "website/.vercelignore",
     "website/impressum.html",
     "website/imprint.html",
     "website/index-en.html",
     "website/index.html",
     "website/privacy.html",
+    "website/support-config.js",
+    "website/vercel.json",
 }
 FORBIDDEN_NAMES = {".env", ".DS_Store"}
 FORBIDDEN_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".pem", ".key"}
@@ -76,6 +90,8 @@ FORBIDDEN_TEXT = {
         re.IGNORECASE,
     ),
     "stale GitHub repository link": re.compile(r"github\.com/amturo/vorrio"),
+    "Stripe secret key": re.compile(r"\b(?:sk|rk)_(?:test|live)_[A-Za-z0-9]{16,}"),
+    "Stripe webhook secret": re.compile(r"\bwhsec_[A-Za-z0-9]{16,}"),
 }
 
 

@@ -17,6 +17,11 @@ English. First-run setup and invitation acceptance store that language for the
 new account. After sign-in, each user's saved choice is authoritative across
 devices and can be changed under **Settings → Language & region**.
 
+The same installation contains every official language. Vorrio loads the
+selected catalog from its own server and caches it for later offline starts. To
+switch to a language that has never been used on that device, connect once so
+the corresponding pack can be stored locally.
+
 Changing the interface never translates or rewrites household product names,
 brands, store names, receipt text, currency or the server timezone. See
 [Localization](LOCALIZATION.md) for the exact behavior.

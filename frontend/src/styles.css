@@ -5270,6 +5270,13 @@ select:focus-visible {
   font: inherit;
 }
 
+.language-pack-status {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
 .login-panel > .language-switcher.compact {
   justify-content: flex-end;
   margin: -12px -8px 14px 0;

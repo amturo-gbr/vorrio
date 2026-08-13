@@ -63,7 +63,7 @@ import type {
   TotpSetup,
 } from './types'
 import { automaticExperienceSurface } from './experience'
-import { changeLocale, currentLocale, formatCurrency, formatDate, formatNumber, translate } from './i18n'
+import { changeLocale, currentLocale, formatCurrency, formatDate, formatNumber, supportedLocales, translate } from './i18n'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
 import type { SupportedLocale } from './types'
 
@@ -155,21 +155,28 @@ function App() {
 
   useEffect(() => {
     if (currentUser?.preferred_locale && currentUser.preferred_locale !== currentLocale()) {
-      void changeLocale(currentUser.preferred_locale)
+      void changeLocale(currentUser.preferred_locale).catch(() => {
+        setMessage({ kind: 'error', text: translate('language.pack_load_failed') })
+      })
     }
   }, [currentUser?.preferred_locale])
 
   const updateLocale = useCallback(async (locale: SupportedLocale) => {
     const previous = currentLocale()
-    await changeLocale(locale)
+    let languageChanged = false
     try {
+      await changeLocale(locale)
+      languageChanged = true
       const state = await api.updatePreferences(locale)
       setCurrentUser(state.user)
       void api.experience().then(setExperience).catch(() => undefined)
       setMessage({ kind: 'success', text: translate('Sprache wurde gespeichert.') })
     } catch (error) {
-      await changeLocale(previous)
-      setMessage({ kind: 'error', text: (error as Error).message })
+      if (languageChanged) await changeLocale(previous)
+      setMessage({
+        kind: 'error',
+        text: languageChanged ? (error as Error).message : translate('language.pack_load_failed'),
+      })
       throw error
     }
   }, [])
@@ -1938,6 +1945,10 @@ function SettingsScreen({
                 : current)
             }}
           />
+          <p className="language-pack-status">
+            {translate('language.pack_status', { count: supportedLocales.length })}
+            {' '}{translate('language.community_status')}
+          </p>
         </section>
         <section className={`settings-section identity-section ${identity?.owner_setup_complete ? '' : 'needs-setup'}`}>
           <div className="section-heading"><ShieldCheck /><div><h2>{translate("Konto & Sicherheit")}</h2><p>{translate("Dein persönlicher Zugang und alle aktiven Browser-Sitzungen.")}</p></div></div>

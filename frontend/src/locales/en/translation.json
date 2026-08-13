@@ -1,4 +1,10 @@
 {
+  "language.interface_label": "Interface language",
+  "language.pack_status": "{{count}} official language packs are included.",
+  "language.pack_status_one": "{{count}} official language pack is included.",
+  "language.pack_status_other": "{{count}} official language packs are included.",
+  "language.community_status": "More reviewed community languages can be added in future.",
+  "language.pack_load_failed": "The language pack could not be loaded. Check the connection and try again.",
   "-Basis-URL ohne Zugangsdaten, Query oder Fragment sein": "-Base URL without access data, query or fragment",
   "-mal verwendet und kann nicht gelöscht werden": "-used once and cannot be deleted",
   "API-Endpunkt nicht gefunden": "API endpoint not found",

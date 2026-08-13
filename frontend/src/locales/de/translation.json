@@ -1,4 +1,10 @@
 {
+  "language.interface_label": "Oberflächensprache",
+  "language.pack_status": "{{count}} offizielle Sprachpakete sind enthalten.",
+  "language.pack_status_one": "{{count}} offizielles Sprachpaket ist enthalten.",
+  "language.pack_status_other": "{{count}} offizielle Sprachpakete sind enthalten.",
+  "language.community_status": "Weitere geprüfte Community-Sprachen können künftig ergänzt werden.",
+  "language.pack_load_failed": "Das Sprachpaket konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut.",
   "{{count}} aktive Sitzungen_one": "{{count}} aktive Sitzung",
   "{{count}} aktive Sitzungen_other": "{{count}} aktive Sitzungen",
   "{{count}} andere Sitzungen wurden beendet._one": "{{count}} andere Sitzung wurde beendet.",

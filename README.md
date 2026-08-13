@@ -9,7 +9,7 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.22
+## What works in 0.8.23
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;
@@ -122,7 +122,9 @@ analysis provider, and scan the first receipt or package. Live camera scanning
 requires HTTPS; manual entry and hardware scanners work on a LAN HTTP address.
 Vorrio initially follows the browser language and stores the chosen German or
 English interface per account; it can be changed later under **Settings →
-Language & region**.
+Language & region**. Both official data-only language packs ship in the same
+image and are loaded on demand. The versioned format for reviewed community
+translations is documented under `language-packs/`.
 Vorrio opens a short product guide after each account's first login. After a
 container upgrade, each user sees the installed release highlights once; both
 surfaces remain available under **Einstellungen → Hilfe & Version**.
@@ -138,6 +140,17 @@ values as unsafe.
 See [Installation](docs/INSTALLATION.md),
 [Configuration](docs/CONFIGURATION.md) and
 [Backup and restore](docs/BACKUP-RESTORE.md) for production use.
+
+## Help translate Vorrio
+
+Community members can request, translate or independently review another
+language without editing application code or accessing a household instance.
+Open the GitHub **New language** issue, generate a data-only pack and submit it
+with the dedicated language pull-request checklist. Automated checks reject
+unsafe files, invalid placeholders and inaccurate completeness metadata;
+fluent reviewers and an Amturo maintainer decide when a language is ready for
+an official signed release. Read the [translation community
+guide](docs/TRANSLATION-COMMUNITY.md) before starting.
 
 ## Daily workflow
 
@@ -232,6 +245,8 @@ required permission as `x-vorrio-required-scope`.
 - [Architecture](ARCHITECTURE.md)
 - [Getting started and update notes](docs/GETTING-STARTED.md)
 - [Localization](docs/LOCALIZATION.md)
+- [Translation community](docs/TRANSLATION-COMMUNITY.md)
+- [Language-pack format](language-packs/README.md)
 - [Installation](docs/INSTALLATION.md)
 - [Deployment profiles and URLs](docs/DEPLOYMENT-PROFILES.md)
 - [Configuration](docs/CONFIGURATION.md)

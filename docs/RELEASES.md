@@ -53,6 +53,8 @@ settings and GHCR visibility, is maintained in the
 The private 0.8.22 rehearsal produced the first signed image, SBOM and release
 assets. None of them are public until an authorized Amturo maintainer changes
 repository and package visibility separately after the launch gate passes.
+Version 0.8.23 is the next candidate and must receive a new tag, image, SBOM,
+signature and fresh-install proof; the immutable 0.8.22 assets are not replaced.
 
 ## Private release rehearsal
 

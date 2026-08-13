@@ -4,7 +4,7 @@ services:
   app:
     build:
       context: .
-    image: vorrio:0.8.22
+    image: vorrio:0.8.23
     container_name: vorrio
     environment:
       APP_PASSWORD: ${APP_PASSWORD:-}

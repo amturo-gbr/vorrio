@@ -1,0 +1,10 @@
+# Amturo keeps final approval for releases, security boundaries and language tiers.
+* @adrian-amturo
+
+# Translation data and the code that loads or validates it require maintainer review.
+/frontend/src/locales/ @adrian-amturo
+/language-packs/ @adrian-amturo
+/scripts/create_language_pack.py @adrian-amturo
+/scripts/validate_language_pack.py @adrian-amturo
+/docs/LOCALIZATION.md @adrian-amturo
+/docs/TRANSLATION-COMMUNITY.md @adrian-amturo

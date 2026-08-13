@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../../language-packs/schema-v1.json",
+  "schema_version": 1,
+  "locale": "de",
+  "native_name": "Deutsch",
+  "english_name": "German",
+  "direction": "ltr",
+  "fallback_locale": "de",
+  "tier": "official",
+  "catalog_mode": "source-fallback",
+  "catalog_version": 1,
+  "minimum_vorrio_version": "0.8.23",
+  "completion": 100,
+  "capabilities": ["frontend", "backend", "notifications", "pwa_manifest"]
+}
