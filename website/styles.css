@@ -886,21 +886,10 @@ h1 {
   margin-bottom: 0;
 }
 
-.support-actions > div {
+.support-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
-}
-
-.button-muted {
-  color: #fff;
-  background: var(--green);
-  cursor: default;
-  opacity: 0.64;
-}
-
-.button-muted:hover {
-  transform: none;
 }
 
 .support-note {
@@ -1519,7 +1508,7 @@ h1 {
     letter-spacing: 0;
   }
 
-  .support-actions > div {
+  .support-buttons {
     grid-template-columns: 1fr;
   }
 

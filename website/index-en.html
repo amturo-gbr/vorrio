@@ -14,9 +14,11 @@
       property="og:description"
       content="The self-hosted household app for receipts, inventory, shopping list, prices and budget."
     />
-    <link rel="alternate" hreflang="de" href="index.html" />
-    <link rel="alternate" hreflang="en" href="index-en.html" />
-    <link rel="alternate" hreflang="x-default" href="index.html" />
+    <meta property="og:url" content="https://vorrio.app/index-en.html" />
+    <link rel="canonical" href="https://vorrio.app/index-en.html" />
+    <link rel="alternate" hreflang="de" href="https://vorrio.app/" />
+    <link rel="alternate" hreflang="en" href="https://vorrio.app/index-en.html" />
+    <link rel="alternate" hreflang="x-default" href="https://vorrio.app/" />
     <link rel="icon" href="assets/vorrio-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <title>Vorrio – Self-hosted household inventory</title>
@@ -299,7 +301,7 @@
             </p>
           </div>
           <div class="support-actions reveal">
-            <div>
+            <div class="support-buttons">
               <a class="button button-outline" href="https://github.com/amturo-gbr/vorrio/blob/main/CONTRIBUTING.md">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
                   <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3.3-.4 6.8-1.6 6.8-7A5.4 5.4 0 0 0 19.3 4 5 5 0 0 0 19.2.5S18 0 15 2a13.4 13.4 0 0 0-7 0C5-.1 3.8.5 3.8.5A5 5 0 0 0 3.7 4a5.4 5.4 0 0 0-1.5 3.7c0 5.4 3.5 6.6 6.8 7A4.8 4.8 0 0 0 8 18v4" />
@@ -307,17 +309,33 @@
                 </svg>
                 Join on GitHub
               </a>
-              <span class="button button-muted" aria-disabled="true">
+              <a
+                class="button button-primary"
+                data-stripe-support-link="oneTime"
+                hidden
+                rel="noopener noreferrer"
+                target="_blank"
+              >
                 <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>
-                GitHub Sponsors not active yet
-              </span>
+                Support once
+              </a>
+              <a
+                class="button button-outline"
+                data-stripe-support-link="monthly"
+                hidden
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                Support monthly
+              </a>
             </div>
-            <p class="support-note">
-              Financial support is treated as sponsorship; donation receipts are not provided.
+            <p class="support-note" data-stripe-support-note hidden>
+              Secure payment processing by Stripe. Financial support is treated as sponsorship;
+              donation receipts are not provided.
             </p>
-            <p class="project-status">
-              <strong>Pre-launch status:</strong> The repository and releases are still private.
-              GitHub Sponsors has not yet been applied for by the organization.
+            <p class="project-status" data-stripe-support-pending>
+              <strong>In preparation:</strong> Financial support only appears after the Stripe live
+              links, accounting process and legal copy have been verified.
             </p>
           </div>
         </div>
@@ -342,6 +360,7 @@
         <nav aria-label="Join in">
           <strong>Join in</strong>
           <a href="https://github.com/amturo-gbr/vorrio/issues">Issues</a>
+          <a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/TRANSLATION-COMMUNITY.md">Translate</a>
           <a href="https://github.com/amturo-gbr/vorrio/discussions">Discussions</a>
           <a href="https://github.com/amturo-gbr/vorrio/security/advisories/new">Security</a>
         </nav>
@@ -360,6 +379,7 @@
       </div>
     </footer>
 
+    <script src="support-config.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
