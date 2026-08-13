@@ -171,6 +171,11 @@ English are split into content-hashed language chunks inside the same image;
 the selected pack is cached on demand. After upgrading, open each account once
 online before relying on a newly selected language offline.
 
+Version 0.8.24 changes no household schema, authentication state or stored
+product data. It aligns the public project website, legal pages and community
+routes with the reviewed deployment already served at `vorrio.app`. The
+container upgrade only updates the reported version and release notes.
+
 Version 0.8.21 changes only the maintained HTTP client dependency used by
 tests and outbound connectors. It adds no schema migration, rewrites no
 household data and leaves the versioned REST contract unchanged. After that

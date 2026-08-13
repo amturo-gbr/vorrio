@@ -67,7 +67,7 @@ necessary but does not by itself publish a repository or container.
 ## 4. First GHCR publication
 
 - [ ] Push `main` and wait for the CI workflow to pass.
-- [ ] Create and push the versioned release tag `v0.8.23` only after CI passes and
+- [ ] Create and push the versioned release tag `v0.8.24` only after CI passes and
   the private release rehearsal is ready for its immutable candidate.
 - [ ] Confirm that the release workflow builds `linux/amd64` and `linux/arm64`,
   publishes provenance/SBOM attestations and signs the immutable digest.

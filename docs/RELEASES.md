@@ -50,11 +50,12 @@ settings and GHCR visibility, is maintained in the
   before logging in and publishing, so a tag cannot rely only on a previous
   branch run.
 
-The private 0.8.22 rehearsal produced the first signed image, SBOM and release
-assets. None of them are public until an authorized Amturo maintainer changes
-repository and package visibility separately after the launch gate passes.
-Version 0.8.23 is the next candidate and must receive a new tag, image, SBOM,
-signature and fresh-install proof; the immutable 0.8.22 assets are not replaced.
+The private 0.8.23 rehearsal produced a signed multi-architecture image, SBOM,
+release assets and an independent fresh-install proof. None of them are public
+until an authorized Amturo maintainer changes repository and package visibility
+separately after the launch gate passes. Version 0.8.24 is the next candidate
+and must receive its own tag, image, SBOM, signature and fresh-install proof;
+the immutable 0.8.23 assets are not replaced.
 
 ## Private release rehearsal
 
@@ -71,11 +72,11 @@ part of this rehearsal.
 Replace the example owner/repository and version with the published values:
 
 ```bash
-docker pull ghcr.io/amturo-gbr/vorrio:0.8.22
+docker pull ghcr.io/amturo-gbr/vorrio:0.8.24
 cosign verify \
   --certificate-identity-regexp '^https://github.com/amturo-gbr/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo-gbr/vorrio:0.8.22
+  ghcr.io/amturo-gbr/vorrio:0.8.24
 ```
 
 Pin production deployments to a version or digest. `latest` is convenient for
