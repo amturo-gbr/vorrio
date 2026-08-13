@@ -16,6 +16,22 @@ export default defineConfig({
         globPatterns: [
           '**/*.{js,css,html,svg,woff2,webmanifest,png}',
         ],
+        globIgnores: [
+          'assets/translation-*.js',
+        ],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/translation-[^/]+\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'vorrio-language-packs-v1',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 365 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
         importScripts: ['/push-worker.js'],
       },
     }),

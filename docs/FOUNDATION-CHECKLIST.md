@@ -269,6 +269,18 @@ public release.
   remaining receipt, settings and future offline mutations;
 - background job persistence for OCR, imports and notifications.
 
+## Prepared in 0.8.23
+
+- lazy official language chunks with a dedicated offline runtime cache;
+- versioned language manifests and a central typed registry;
+- a public data-only pack schema plus positive and adversarial validation tests;
+- stable namespaced translation keys with a CI ceiling on legacy sentence keys;
+- an explicit signature/index/compatibility gate before community packages can
+  ever be installed at runtime.
+- a public translation workflow with issue and pull-request templates,
+  CODEOWNERS, non-destructive pack generation, truthful completion checks and
+  independent fluent-review requirements.
+
 ## P1 – native-client prerequisites
 
 - stable API compatibility and client capability discovery;

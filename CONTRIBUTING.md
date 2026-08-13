@@ -35,11 +35,33 @@ The API documentation drift, local documentation-link and public-package
 hygiene checks must pass. A matching, stock, migration or connector change
 needs a regression test.
 
+## Translation contributions
+
+Start with the GitHub **New language** issue so one locale has one visible
+coordination point. Generate a safe draft with:
+
+```bash
+python3 scripts/create_language_pack.py es "Español" "Spanish"
+```
+
+Language-pack pull requests use the specialized
+[`language_pack.md`](.github/PULL_REQUEST_TEMPLATE/language_pack.md) template
+and contain only the data-only manifest and catalog below
+`language-packs/community/<locale>/`.
+Run `make language-pack-check` before submission. A technically valid draft can
+remain a community candidate; official status additionally requires complete
+product integration, independent fluent review and Amturo maintainer approval.
+Machine-assisted drafts must be disclosed and cannot review themselves. See
+[Translation community](docs/TRANSLATION-COMMUNITY.md) for roles, status labels
+and the promotion gate.
+
 ## Pull requests
 
 - Keep one coherent behavior change per pull request.
 - Explain data migration and rollback behavior.
 - Include desktop and mobile screenshots for visible UI changes.
+- Link the coordinating language issue and name the independent fluent reviewer
+  when proposing an official language.
 - Never include API keys, cookies, receipts, addresses, database exports,
   private domains, LAN addresses or personal filesystem paths.
 - Add a changelog entry and mark breaking API changes clearly.

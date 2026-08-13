@@ -33,6 +33,8 @@ def main() -> None:
         ("frontend/src/i18n.ts", "`/manifest-${locale}.webmanifest`", "runtime localized manifest selection"),
         ("frontend/vite.config.ts", "manifest: false", "explicit localized manifests"),
         ("frontend/vite.config.ts", "navigateFallback: '/index.html'", "offline navigation fallback"),
+        ("frontend/vite.config.ts", "cacheName: 'vorrio-language-packs-v1'", "on-demand language-pack cache"),
+        ("frontend/vite.config.ts", "'assets/translation-*.js'", "language chunks excluded from eager precache"),
         ("frontend/vite.config.ts", "importScripts: ['/push-worker.js']", "push worker integration"),
         ("frontend/src/main.tsx", "registerSW({ immediate: true })", "service-worker registration"),
         ("frontend/public/push-worker.js", "self.addEventListener('push'", "visible Web Push handler"),
@@ -99,6 +101,9 @@ def main() -> None:
     ):
         if service_worker_content.count(f'url:"{asset}"') != 1:
             raise SystemExit(f"PWA check failed: {asset} must occur exactly once in the precache")
+
+    if "translation-" in service_worker_content and "vorrio-language-packs-v1" not in service_worker_content:
+        raise SystemExit("PWA check failed: language chunks need the dedicated runtime cache")
 
     print(f"PWA contract is valid (install icon {width}x{height})")
 

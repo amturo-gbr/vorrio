@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.23 – 2026-08-13
+
+- Kept the compact German safety fallback embedded and split other official
+  catalogs into lazy, content-hashed chunks while retaining one Docker image
+  and per-account selection.
+- Added a central typed language registry with native names, text direction,
+  trust tier, compatibility, capabilities and completeness metadata.
+- Added a versioned data-only language-pack schema and validator that rejects
+  executable/HTML content, unexpected files, unknown keys, unsafe values,
+  changed placeholders and oversized catalogs, including adversarial tests.
+- Added a dedicated PWA runtime cache for selected language chunks and kept
+  unselected translations out of the eager offline precache.
+- Began the migration to stable namespaced translation keys and added a CI
+  ceiling that prevents new legacy sentence-key debt.
+- Added a complete translation-community workflow with a language request form,
+  specialized pull-request checklist, CODEOWNERS, lifecycle labels and explicit
+  translator, fluent-reviewer and maintainer responsibilities.
+- Added a non-destructive community-pack generator and CI coverage that rejects
+  inaccurate community completion metadata as well as unsafe package content.
+- Prepared dependency-free Stripe-hosted Payment Links for optional one-time
+  and monthly project support while keeping all payment controls hidden until
+  reviewed live links are explicitly configured.
+- Added repeatable test-mode setup for PDF invoices and the hosted customer
+  portal, then verified successful, declined, subscription-cancellation and
+  refund flows without exposing Stripe credentials or test links publicly.
+- Prepared the static website for Vercel with hardened response headers,
+  canonical multilingual URLs, updated hosting privacy disclosures and the
+  `vorrio.app` / `vorrio.de` production-domain contract.
+
 ## 0.8.22 – 2026-08-12
 
 - Added a complete German and English PWA, including signed-out flows,

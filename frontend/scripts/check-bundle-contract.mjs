@@ -17,4 +17,22 @@ if (entryBytes > maximumEntryBytes) {
   throw new Error(`Initial JavaScript bundle is ${(entryBytes / 1024).toFixed(1)} KiB; limit is 500.0 KiB`)
 }
 
+if (manifest['src/locales/de/translation.json']) {
+  throw new Error('the German fallback catalog must remain embedded in the entry bundle')
+}
+
+for (const locale of ['en']) {
+  const localeSource = `src/locales/${locale}/translation.json`
+  const localeEntry = manifest[localeSource]
+  if (!localeEntry?.isDynamicEntry || !localeEntry.file) {
+    throw new Error(`${localeSource} must build as a separate lazy language chunk`)
+  }
+  if (!entry.dynamicImports?.includes(localeSource)) {
+    throw new Error(`index.html must reference ${localeSource} as a dynamic import`)
+  }
+  if (entry.imports?.includes(localeSource)) {
+    throw new Error(`${localeSource} must not be a static entry dependency`)
+  }
+}
+
 console.log(`Initial JavaScript bundle: ${(entryBytes / 1024).toFixed(1)} KiB (limit 500.0 KiB)`)

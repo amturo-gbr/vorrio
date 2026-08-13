@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/amturo-gbr/vorrio/blob/main/language-packs/schema-v1.json",
+  "title": "Vorrio language pack manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "locale",
+    "native_name",
+    "english_name",
+    "direction",
+    "fallback_locale",
+    "tier",
+    "catalog_mode",
+    "catalog_version",
+    "minimum_vorrio_version",
+    "completion",
+    "capabilities"
+  ],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schema_version": { "const": 1 },
+    "locale": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(?:-[A-Z][a-z]{3})?(?:-[A-Z]{2}|-[0-9]{3})?$"
+    },
+    "native_name": { "type": "string", "minLength": 2, "maxLength": 80 },
+    "english_name": { "type": "string", "minLength": 2, "maxLength": 80 },
+    "direction": { "enum": ["ltr", "rtl"] },
+    "fallback_locale": { "type": "string", "pattern": "^[a-z]{2,3}$" },
+    "tier": { "enum": ["official", "community"] },
+    "catalog_mode": { "enum": ["complete", "source-fallback"] },
+    "catalog_version": { "type": "integer", "minimum": 1 },
+    "minimum_vorrio_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "completion": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "enum": ["frontend", "backend", "notifications", "pwa_manifest", "website"]
+      }
+    }
+  }
+}

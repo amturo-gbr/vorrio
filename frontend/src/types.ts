@@ -1,6 +1,7 @@
 export type Screen = 'home' | 'scan' | 'catalog' | 'history' | 'settings' | 'review'
 export type ScanMode = 'identify' | 'add' | 'consume' | 'open' | 'shopping'
-export type SupportedLocale = 'de' | 'en'
+export type { SupportedLocale } from './locales/registry.ts'
+import type { SupportedLocale } from './locales/registry.ts'
 
 export interface AuthenticatedUser {
   id: string

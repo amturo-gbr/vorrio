@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.22",
+    version="0.8.23",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.22",
-        "title": "Vorrio spricht Deutsch und Englisch",
-        "summary": "Die gesamte PWA folgt jetzt deiner persönlichen Sprachwahl – einschließlich Login, Scanner, Einstellungen, Fehlermeldungen und Push-Mitteilungen.",
+        "version": "0.8.23",
+        "title": "Sprachen werden modular",
+        "summary": "Offizielle Sprachen werden jetzt als geprüfte Pakete bei Bedarf geladen und sicher für die Offline-Nutzung gespeichert.",
         "highlights": [
-            "Deutsch und Englisch mit persönlicher, geräteübergreifender Sprachwahl",
-            "Lokalisierte Zahlen, Datumsangaben, API-Fehler und Benachrichtigungen",
-            "Automatische Vollständigkeitsprüfung schützt neue Funktionen vor fehlenden Übersetzungen",
+            "Deutsch und Englisch bleiben vollständig im selben Docker-Image enthalten",
+            "Ein zentrales Sprachregister bereitet weitere offizielle Sprachen vor",
+            "Der neue Datenvertrag prüft künftige Community-Übersetzungen ohne ausführbaren Code",
         ],
     },
     "en": {
-        "version": "0.8.22",
-        "title": "Vorrio now speaks German and English",
-        "summary": "The entire PWA now follows your personal language choice, including sign-in, scanner, settings, errors and push notifications.",
+        "version": "0.8.23",
+        "title": "Languages become modular",
+        "summary": "Official languages are now loaded as reviewed packs when needed and stored safely for offline use.",
         "highlights": [
-            "German and English with a personal language choice synced across devices",
-            "Localized numbers, dates, API errors and notifications",
-            "Automated completeness checks protect new features from missing translations",
+            "German and English remain complete in the same Docker image",
+            "A central language registry prepares additional official languages",
+            "The new data contract validates future community translations without executable code",
         ],
     },
 }

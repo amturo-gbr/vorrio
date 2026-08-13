@@ -166,6 +166,11 @@ currency or timezone data. Each account may switch between German and English
 after login; release notes, API-token scope descriptions and future Push
 messages then follow that personal choice. Reinstalling the PWA is not required.
 
+Version 0.8.23 changes no household schema or stored product data. German and
+English are split into content-hashed language chunks inside the same image;
+the selected pack is cached on demand. After upgrading, open each account once
+online before relying on a newly selected language offline.
+
 Version 0.8.21 changes only the maintained HTTP client dependency used by
 tests and outbound connectors. It adds no schema migration, rewrites no
 household data and leaves the versioned REST contract unchanged. After that

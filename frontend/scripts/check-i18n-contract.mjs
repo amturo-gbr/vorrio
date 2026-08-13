@@ -10,6 +10,16 @@ const catalog = JSON.parse(
 const germanCatalog = JSON.parse(
   fs.readFileSync(path.join(sourceRoot, 'locales/de/translation.json'), 'utf8'),
 )
+const localeRoot = path.join(sourceRoot, 'locales')
+const localeDirectories = fs.readdirSync(localeRoot, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort()
+const localeManifests = Object.fromEntries(localeDirectories.map((locale) => [
+  locale,
+  JSON.parse(fs.readFileSync(path.join(localeRoot, locale, 'manifest.json'), 'utf8')),
+]))
+const registrySource = fs.readFileSync(path.join(localeRoot, 'registry.ts'), 'utf8')
 const sourceFiles = fs.readdirSync(sourceRoot, { recursive: true })
   .filter((name) => /\.(?:ts|tsx)$/.test(name))
 
@@ -109,6 +119,22 @@ const missingPluralForms = countedKeys.flatMap((key) => [
   ...['_one', '_other'].filter((suffix) => !(key + suffix in catalog)).map((suffix) => `en:${key + suffix}`),
   ...['_one', '_other'].filter((suffix) => !(key + suffix in germanCatalog)).map((suffix) => `de:${key + suffix}`),
 ]).sort((left, right) => left.localeCompare(right, 'de'))
+const semanticKeys = [...translationKeys].filter((key) => /^[a-z][a-z0-9]*(?:\.[a-z0-9_-]+)+$/.test(key))
+const legacyKeys = [...translationKeys].filter((key) => !semanticKeys.includes(key))
+const maximumLegacyKeys = 746
+const invalidManifests = localeDirectories.flatMap((locale) => {
+  const manifest = localeManifests[locale]
+  const errors = []
+  if (manifest.locale !== locale) errors.push(`${locale}: manifest locale must match its directory`)
+  if (manifest.tier !== 'official') errors.push(`${locale}: bundled locale must be official`)
+  if (manifest.completion !== 100) errors.push(`${locale}: bundled locale must be 100% complete`)
+  if (!registrySource.includes(`${locale}: definition(`)) errors.push(`${locale}: missing lazy registry entry`)
+  return errors
+})
+const missingSemanticFallbacks = semanticKeys.flatMap((key) => [
+  ...(!(key in catalog) ? [`en:${key}`] : []),
+  ...(!(key in germanCatalog) ? [`de:${key}`] : []),
+])
 
 console.log(JSON.stringify({
   translatedKeysUsed: translationKeys.size,
@@ -117,11 +143,23 @@ console.log(JSON.stringify({
   missing: missing.length,
   empty: empty.length,
   missingPluralForms: missingPluralForms.length,
+  semanticKeys: semanticKeys.length,
+  legacyKeys: legacyKeys.length,
+  invalidManifests: invalidManifests.length,
+  missingSemanticFallbacks: missingSemanticFallbacks.length,
   suspiciousUntranslated: untranslated.length,
 }, null, 2))
 
 if (missing.length) console.error(`Missing English translations:\n${missing.join('\n')}`)
 if (empty.length) console.error(`Empty English translations:\n${empty.join('\n')}`)
 if (missingPluralForms.length) console.error(`Missing plural forms:\n${missingPluralForms.join('\n')}`)
+if (invalidManifests.length) console.error(`Invalid locale manifests:\n${invalidManifests.join('\n')}`)
+if (missingSemanticFallbacks.length) console.error(`Missing stable-key fallbacks:\n${missingSemanticFallbacks.join('\n')}`)
+if (legacyKeys.length > maximumLegacyKeys) {
+  console.error(`Legacy sentence keys increased to ${legacyKeys.length}; limit is ${maximumLegacyKeys}`)
+}
 if (untranslated.length) console.error(`Potential untranslated UI text:\n${untranslated.join('\n')}`)
-if (missing.length || empty.length || missingPluralForms.length || untranslated.length) process.exitCode = 1
+if (
+  missing.length || empty.length || missingPluralForms.length || invalidManifests.length ||
+  missingSemanticFallbacks.length || legacyKeys.length > maximumLegacyKeys || untranslated.length
+) process.exitCode = 1

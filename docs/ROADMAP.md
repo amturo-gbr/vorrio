@@ -227,6 +227,21 @@
 - localize formatting and install metadata without rewriting household data;
 - ship a bilingual project website and enforce translation completeness in CI.
 
+## 0.8.23 – modular language foundation
+
+- embed the compact German fallback and load other official language catalogs
+  as separate, cacheable PWA chunks;
+- define a central language registry with native labels, direction, trust tier,
+  compatibility and completeness metadata;
+- publish and validate a data-only community-pack schema that rejects scripts,
+  HTML, unexpected files, unsafe values and changed placeholders;
+- begin the migration to stable namespaced translation keys and prevent new
+  sentence-key debt in CI;
+- keep runtime package installation disabled until a signed, checksummed and
+  version-compatible Amturo package index is available.
+- provide a language request form, dedicated pull-request review, CODEOWNERS,
+  contributor generator and documented requested/community/official lifecycle.
+
 ## Next family-ready PWA milestone
 
 - optional Home Assistant webhook and dashboard cards.

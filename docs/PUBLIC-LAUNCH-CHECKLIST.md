@@ -45,18 +45,29 @@ necessary but does not by itself publish a repository or container.
   by ecosystem; major upgrades require deliberate maintainer review.
 - [ ] Discussions, issue templates and the support/security routes point users
   to the correct channel.
+- [ ] `CODEOWNERS` resolves to an active maintainer; language request and
+  language-pack pull-request templates render correctly from a signed-out
+  contributor flow.
+- [ ] Translation workflow labels (`language:requested`, `language:in-progress`,
+  `language:needs-review`, `language:verified`, `language:official`) exist and
+  the community guide is linked from README and contribution documentation.
 - [ ] The static project website renders at 1440 px desktop and 390 px mobile,
   all published links work signed out and every screenshot uses synthetic data.
 - [ ] German and English complete the same signed-out, onboarding, receipt,
   scanner, catalog, shopping, settings, error and mobile-layout journey; the
   automated i18n contract reports no missing or bypassed copy.
+- [ ] Official language manifests and the data-only pack validator pass; no
+  runtime community-package source is enabled before signature verification.
 - [ ] Amturo's legally approved imprint and website privacy notice are present
   on the deployed origin before public announcement.
+- [ ] `vorrio.app` is verified as the canonical Vercel domain, `vorrio.de`
+  returns a permanent same-path redirect to `.app`, and both HTTPS certificates
+  are valid after the IONOS DNS change.
 
 ## 4. First GHCR publication
 
 - [ ] Push `main` and wait for the CI workflow to pass.
-- [ ] Create and push the versioned release tag `v0.8.22` only after CI passes and
+- [ ] Create and push the versioned release tag `v0.8.23` only after CI passes and
   the private release rehearsal is ready for its immutable candidate.
 - [ ] Confirm that the release workflow builds `linux/amd64` and `linux/arm64`,
   publishes provenance/SBOM attestations and signs the immutable digest.
@@ -86,8 +97,9 @@ necessary but does not by itself publish a repository or container.
 - [ ] Record the released digest, CI run and SBOM artifact in the release notes.
 - [ ] Announce only after installation, signature verification and first-login
   recovery have all passed.
-- [ ] Activate the website's GitHub Sponsors action only after the receiving
-  Amturo profile, sponsorship wording and bookkeeping process are approved.
+- [ ] Activate the website's Stripe Payment Links only after the Amturo business
+  account, live links, privacy wording, VAT treatment and bookkeeping process
+  are approved; keep GitHub Sponsors hidden.
 
 The maintainer checks every box against public or synthetic data. A private
 household installation is never used as release evidence and does not need a

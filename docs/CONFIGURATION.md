@@ -4,7 +4,7 @@
 
 | Variable | Required | Default | Purpose |
 |---|---:|---|---|
-| `VORRIO_VERSION` | release Compose only | `0.8.22` | Versioned GHCR tag selected by `docker-compose.release.yml`. |
+| `VORRIO_VERSION` | release Compose only | `0.8.23` | Versioned GHCR tag selected by `docker-compose.release.yml`. |
 | `APP_SECRET_KEY` | yes | development fallback | Encrypts provider/connector, TOTP, VAPID and push-subscription secrets and signs the cookie carrying a random server-session token. |
 | `APP_PASSWORD` | no | empty | Optional preconfigured household password; empty enables first-run setup. |
 | `DEPLOYMENT_PROFILE` | no | `lan` | Selects `lan`, `private_https` or the guarded `public_https` policy. |
@@ -53,9 +53,11 @@ rendering and embedded-text extraction happen locally first.
 ## Interface language
 
 There is no deployment-wide language environment variable. German or English
-is selected per account and stored in the local database. Before sign-in the
-browser and last local choice provide the initial language; after sign-in the
-account preference wins. See [Localization](LOCALIZATION.md).
+is selected per account and stored in the local database. Both official
+data-only packs ship in the same image; the PWA loads and caches the selected
+catalog on demand. Before sign-in the browser and last local choice provide the
+initial language; after sign-in the account preference wins. See
+[Localization](LOCALIZATION.md).
 
 ## Web Push
 

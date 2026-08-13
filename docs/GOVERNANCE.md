@@ -19,6 +19,13 @@ The project uses the Developer Certificate of Origin rather than a contributor
 license agreement for normal AGPL development. A CLA is considered only if a
 future dual-license model creates a concrete need, and never retroactively.
 
+Translation contributions use the same DCO and license. Amturo approves the
+technical boundary and final `community`/`official` tier, while independent
+fluent reviewers approve linguistic meaning. A translator cannot be the sole
+reviewer of their own official pack. Missing language-review capacity keeps a
+pack at community-candidate status instead of blocking safe incremental work or
+exposing unverified copy to users. See [Translation community](TRANSLATION-COMMUNITY.md).
+
 ## Commercial extensions
 
 Future hosted services or commercial modules use documented network boundaries.

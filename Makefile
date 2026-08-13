@@ -1,4 +1,4 @@
-.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image image-scan sbom pwa-check release-package-check secret-scan website-check check
+.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check external-path-test frontend-deps frontend-build frontend-test image image-scan language-pack-check sbom pwa-check release-package-check secret-scan website-check check
 
 CHECK_IMAGE ?= vorrio:check
 GRYPE_IMAGE ?= anchore/grype:v0.110.0@sha256:af65fbc0c664691067788fe95ff88760b435543e45595eb2ca6f102fc476fbe1
@@ -91,6 +91,11 @@ docs-check:
 backend-i18n-check:
 	python3 scripts/check_backend_i18n_contract.py
 
+language-pack-check:
+	python3 scripts/validate_language_pack.py
+	python3 -m unittest scripts.test_language_pack scripts.test_create_language_pack -v
+	python3 scripts/check_translation_community.py
+
 website-check:
 	python3 scripts/check_website_contract.py
 
@@ -103,4 +108,4 @@ secret-scan:
 		-w /repository \
 		$(GITLEAKS_IMAGE) git . --redact=100 --no-banner
 
-check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check backend-i18n-check website-check release-package-check api-docs-check
+check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check backend-i18n-check language-pack-check website-check release-package-check api-docs-check

@@ -1,0 +1,83 @@
+name: New language
+description: Propose or volunteer for a new Vorrio translation.
+title: "[Language]: "
+labels: [triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping Vorrio speak another language. Search existing language issues first. Never attach real receipts, household data or credentials.
+  - type: input
+    id: locale
+    attributes:
+      label: Locale
+      description: Use a canonical BCP 47 tag such as es, fr, nl or pt-BR.
+      placeholder: es
+    validations:
+      required: true
+  - type: input
+    id: names
+    attributes:
+      label: Language names
+      description: Give the native and English names.
+      placeholder: Español / Spanish
+    validations:
+      required: true
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: How would you like to help?
+      options:
+        - I want to translate the language pack
+        - I want to review an existing translation
+        - I want to coordinate translators and reviewers
+        - I am requesting the language but cannot translate it
+    validations:
+      required: true
+  - type: dropdown
+    id: fluency
+    attributes:
+      label: Language proficiency
+      description: This helps maintainers find an independent reviewer; it is not a credential check.
+      options:
+        - Native speaker
+        - Fluent professional or near-native speaker
+        - Conversational speaker
+        - Learning the language
+        - Not a speaker
+    validations:
+      required: true
+  - type: textarea
+    id: region
+    attributes:
+      label: Region and terminology
+      description: Mention relevant regional variants, writing direction, household terminology or accessibility considerations.
+  - type: dropdown
+    id: machine_translation
+    attributes:
+      label: Machine-assisted draft
+      description: Machine translation may start a draft but cannot approve official status.
+      options:
+        - No machine translation planned
+        - A machine-assisted draft will be disclosed and reviewed by fluent speakers
+        - Not decided yet
+    validations:
+      required: true
+  - type: textarea
+    id: reviewers
+    attributes:
+      label: Possible independent reviewers
+      description: Add GitHub handles only with their agreement. Leave blank if the project should help find reviewers.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Contribution agreement
+      options:
+        - label: I searched for an existing issue for this locale.
+          required: true
+        - label: I will use synthetic examples and will not submit private household data.
+          required: true
+        - label: I understand that official status requires independent fluent review and maintainer approval.
+          required: true
+        - label: I understand that accepted contributions use AGPL-3.0-or-later and DCO sign-off.
+          required: true
