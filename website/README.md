@@ -3,7 +3,10 @@
 This directory contains the dependency-free, static German and English project
 website. `index.html` is German and `index-en.html` is English; both link to the
 other language. The site is deliberately separate from the authenticated PWA in
-`frontend/` and makes no API calls.
+`frontend/` and makes no API calls. A compact public roadmap distinguishes the
+installable PWA available today from the planned native iOS and Android clients,
+links to the detailed repository roadmap and routes demand through GitHub's
+feature-request form.
 
 ## Preview
 

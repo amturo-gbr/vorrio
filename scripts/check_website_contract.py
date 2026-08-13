@@ -110,6 +110,16 @@ def main() -> None:
         page_text = pages[locale].read_text(encoding="utf-8")
         if expected_github not in page_text:
             failures.append(f"{pages[locale].name}: canonical GitHub repository link is missing")
+        for marker in (
+            'id="roadmap"',
+            "docs/ROADMAP.md",
+            "PWA",
+            "iOS",
+            "Android",
+            "feature_request.yml",
+        ):
+            if marker not in page_text:
+                failures.append(f"{pages[locale].name}: roadmap marker {marker!r} is missing")
         if "GitHub Sponsors" in page_text or "github.com/sponsors/" in page_text:
             failures.append(f"{pages[locale].name}: GitHub Sponsors must stay hidden")
         for key in ("oneTime", "monthly"):
@@ -210,6 +220,7 @@ def main() -> None:
         "bounded page shell": r"\.shell\s*\{[^}]*width:\s*min\(100%,\s*var\(--shell\)\)",
         "390 px layout breakpoint": r"@media\s*\(max-width:\s*390px\)",
         "responsive media": r"img\s*\{[^}]*max-width:\s*100%",
+        "author-level hidden state": r"\[hidden\]\s*\{[^}]*display:\s*none\s*!important",
     }
     for label, pattern in responsive_css.items():
         if not re.search(pattern, css, re.DOTALL):
