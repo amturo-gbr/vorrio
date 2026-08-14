@@ -5263,7 +5263,7 @@
       "ScanResolveInput": {
         "properties": {
           "barcode": {
-            "description": "EAN, UPC or GTIN as decoded by the camera or scanner.",
+            "description": "EAN, UPC or GTIN as decoded by the camera or scanner. Repeated-digit placeholder GTINs are rejected even when their checksum is valid.",
             "examples": [
               "4000000000016"
             ],
@@ -6753,7 +6753,7 @@
     },
     "summary": "Self-hosted household inventory and receipt API",
     "title": "Vorrio REST API",
-    "version": "0.8.24"
+    "version": "0.8.25"
   },
   "openapi": "3.1.0",
   "paths": {
@@ -12990,7 +12990,7 @@
     },
     "/api/v1/scans/resolve": {
       "post": {
-        "description": "Normalizes the decoded code, checks the local catalog and fresh cache first, then queries Open Facts for EAN/UPC/GTIN codes. Internal codes never leave the installation. Unknown and upstream-failed codes are kept in the unresolved inbox. Reusing client_mutation_id returns the same draft.",
+        "description": "Normalizes the decoded code, checks the local catalog and fresh cache first, rejects repeated-digit placeholder GTINs, then queries Open Facts for EAN/UPC/GTIN codes. Internal codes never leave the installation. Unknown and upstream-failed codes are kept in the unresolved inbox. Reusing client_mutation_id returns the same draft.",
         "operationId": "resolve_scan_api_v1_scans_resolve_post",
         "requestBody": {
           "content": {

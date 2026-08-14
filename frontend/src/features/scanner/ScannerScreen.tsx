@@ -35,6 +35,10 @@ import {
   type OfflineScanEntry,
   type OfflineScanStorage,
 } from './offlineQueue'
+import {
+  observeCameraCode,
+  type CameraScanCandidate,
+} from './cameraConsensus'
 import { currentLocale, formatDate, formatNumber, translate } from '../../i18n'
 
 const modes: { id: ScanMode; label: string; icon: typeof Barcode; action: string; description: string }[] = [
@@ -125,6 +129,8 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   const [cameraState, setCameraState] = useState<'idle' | 'starting' | 'active'>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
   const scannerControlsRef = useRef<{ stop: () => void } | null>(null)
+  const cameraCandidateRef = useRef<CameraScanCandidate | null>(null)
+  const cameraAcceptedRef = useRef(false)
   const manualInputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<HTMLElement>(null)
 
@@ -146,6 +152,8 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   const stopCamera = useCallback(() => {
     scannerControlsRef.current?.stop()
     scannerControlsRef.current = null
+    cameraCandidateRef.current = null
+    cameraAcceptedRef.current = false
     const stream = videoRef.current?.srcObject
     if (stream instanceof MediaStream) stream.getTracks().forEach((track) => track.stop())
     if (videoRef.current) videoRef.current.srcObject = null
@@ -322,10 +330,12 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     setError('')
     setCameraState('starting')
     try {
-      const { BrowserMultiFormatReader } = await import('@zxing/browser')
-      const reader = new BrowserMultiFormatReader(undefined, {
+      cameraCandidateRef.current = null
+      cameraAcceptedRef.current = false
+      const { BrowserMultiFormatOneDReader } = await import('@zxing/browser')
+      const reader = new BrowserMultiFormatOneDReader(undefined, {
         delayBetweenScanAttempts: 100,
-        delayBetweenScanSuccess: 800,
+        delayBetweenScanSuccess: 250,
       })
       const controls = await reader.decodeFromConstraints(
         {
@@ -338,9 +348,17 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
         },
         videoRef.current || undefined,
         (result, _error, activeControls) => {
-          if (!result) return
+          if (!result || cameraAcceptedRef.current) return
+          const observation = observeCameraCode(
+            cameraCandidateRef.current,
+            result.getText(),
+            Date.now(),
+          )
+          cameraCandidateRef.current = observation.candidate
+          if (!observation.confirmed) return
+          cameraAcceptedRef.current = true
           activeControls.stop()
-          void resolveCode(result.getText())
+          void resolveCode(observation.candidate.code)
         },
       )
       scannerControlsRef.current = controls

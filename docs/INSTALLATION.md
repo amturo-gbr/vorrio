@@ -171,6 +171,11 @@ English are split into content-hashed language chunks inside the same image;
 the selected pack is cached on demand. After upgrading, open each account once
 online before relying on a newly selected language offline.
 
+Version 0.8.25 changes no household schema, authentication state, confirmed
+products or stock history. It hardens camera consensus and barcode validation;
+existing unresolved drafts remain visible until a household deliberately
+discards or maps them.
+
 Version 0.8.24 changes no household schema, authentication state or stored
 product data. It aligns the public project website, legal pages and community
 routes with the reviewed deployment already served at `vorrio.app`. The

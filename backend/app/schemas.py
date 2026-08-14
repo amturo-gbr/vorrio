@@ -1024,7 +1024,10 @@ class ScanResolveInput(BaseModel):
     barcode: str = Field(
         min_length=4,
         max_length=100,
-        description="EAN, UPC or GTIN as decoded by the camera or scanner.",
+        description=(
+            "EAN, UPC or GTIN as decoded by the camera or scanner. Repeated-digit "
+            "placeholder GTINs are rejected even when their checksum is valid."
+        ),
         examples=["4000000000016"],
     )
     mode: ScanMode = Field(default="identify", examples=["identify"])

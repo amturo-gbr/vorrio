@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.24",
+    version="0.8.25",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.24",
-        "title": "Projektseite klarer und startbereit",
-        "summary": "Die öffentliche Vorrio-Seite trennt Mitmachen, künftige Finanzierung und Produktbetrieb jetzt eindeutig voneinander.",
+        "version": "0.8.25",
+        "title": "Zuverlässiger scannen",
+        "summary": "Der Kamerascanner bestätigt Codes stabiler, lehnt Platzhalter ab und bleibt auf Desktop übersichtlich.",
         "highlights": [
-            "Die öffentliche Projektseite verweist nur auf tatsächlich verfügbare Funktionen",
-            "Inaktive Zahlungsintegration und vorbereitende Hinweise werden nicht ausgeliefert",
-            "Impressum, Datenschutz, Roadmap und Community-Wege sind zweisprachig abgestimmt",
+            "Kameracodes werden erst nach zwei übereinstimmenden Bildern übernommen",
+            "Offensichtliche Platzhalter wie ein reiner Nullcode werden abgelehnt",
+            "Alle fünf Scanaktionen bleiben auf Desktop in einer sauberen Reihe",
         ],
     },
     "en": {
-        "version": "0.8.24",
-        "title": "A clearer, launch-ready project site",
-        "summary": "The public Vorrio site now clearly separates contributing, future funding and product operation.",
+        "version": "0.8.25",
+        "title": "More reliable scanning",
+        "summary": "The camera scanner confirms codes more reliably, rejects placeholders and stays clear on desktop.",
         "highlights": [
-            "The public project site only points to capabilities that are actually available",
-            "Inactive payment integration and preparation notes are not shipped",
-            "Legal pages, privacy, roadmap and community routes are aligned in both languages",
+            "Camera codes are accepted only after two matching frames",
+            "Obvious placeholders such as an all-zero code are rejected",
+            "All five scan actions stay in one clean desktop row",
         ],
     },
 }
@@ -3329,6 +3329,7 @@ async def catalog_barcode_lookup(
     summary="Resolve a package code without changing stock",
     description=(
         "Normalizes the decoded code, checks the local catalog and fresh cache first, "
+        "rejects repeated-digit placeholder GTINs, "
         "then queries Open Facts for EAN/UPC/GTIN codes. Internal codes never leave the "
         "installation. Unknown and upstream-failed codes are kept "
         "in the unresolved inbox. Reusing client_mutation_id returns the same draft."

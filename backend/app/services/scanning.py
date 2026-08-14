@@ -33,6 +33,8 @@ def normalize_barcode(value: str) -> NormalizedBarcode:
     normalized = re.sub(r"[\s-]+", "", raw)
     if not normalized.isdigit() or not 4 <= len(normalized) <= 18:
         raise BarcodeValidationError("Der Code muss aus 4 bis 18 Ziffern bestehen")
+    if len(normalized) in GTIN_SYMBOLOGIES and len(set(normalized)) == 1:
+        raise BarcodeValidationError("Der erkannte Code ist nicht plausibel")
     if len(normalized) in GTIN_SYMBOLOGIES and not has_valid_gtin_checksum(normalized):
         raise BarcodeValidationError("Die Prüfziffer des Barcodes ist ungültig")
     return NormalizedBarcode(

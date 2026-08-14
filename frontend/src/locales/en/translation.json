@@ -61,6 +61,7 @@
   "Der Barcode ist ungültig": "The barcode is invalid",
   "Der Bon enthält keine auswertbaren Seiten": "The receipt does not contain any evaluable pages",
   "Der Code muss aus 4 bis 18 Ziffern bestehen": "The code must consist of 4 to 18 digits",
+  "Der erkannte Code ist nicht plausibel": "The detected code is not plausible",
   "Der Eintrag wurde inzwischen geändert. Bitte neu laden.": "The entry has since been changed. Please reload.",
   "Der Grocy-Connector ist deaktiviert": "The Grocy connector is disabled",
   "Der Listeneintrag konnte nicht geladen werden": "The list entry could not be loaded",
