@@ -140,6 +140,8 @@ values as unsafe.
 See [Installation](docs/INSTALLATION.md),
 [Configuration](docs/CONFIGURATION.md) and
 [Backup and restore](docs/BACKUP-RESTORE.md) for production use.
+The same maintained guides and a read-only reference generated from the checked-in
+OpenAPI contract are published at [docs.vorrio.app](https://docs.vorrio.app).
 
 ## Help translate Vorrio
 

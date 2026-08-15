@@ -1,0 +1,8 @@
+node_modules/
+.vitepress/cache/
+.vitepress/dist/
+public/openapi.json
+public/brand/
+public/vorrio-icon.png
+public/vorrio-social-card-en.png
+.vercel

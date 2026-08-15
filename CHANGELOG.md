@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Added `docs.vorrio.app` as a standalone static documentation build with local
+  search, the maintained operator guides and a read-only API reference rendered
+  directly from `docs/api/openapi.json`.
+- Replaced public website links to raw GitHub Markdown with the new documentation
+  routes while keeping GitHub as the source and contribution surface.
 - Replaced the completed public-launch website milestone with the actual path
   toward a stable 1.0 and removed the unplanned Home Assistant roadmap entry.
 - Added localized Open Graph and Twitter sharing cards, crawler directives,

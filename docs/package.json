@@ -1,0 +1,20 @@
+{
+  "name": "vorrio-docs",
+  "private": true,
+  "version": "0.8.26",
+  "type": "module",
+  "scripts": {
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "dev": "npm run prepare:assets && vitepress dev . --host 127.0.0.1",
+    "build": "npm run prepare:assets && vitepress build .",
+    "preview": "vitepress preview . --host 127.0.0.1",
+    "check": "npm run build"
+  },
+  "devDependencies": {
+    "vite": "6.4.3",
+    "vitepress": "1.6.4"
+  },
+  "overrides": {
+    "vite": "6.4.3"
+  }
+}

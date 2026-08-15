@@ -15,6 +15,11 @@ data, crawler directives and an XML sitemap. The legal pages deliberately use
 project landing pages in search results. `social-card-source.html` is the local,
 reproducible card layout and is excluded from Vercel deployments.
 
+Public installation, operation and integration links point to
+`https://docs.vorrio.app`. That separate static build renders the maintained
+Markdown guides and the checked-in OpenAPI contract without connecting to a
+private Vorrio household.
+
 ## Preview
 
 From the repository root:

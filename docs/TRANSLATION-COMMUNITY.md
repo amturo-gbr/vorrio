@@ -98,6 +98,7 @@ Git history and release notes credit contributors. Translation packs do not
 carry executable attribution or personal metadata, and contributors should not
 publish email addresses beyond the DCO identity they intentionally use.
 
-All contributions follow the [Code of Conduct](../CODE_OF_CONDUCT.md),
-[contribution guide](../CONTRIBUTING.md), [governance](GOVERNANCE.md) and the
-[language-pack contract](../language-packs/README.md).
+All contributions follow the [Code of Conduct](https://github.com/amturo-gbr/vorrio/blob/main/CODE_OF_CONDUCT.md),
+[contribution guide](https://github.com/amturo-gbr/vorrio/blob/main/CONTRIBUTING.md),
+[governance](GOVERNANCE.md) and the
+[language-pack contract](https://github.com/amturo-gbr/vorrio/blob/main/language-packs/README.md).

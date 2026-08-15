@@ -117,7 +117,9 @@ def main() -> None:
             failures.append(f"{pages[locale].name}: canonical GitHub repository link is missing")
         for marker in (
             'id="roadmap"',
-            "docs/ROADMAP.md",
+            "https://docs.vorrio.app/ROADMAP",
+            "https://docs.vorrio.app/INSTALLATION",
+            "https://docs.vorrio.app/api-reference",
             "PWA",
             "iOS",
             "Android",
@@ -340,7 +342,7 @@ def main() -> None:
         raise SystemExit("\n".join(failures))
     print(
         "Website contract is valid "
-        "(bilingual pages, SEO, legal data, local assets and no tracking)"
+        "(bilingual pages, public docs links, SEO, legal data, local assets and no tracking)"
     )
 
 
