@@ -13,10 +13,14 @@ necessary but does not by itself publish a repository or container.
   `SECURITY.md`, support material and the changelog render correctly.
 - [ ] No receipt, database, `.env`, API key, cookie, private hostname, LAN
   address, personal path or generated local artifact is staged.
+- [ ] Amturo has rechecked the intentionally public company identity, managing
+  directors, registered office, register details, phone number and security
+  email in both imprint/privacy variants.
 - [ ] The full-history secret scan and release-package identity contract pass
   with no unexplained allowlist entry.
-- [ ] GitHub private vulnerability reporting is enabled before issues are
-  opened to the public.
+- [ ] Immediately after public visibility is enabled and before announcement,
+  enable GitHub private vulnerability reporting and verify the advisory link
+  from a signed-out browser.
 
 ## 2. Release candidate
 
@@ -41,6 +45,9 @@ necessary but does not by itself publish a repository or container.
 - [ ] Dependabot security and version updates are enabled.
 - [ ] Secret scanning and push protection are enabled where the GitHub plan
   supports them.
+- [ ] If private-repository plan restrictions prevented rulesets, create and
+  verify the `main` branch ruleset immediately after changing visibility and
+  before accepting contributions or announcing the project.
 - [ ] Dependency update proposals use the seven-day cooldown and remain grouped
   by ecosystem; major upgrades require deliberate maintainer review.
 - [ ] Discussions, issue templates and the support/security routes point users
@@ -67,7 +74,7 @@ necessary but does not by itself publish a repository or container.
 ## 4. First GHCR publication
 
 - [ ] Push `main` and wait for the CI workflow to pass.
-- [ ] Create and push the versioned release tag `v0.8.24` only after CI passes and
+- [ ] Create and push the versioned release tag `v0.8.26` only after CI passes and
   the private release rehearsal is ready for its immutable candidate.
 - [ ] Confirm that the release workflow builds `linux/amd64` and `linux/arm64`,
   publishes provenance/SBOM attestations and signs the immutable digest.

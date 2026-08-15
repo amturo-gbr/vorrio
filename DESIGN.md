@@ -93,7 +93,9 @@ horizontal erreichbaren Aktionsleisten und einer festen unteren Navigation.
 - `StickyImportBar`: Summe und bestätigter Import;
 - `ConnectionPanel`: URL, Schlüssel, Modell und Verbindungstest;
 - `ScannerScreen`: fünf stets sichtbare Scan-Modi mit verständlicher
-  Wirkungsbeschreibung, lokaler Kamera-Decoder, manuelle/Keyboard-Eingabe,
+  Wirkungsbeschreibung und einer einzigen kontextuellen Erklärung für alle
+  Modi; diese erscheint mobil als Bottom-Sheet und am Desktop als zentrierter
+  Dialog. Dazu kommen lokaler Kamera-Decoder, manuelle/Keyboard-Eingabe,
   bestätigungspflichtige Produktzuordnung und Unbekannt-Code-Inbox. Vor der
   Erkennung stehen Kamera und Eingabe im Fokus; danach ersetzt die Prüfung die
   Aufnahmefläche und hält die Bestätigung mobil erreichbar;

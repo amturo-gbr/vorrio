@@ -9,7 +9,7 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.24
+## What works in 0.8.26
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;

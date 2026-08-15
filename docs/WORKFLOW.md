@@ -174,7 +174,8 @@ Responsive implementation references:
 4. After reconnect or **Jetzt abgleichen**, Vorrio validates the code and checks the local variant first, then its
    external cache and Open Facts.
 5. After recognition, the camera panel closes and the review moves to the top.
-   The selected action and its exact effect remain visible.
+   The selected action and its exact effect remain visible. **Aktionen erklärt**
+   opens one overview of all five modes without changing the current selection.
 6. Review the product and source. Map an external or unknown result to an
    existing product, or edit the proposed name and create it deliberately.
 7. Add quantity, location, date or price only when the selected action needs

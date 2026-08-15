@@ -24,11 +24,16 @@ The user chooses the intended action before scanning:
 | Open | Mark an appropriate existing lot as opened. |
 | Shopping list | Add or increase the unchecked item for the generic product. |
 
-The mode is always visible and its effect is explained in plain language. On a
-phone, all five actions fit without horizontal scrolling. Once a code resolves,
-the acquisition panel leaves the screen, the review becomes the primary
-content and the final action remains reachable above mobile navigation. Short
-success/error audio feedback is used when the browser permits it.
+The mode is always visible and its effect is explained in plain language. A
+single accessible **Actions explained** control opens all five explanations in
+a mobile bottom sheet or centered desktop dialog; the selected mode is
+highlighted and no nested help target interferes with the action tabs. The
+dialog traps keyboard focus, closes with Escape or its explicit controls and
+returns focus to the trigger. On a phone, all five actions fit without
+horizontal scrolling. Once a code resolves, the acquisition panel leaves the
+screen, the review becomes the primary content and the final action remains
+reachable above mobile navigation. Short success/error audio feedback is used
+when the browser permits it.
 Station-specific pinned defaults and an undo window remain future enhancements.
 
 ## Offline queue
@@ -56,7 +61,8 @@ server as authentication.
 ## Resolution order
 
 1. Preserve the raw input, normalize separators and validate supported numeric
-   lengths and GTIN checksums.
+   lengths and GTIN checksums. Repeated-digit placeholder GTINs such as an
+   all-zero camera false positive are rejected before a draft is created.
 2. Search `catalog_barcodes` and local variants first.
 3. For checksum-valid EAN-8, UPC-A, EAN-13 and GTIN-14 values, search a fresh
    external record cached in `catalog_external_refs`.
@@ -91,8 +97,11 @@ mode reuse the same draft. Optional front/label photos are not part of 0.8.14.
 ## Camera and hardware scanners
 
 The PWA uses `getUserMedia` in a secure context and lazy-loads the bundled
-`@zxing/browser` multi-format decoder. Camera frames stay inside the browser;
-only the decoded character sequence is submitted.
+`@zxing/browser` one-dimensional product-code decoder. Camera frames stay
+inside the browser; only the decoded character sequence is submitted. A camera
+result must be observed identically in two nearby frames before Vorrio stops
+the preview and resolves it. This protects the unresolved inbox from transient
+single-frame false positives without slowing keyboard scanners.
 
 Live camera scanning therefore needs HTTPS (or a browser-defined localhost
 exception), not a raw LAN HTTP address. When that requirement is absent, the
@@ -169,6 +178,8 @@ The complete schemas, bounds and errors are generated at `/docs`, `/redoc` and
 ## Privacy and availability
 
 - Raw camera frames stay on the device and 0.8.14 uploads no package photos.
+- Camera reads are limited to one-dimensional product codes; QR and Micro QR
+  patterns are deliberately ignored by the package scanner.
 - When local and cached lookup miss, only a checksum-valid EAN/UPC/GTIN is sent
   to Open Facts; internal codes stay inside the installation. The result panel
   identifies every external source.

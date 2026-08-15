@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.26 – 2026-08-15
+
+- Added one accessible **Actions explained** control beside the current scanner
+  mode explanation instead of placing small nested help targets inside all five
+  action tabs.
+- Presented all scan effects in a mobile bottom sheet and centered desktop
+  dialog with bilingual copy, selected-mode emphasis, focus containment,
+  Escape/backdrop closing and trigger-focus restoration.
+- Applied the scanner-grid spacing to the complete explanation row so the
+  mobile help control no longer appears attached to the action above it.
+- Kept recognition, stock, opened-package and shopping-list behavior unchanged;
+  the new surface is explanatory only and still requires explicit confirmation.
+- Hardened the public-package gate against force-added environment files,
+  browser captures, cookies, local data/build output, private IPv4 addresses
+  and Cloudflare account endpoints, with regression coverage and a repeated
+  pre-publication source, image-metadata, dependency and container review.
+
+## 0.8.25 – 2026-08-14
+
+- Required the camera scanner to observe the same product code twice before
+  resolving it, preventing transient single-frame detections from polluting the
+  unresolved inbox.
+- Rejected repeated-digit placeholder GTINs such as `000000000000` even when
+  their mathematical check digit is valid.
+- Restricted camera decoding to one-dimensional product codes, removing noisy
+  QR/Micro-QR attempts from normal scanner operation.
+- Kept all five scanner actions in one equal-width desktop row while preserving
+  the compact three-plus-two mobile layout.
+
 ## 0.8.24 – 2026-08-13
 
 - Removed inactive Stripe controls, future-service disclosures and internal

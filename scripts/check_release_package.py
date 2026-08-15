@@ -45,8 +45,27 @@ REQUIRED_FILES = {
     "website/support-config.js",
     "website/vercel.json",
 }
-FORBIDDEN_NAMES = {".env", ".DS_Store"}
-FORBIDDEN_SUFFIXES = {".db", ".sqlite", ".sqlite3", ".pem", ".key"}
+FORBIDDEN_NAMES = {".env", ".DS_Store", "cookie.jar", "cookies.txt"}
+FORBIDDEN_PREFIXES = (".env.",)
+FORBIDDEN_PATH_PARTS = {
+    ".playwright-cli",
+    ".vercel",
+    "__pycache__",
+    "data",
+    "dist",
+    "node_modules",
+    "output",
+}
+FORBIDDEN_SUFFIXES = {
+    ".cookies",
+    ".db",
+    ".har",
+    ".key",
+    ".pem",
+    ".session",
+    ".sqlite",
+    ".sqlite3",
+}
 TEXT_SUFFIXES = {
     "",
     ".css",
@@ -83,16 +102,67 @@ FORBIDDEN_TEXT = {
     ),
     "private key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     "personal macOS path": re.compile(r"/Users/[A-Za-z0-9._-]+/"),
+    "private IPv4 address": re.compile(
+        r"(?<![0-9])(?:"
+        r"10(?:\.[0-9]{1,3}){3}"
+        r"|192\.168(?:\.[0-9]{1,3}){2}"
+        r"|172\.(?:1[6-9]|2[0-9]|3[01])(?:\.[0-9]{1,3}){2}"
+        r")(?![0-9])"
+    ),
+    "Cloudflare account endpoint": re.compile(
+        r"https://(?:api\.cloudflare\.com/client/v4/accounts/)?"
+        r"[0-9a-f]{32}(?:\.r2\.cloudflarestorage\.com|(?:/|\b))",
+        re.IGNORECASE,
+    ),
     "generator attribution": re.compile(
         "generated "
         + r"(?:by|with)\s+(?:an?\s+)?[A-Za-z0-9_. -]{2,40}"
         + r"|\b[A-Za-z0-9_.-]+[- ]generated\s+(?:code|source|content)\b",
         re.IGNORECASE,
     ),
+    "development-assistant attribution": re.compile(
+        r"\b(?:"
+        + "Chat"
+        + r"GPT|Code"
+        + "x"
+        + "|Claude"
+        + r"\s+Code|GitHub\s+Copilot|Cursor\s+AI)\b",
+        re.IGNORECASE,
+    ),
     "stale GitHub repository link": re.compile(r"github\.com/amturo/vorrio"),
     "Stripe secret key": re.compile(r"\b(?:sk|rk)_(?:test|live)_[A-Za-z0-9]{16,}"),
     "Stripe webhook secret": re.compile(r"\bwhsec_[A-Za-z0-9]{16,}"),
 }
+ALLOWED_TEXT_MATCHES = {
+    ("backend/tests/test_app.py", "private IPv4 address"): {"192.168.1.10", "172.20.0.0"},
+    ("docs/DEPLOYMENT-PROFILES.md", "private IPv4 address"): {"172.20.0.0"},
+    ("docs/EXTERNAL-ACCESS-SECURITY-REVIEW.md", "private IPv4 address"): {"172.20.0.0"},
+    ("scripts/check_release_package.py", "private IPv4 address"): {"192.168.1.10", "172.20.0.0"},
+}
+
+
+def forbidden_path_reason(path: Path) -> str | None:
+    if path.name in FORBIDDEN_NAMES or (
+        path.name != ".env.example" and path.name.startswith(FORBIDDEN_PREFIXES)
+    ):
+        return "private/generated file"
+    if path.suffix.lower() in FORBIDDEN_SUFFIXES:
+        return "private/generated file"
+    if FORBIDDEN_PATH_PARTS.intersection(path.parts):
+        return "private/generated path"
+    return None
+
+
+def forbidden_text_labels(path: Path, content: str) -> set[str]:
+    labels: set[str] = set()
+    rel = path.as_posix()
+    for label, pattern in FORBIDDEN_TEXT.items():
+        allowed_values = ALLOWED_TEXT_MATCHES.get((rel, label), set())
+        for match in pattern.finditer(content):
+            if match.group(0) not in allowed_values:
+                labels.add(label)
+                break
+    return labels
 
 
 def publishable_files() -> list[Path]:
@@ -131,8 +201,9 @@ def main() -> None:
 
     for path in files:
         rel = path.relative_to(ROOT)
-        if path.name in FORBIDDEN_NAMES or path.suffix.lower() in FORBIDDEN_SUFFIXES:
-            failures.append(f"private/generated file would be published: {rel}")
+        forbidden_reason = forbidden_path_reason(rel)
+        if forbidden_reason:
+            failures.append(f"{forbidden_reason} would be published: {rel}")
             continue
         if path.suffix.lower() not in TEXT_SUFFIXES:
             continue
@@ -140,9 +211,8 @@ def main() -> None:
             content = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        for label, pattern in FORBIDDEN_TEXT.items():
-            if pattern.search(content):
-                failures.append(f"{rel}: contains {label}")
+        for label in sorted(forbidden_text_labels(rel, content)):
+            failures.append(f"{rel}: contains {label}")
 
     env_example = (ROOT / ".env.example").read_text(encoding="utf-8")
     if not re.search(r"^APP_SECRET_KEY=$", env_example, re.MULTILINE):
@@ -184,6 +254,8 @@ def main() -> None:
     ).stdout
     if FORBIDDEN_TEXT["generator attribution"].search(history):
         failures.append("Git history contains generator attribution")
+    if FORBIDDEN_TEXT["development-assistant attribution"].search(history):
+        failures.append("Git history contains development-assistant attribution")
 
     vex = (ROOT / "security/vex.openvex.json").read_text(encoding="utf-8")
     for image_name in ("vorrio:ci", "vorrio:release"):

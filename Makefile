@@ -101,6 +101,7 @@ website-check:
 
 release-package-check:
 	python3 scripts/check_release_package.py
+	python3 -m unittest scripts.test_release_package -v
 
 secret-scan:
 	docker run --rm \

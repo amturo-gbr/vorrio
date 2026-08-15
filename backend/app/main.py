@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.24",
+    version="0.8.26",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.24",
-        "title": "Projektseite klarer und startbereit",
-        "summary": "Die öffentliche Vorrio-Seite trennt Mitmachen, künftige Finanzierung und Produktbetrieb jetzt eindeutig voneinander.",
+        "version": "0.8.26",
+        "title": "Scan-Aktionen verständlich erklärt",
+        "summary": "Eine kompakte Hilfe erklärt jetzt alle fünf Scan-Aktionen, ohne die schnelle Bedienung zu stören.",
         "highlights": [
-            "Die öffentliche Projektseite verweist nur auf tatsächlich verfügbare Funktionen",
-            "Inaktive Zahlungsintegration und vorbereitende Hinweise werden nicht ausgeliefert",
-            "Impressum, Datenschutz, Roadmap und Community-Wege sind zweisprachig abgestimmt",
+            "Alle fünf Aktionen sind gemeinsam und in einfacher Sprache erklärt",
+            "Auf dem Handy öffnet sich eine übersichtliche Hilfe von unten",
+            "Die ausgewählte Aktion und der Bestätigungsablauf bleiben unverändert",
         ],
     },
     "en": {
-        "version": "0.8.24",
-        "title": "A clearer, launch-ready project site",
-        "summary": "The public Vorrio site now clearly separates contributing, future funding and product operation.",
+        "version": "0.8.26",
+        "title": "Scan actions explained clearly",
+        "summary": "Compact help now explains all five scan actions without interrupting the fast workflow.",
         "highlights": [
-            "The public project site only points to capabilities that are actually available",
-            "Inactive payment integration and preparation notes are not shipped",
-            "Legal pages, privacy, roadmap and community routes are aligned in both languages",
+            "All five actions are explained together in plain language",
+            "Phones show the overview in a clear bottom sheet",
+            "The selected action and confirmation flow remain unchanged",
         ],
     },
 }
@@ -3329,6 +3329,7 @@ async def catalog_barcode_lookup(
     summary="Resolve a package code without changing stock",
     description=(
         "Normalizes the decoded code, checks the local catalog and fresh cache first, "
+        "rejects repeated-digit placeholder GTINs, "
         "then queries Open Facts for EAN/UPC/GTIN codes. Internal codes never leave the "
         "installation. Unknown and upstream-failed codes are kept "
         "in the unresolved inbox. Reusing client_mutation_id returns the same draft."

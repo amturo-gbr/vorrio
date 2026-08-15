@@ -20,8 +20,8 @@
         {"@id": "vorrio:security-fix"},
         {"@id": "grocy-receipt-ai:0.8.22"},
         {"@id": "ghcr.io/amturo-gbr/vorrio:0.8.22"},
-        {"@id": "grocy-receipt-ai:0.8.24"},
-        {"@id": "ghcr.io/amturo-gbr/vorrio:0.8.24"}
+        {"@id": "grocy-receipt-ai:0.8.26"},
+        {"@id": "ghcr.io/amturo-gbr/vorrio:0.8.26"}
       ],
       "status": "not_affected",
       "justification": "vulnerable_code_not_in_execute_path",

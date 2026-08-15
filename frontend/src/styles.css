@@ -565,10 +565,6 @@ select:focus-visible {
   cursor: pointer;
 }
 
-.scan-mode-bar button:nth-child(n + 4) {
-  grid-column: span 3;
-}
-
 .scan-mode-bar button.selected {
   color: #fff;
   border-color: var(--green);
@@ -583,10 +579,11 @@ select:focus-visible {
 
 .scan-mode-help {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: 8px;
   min-height: 30px;
-  margin: 8px 2px 0;
+  margin: 0 2px;
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
@@ -601,6 +598,109 @@ select:focus-visible {
 
 .scan-mode-help strong {
   color: var(--ink);
+}
+
+.scan-mode-help-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.scan-mode-info-button {
+  display: inline-flex;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--green);
+  border: 1px solid #cfe3d4;
+  border-radius: 12px;
+  background: var(--green-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.scan-mode-info-button:hover,
+.scan-mode-info-button:focus-visible {
+  border-color: var(--green);
+}
+
+.scan-mode-info-button svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+}
+
+.scan-mode-info-button span {
+  display: none;
+}
+
+.scan-help-sheet {
+  max-height: min(88vh, 760px);
+}
+
+.scan-help-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.scan-help-list article {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.scan-help-list article.selected {
+  border-color: #bcd9c4;
+  background: var(--green-soft);
+}
+
+.scan-help-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: var(--green);
+  border-radius: 12px;
+  background: #edf7ef;
+}
+
+.scan-help-icon svg {
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.9;
+}
+
+.scan-help-list article > span:last-child {
+  display: grid;
+  gap: 2px;
+}
+
+.scan-help-list strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.scan-help-list small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.scan-help-close {
+  width: 100%;
+  margin-top: 16px;
 }
 
 .offline-scan-panel {
@@ -1250,6 +1350,10 @@ select:focus-visible {
 }
 
 @media (max-width: 959px) {
+  .scan-mode-bar button:nth-child(n + 4) {
+    grid-column: span 3;
+  }
+
   .scanner-screen.has-scan .scanner-header {
     align-items: center;
     padding-bottom: 17px;
@@ -1627,10 +1731,6 @@ select:focus-visible {
     font-size: 13px;
   }
 
-  .scan-mode-bar button:nth-child(n + 4) {
-    grid-column: auto;
-  }
-
   .scan-mode-bar button:first-child {
     border-radius: 10px 0 0 10px;
   }
@@ -1647,6 +1747,27 @@ select:focus-visible {
   .scan-mode-bar svg {
     width: 19px;
     height: 19px;
+  }
+
+  .scan-mode-info-button {
+    width: auto;
+    padding: 0 13px;
+    gap: 7px;
+  }
+
+  .scan-mode-info-button span {
+    display: inline;
+  }
+
+  .scan-help-sheet {
+    width: min(100%, 610px);
+    padding: 22px 26px 24px;
+    border-radius: 24px;
+    box-shadow: 0 24px 90px rgba(15, 22, 18, 0.24);
+  }
+
+  .scan-help-sheet .sheet-handle {
+    display: none;
   }
 
   .offline-scan-panel > header {

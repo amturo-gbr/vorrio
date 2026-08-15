@@ -155,6 +155,10 @@ keyboard-wedge and manual input. As soon as resolution returns a draft, the
 client stops the camera and replaces acquisition with a result-first review;
 changing the visible action patches only that draft. The stock or shopping
 mutation still happens exclusively through the idempotent confirm endpoint.
+One contextual help trigger beside the active-mode summary explains all five
+effects without adding nested targets to the mode tabs. It uses the shared
+responsive sheet primitive, traps focus while open and performs no domain or
+draft mutation.
 
 When the server is unavailable, acquisition may instead append a bounded entry
 to browser local storage. That entry contains only barcode, intended mode,
@@ -356,6 +360,11 @@ service-worker registration and the install icon during `make check`.
 OpenAPI drift check, guarded public-HTTPS smoke, a synthetic household launch
 journey and a separate family/security acceptance journey
 against temporary data.
+The release-package contract operates on exactly the tracked and unignored
+Git publication set. In addition to secret patterns it rejects environment,
+cookie/session, browser-capture, database, build-output and local-data paths,
+private IPv4 addresses, Cloudflare account endpoints and personal workstation
+paths even when a contributor force-adds an otherwise ignored file.
 The production container uses digest-pinned bases. CI scans it with Grype and
 generates a CycloneDX SBOM. Tag releases are prepared to publish an OCI-labeled,
 multi-architecture GHCR image with BuildKit provenance and a keyless Cosign

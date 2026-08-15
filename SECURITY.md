@@ -32,6 +32,27 @@ frontend repository metadata and OpenAPI contact. GitHub Actions checkouts use
 full history so a secret in an earlier commit cannot be hidden by a shallow
 clone.
 
+The 0.8.26 pre-publication audit on 15 August 2026 repeated the full-history
+and exact working-tree scans and reviewed all 256 publishable files. It found no
+household LAN address, private installation hostname, personal workstation
+path, database, receipt, cookie or provider credential. The explicitly checked
+Cloudflare, R2 and Uptime credential forms were absent from every reachable
+commit. All 86 tracked image assets use synthetic content; their metadata
+contains no GPS position, camera/device identity, author or capture timestamp.
+
+The release-package gate also rejects forced additions that Git would normally
+ignore: `.env.*` files, cookie/session/HAR files, local data and browser-test
+directories, build output, private IPv4 addresses and Cloudflare account/R2
+endpoints. It also rejects source/history attribution to interactive development
+assistants while allowing ordinary documentation of Vorrio's configurable AI
+providers. These checks are regression-tested and are independent of Gitleaks.
+
+The website source intentionally contains Amturo UG's legal company identity,
+managing directors, registered office, register details, public phone number
+and `info@amturo.de` in the German and English imprint/privacy pages. Those are
+deliberate public legal disclosures, not household application data. They must
+be reviewed by Amturo immediately before repository and website publication.
+
 ## Security boundaries
 
 - Provider and connector secrets are encrypted at rest with `APP_SECRET_KEY`.
@@ -111,6 +132,21 @@ The scanner can additionally report lower-severity runtime findings that do
 not fail the High/Critical release threshold. They remain visible in CI and
 must be reassessed on every base-image update; they are not hidden by this VEX
 statement.
+
+The 0.8.26 image scan reports one Medium CPython finding,
+[`CVE-2025-15367`](https://github.com/python/cpython/issues/143923), in the
+standard-library `poplib` command API. Vorrio does not import or call `poplib`
+and exposes no POP3 feature. The only scanner-listed fix is currently a Python
+3.15 alpha build, so the finding remains visible rather than moving the stable
+runtime to a pre-release interpreter. Reassess when a stable patched base is
+available or if POP3 support is ever introduced. Bandit found no Medium or High
+issue in the runtime application; its Low findings are confined to fixed-argument
+release tooling, test assertions and explicitly synthetic smoke-test passwords.
+The production npm audit reports zero findings. `npm ci` does emit an upstream
+deprecation notice because the current `vite-plugin-pwa`/`workbox-build` chain
+still pins `glob` 11.1.0; it is a build-stage-only dependency, has no npm audit
+advisory in this lockfile and is absent from the final Python runtime image.
+Track the upstream update without overriding Workbox's tested dependency range.
 
 ## Internet exposure
 

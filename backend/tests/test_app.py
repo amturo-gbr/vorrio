@@ -799,17 +799,17 @@ class AppFlowTests(unittest.TestCase):
             self.assertFalse(completed.json()["release_notes_pending"])
             self.assertEqual(completed.json()["last_acknowledged_version"], app.version)
 
-            with patch.object(app, "version", "0.8.25"):
+            with patch.object(app, "version", "0.8.27"):
                 upgraded = client.get("/api/v1/experience")
                 self.assertTrue(upgraded.json()["release_notes_pending"])
-                self.assertEqual(upgraded.json()["release"]["version"], "0.8.25")
+                self.assertEqual(upgraded.json()["release"]["version"], "0.8.27")
                 acknowledged = client.put(
                     "/api/v1/experience",
                     json={"acknowledge_current_version": True},
                 )
                 self.assertFalse(acknowledged.json()["release_notes_pending"])
                 self.assertEqual(
-                    acknowledged.json()["last_acknowledged_version"], "0.8.25"
+                    acknowledged.json()["last_acknowledged_version"], "0.8.27"
                 )
 
             with database.connect() as conn:
@@ -817,7 +817,7 @@ class AppFlowTests(unittest.TestCase):
                     "SELECT onboarding_completed_at, last_acknowledged_version FROM user_experience"
                 ).fetchone()
                 self.assertIsNotNone(exported_experience["onboarding_completed_at"])
-                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.25")
+                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.27")
                 actions = {
                     row[0]
                     for row in conn.execute(
@@ -854,7 +854,7 @@ class AppFlowTests(unittest.TestCase):
             )
             self.assertEqual(
                 client.get("/api/v1/experience").json()["release"]["title"],
-                "A clearer, launch-ready project site",
+                "Scan actions explained clearly",
             )
             scopes = client.get("/api/v1/auth/api-token-scopes")
             self.assertEqual(scopes.status_code, 200)
@@ -875,7 +875,7 @@ class AppFlowTests(unittest.TestCase):
             )
             self.assertEqual(
                 client.get("/api/v1/experience").json()["release"]["title"],
-                "Projektseite klarer und startbereit",
+                "Scan-Aktionen verständlich erklärt",
             )
             self.assertEqual(
                 client.patch(
@@ -1460,6 +1460,8 @@ class AppFlowTests(unittest.TestCase):
         self.assertFalse(internal.supports_open_facts_lookup)
         with self.assertRaises(BarcodeValidationError):
             normalize_barcode("4006381333932")
+        with self.assertRaises(BarcodeValidationError):
+            normalize_barcode("000000000000")
 
     def test_scanner_actions_are_local_and_idempotent(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -1803,6 +1805,23 @@ class AppFlowTests(unittest.TestCase):
             self.assertEqual(inbox.status_code, 200)
             self.assertEqual(inbox.json()[0]["id"], response.json()["id"])
 
+    def test_versioned_scanner_api_rejects_placeholder_gtin_without_draft(self) -> None:
+        with TestClient(app) as client:
+            client.post(
+                "/api/v1/auth/setup", json={"password": "sicheres-test-passwort"}
+            )
+            response = client.post(
+                "/api/v1/scans/resolve",
+                json={
+                    "barcode": "000000000000",
+                    "mode": "identify",
+                    "client_mutation_id": "resolve-placeholder-api-test",
+                },
+            )
+            self.assertEqual(response.status_code, 422)
+            self.assertEqual(response.json()["detail"], "Der erkannte Code ist nicht plausibel")
+            self.assertEqual(client.get("/api/v1/scans/unresolved").json(), [])
+
     def test_candidate_api_requires_review_and_learns_confirmed_product(self) -> None:
         with TestClient(app) as client:
             client.post(
@@ -1965,7 +1984,7 @@ class AppFlowTests(unittest.TestCase):
     def test_openapi_contract_is_versioned_and_scoped_token_authenticated(self) -> None:
         schema = app.openapi()
         self.assertEqual(schema["openapi"], "3.1.0")
-        self.assertEqual(schema["info"]["version"], "0.8.24")
+        self.assertEqual(schema["info"]["version"], "0.8.26")
         self.assertIn("/api/v1/privacy/export", schema["paths"])
         self.assertIn("/api/v1/operations/overview", schema["paths"])
         self.assertIn("/api/v1/catalog/products", schema["paths"])
