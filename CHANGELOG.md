@@ -4,7 +4,8 @@
 
 - Reframed every German and English website product capture with complete,
   consistently scaled laptop and phone devices; removed the decorative receipt
-  fold and the intentional mobile crops that made the screenshots look broken.
+  fold and the intentional mobile crops that made the screenshots look broken,
+  then replaced the heavy phone bezels with slim proportional device frames.
 - Added `docs.vorrio.app` as a standalone static documentation build with local
   search, the maintained operator guides and a read-only API reference rendered
   directly from `docs/api/openapi.json`.

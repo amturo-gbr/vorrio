@@ -389,10 +389,10 @@ h1 {
   right: 2%;
   bottom: 12px;
   width: 22%;
-  padding: 7px;
+  padding: 2px;
   overflow: hidden;
-  border: 3px solid #111517;
-  border-radius: 28px;
+  border: 2px solid #111517;
+  border-radius: 12% / 6%;
   background: #111517;
   box-shadow: var(--shadow-device);
 }
@@ -400,7 +400,7 @@ h1 {
 .device-phone .device-screen {
   overflow: hidden;
   aspect-ratio: 390 / 844;
-  border-radius: 20px;
+  border-radius: 10% / 5%;
   background: #fff;
 }
 
@@ -413,12 +413,13 @@ h1 {
 .phone-speaker {
   position: absolute;
   z-index: 2;
-  top: 10px;
+  top: 2%;
   left: 50%;
-  width: 33%;
-  height: 10px;
+  width: 25%;
+  height: auto;
+  aspect-ratio: 3.8;
   background: #111517;
-  border-radius: 0 0 8px 8px;
+  border-radius: 999px;
   transform: translateX(-50%);
 }
 
@@ -511,19 +512,20 @@ h1 {
   width: min(100%, 275px);
   aspect-ratio: 390 / 844;
   margin-inline: auto;
-  border: 7px solid #14191b;
-  border-radius: 34px;
+  border: 3px solid #14191b;
+  border-radius: 12% / 6%;
 }
 
 .phone-frame::before {
   position: absolute;
   z-index: 2;
-  top: 7px;
+  top: 1.5%;
   left: 50%;
-  width: 32%;
-  height: 10px;
+  width: 24%;
+  height: auto;
+  aspect-ratio: 3.8;
   background: #14191b;
-  border-radius: 0 0 8px 8px;
+  border-radius: 999px;
   content: "";
   transform: translateX(-50%);
 }
@@ -647,10 +649,10 @@ h1 {
   bottom: -5%;
   width: 21%;
   aspect-ratio: 390 / 844;
-  padding: 6px;
+  padding: 2px;
   overflow: hidden;
-  border: 3px solid #14191b;
-  border-radius: 28px;
+  border: 2px solid #14191b;
+  border-radius: 12% / 6%;
   background: #14191b;
   box-shadow: var(--shadow-device);
 }
@@ -660,7 +662,7 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 20px;
+  border-radius: 10% / 5%;
 }
 
 .principles {

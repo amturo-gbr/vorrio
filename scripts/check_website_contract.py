@@ -116,6 +116,8 @@ def main() -> None:
         "top: auto;\n    right: 7%;\n    bottom: 44px;\n    width: 87%;",
         "top: auto;\n    right: 2%;\n    bottom: 8px;\n    left: auto;\n    width: 23%;",
         "top: 24%;\n    right: 3%;\n    bottom: auto;\n    left: auto;\n    width: 23%;",
+        "padding: 2px;\n  overflow: hidden;\n  border: 2px solid #111517;\n  border-radius: 12% / 6%;",
+        "border: 3px solid #14191b;\n  border-radius: 12% / 6%;",
     ):
         if marker not in website_css:
             failures.append("styles.css: responsive product media composition contract changed")
