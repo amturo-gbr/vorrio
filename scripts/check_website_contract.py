@@ -113,12 +113,12 @@ def main() -> None:
     if "receipt-backdrop" in website_css:
         failures.append("styles.css: decorative receipt backdrop must not obscure product media")
     for marker in (
-        "top: 0;\n    right: 0;\n    bottom: auto;\n    width: 100%;",
-        "right: auto;\n    bottom: 0;\n    left: 50%;\n    width: min(27%, 105px);",
-        "top: calc(100% + 18px);\n    right: auto;\n    bottom: auto;\n    left: 50%;",
+        "top: auto;\n    right: 7%;\n    bottom: 44px;\n    width: 87%;",
+        "top: auto;\n    right: 2%;\n    bottom: 8px;\n    left: auto;\n    width: 23%;",
+        "top: 24%;\n    right: 3%;\n    bottom: auto;\n    left: auto;\n    width: 23%;",
     ):
         if marker not in website_css:
-            failures.append("styles.css: responsive product media containment contract changed")
+            failures.append("styles.css: responsive product media composition contract changed")
             break
 
     expected_github = "https://github.com/amturo-gbr/vorrio"

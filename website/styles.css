@@ -1410,7 +1410,7 @@ h1 {
 
   .hero {
     padding-top: 128px;
-    padding-bottom: 58px;
+    padding-bottom: 34px;
   }
 
   .hero-grid {
@@ -1447,27 +1447,28 @@ h1 {
 
   .hero-media {
     width: 100%;
-    min-height: clamp(440px, calc(70vw + 196px), 630px);
+    min-height: clamp(290px, 82vw, 420px);
   }
 
   .device-laptop {
-    top: 0;
-    right: 0;
-    bottom: auto;
-    width: 100%;
+    top: auto;
+    right: 7%;
+    bottom: 44px;
+    width: 87%;
   }
 
   .device-laptop .laptop-base {
-    width: 100%;
-    margin-left: 0;
+    width: 112%;
+    margin-left: -6%;
   }
 
   .device-phone {
-    right: auto;
-    bottom: 0;
-    left: 50%;
-    width: min(27%, 105px);
-    transform: translateX(-50%);
+    top: auto;
+    right: 2%;
+    bottom: 8px;
+    left: auto;
+    width: 23%;
+    transform: none;
   }
 
   .section {
@@ -1475,7 +1476,7 @@ h1 {
   }
 
   .workflow {
-    padding-top: 86px;
+    padding-top: 64px;
   }
 
   .section h2,
@@ -1526,6 +1527,7 @@ h1 {
 
   .features-grid {
     gap: 46px;
+    padding-bottom: 40px;
   }
 
   .feature-list article {
@@ -1540,7 +1542,7 @@ h1 {
   }
 
   .feature-media {
-    min-height: clamp(430px, calc(70vw + 180px), 615px);
+    min-height: clamp(250px, 72vw, 420px);
   }
 
   .paper-canvas {
@@ -1549,12 +1551,12 @@ h1 {
   }
 
   .catalog-phone {
-    top: calc(100% + 18px);
-    right: auto;
+    top: 24%;
+    right: 3%;
     bottom: auto;
-    left: 50%;
-    width: min(23%, 90px);
-    transform: translateX(-50%);
+    left: auto;
+    width: 23%;
+    transform: none;
   }
 
   .principles {
