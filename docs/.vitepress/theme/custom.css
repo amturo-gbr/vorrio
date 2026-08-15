@@ -459,6 +459,11 @@ body {
     padding: 28px 20px 64px;
   }
 
+  .VPNavScreen {
+    height: calc(100vh - var(--vp-nav-height));
+    height: calc(100dvh - var(--vp-nav-height));
+  }
+
   .vp-doc h1 {
     font-size: 36px;
   }

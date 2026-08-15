@@ -83,6 +83,10 @@ def main() -> None:
         if required not in configured_headers:
             failures.append(f"docs/vercel.json: missing security header {required}")
 
+    theme_css = (DOCS / ".vitepress/theme/custom.css").read_text(encoding="utf-8")
+    if "height: calc(100dvh - var(--vp-nav-height));" not in theme_css:
+        failures.append("docs theme: mobile navigation must fill the available viewport height")
+
     if failures:
         raise SystemExit("\n".join(failures))
     print(
