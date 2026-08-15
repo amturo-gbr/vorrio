@@ -321,25 +321,9 @@ h1 {
 
 .hero-media {
   position: relative;
-  min-height: 560px;
+  min-height: 520px;
 }
 
-.receipt-backdrop {
-  position: absolute;
-  top: -30px;
-  right: 28px;
-  width: 55%;
-  height: 470px;
-  padding: 90px 50px;
-  overflow: hidden;
-  border: 1px solid #ecefec;
-  background: #fff;
-  box-shadow: 0 24px 60px rgba(24, 33, 40, 0.07);
-  transform: rotate(1.5deg);
-}
-
-.receipt-backdrop::after,
-.paper-canvas::after,
 .terminal::after {
   position: absolute;
   top: -1px;
@@ -352,23 +336,6 @@ h1 {
   content: "";
 }
 
-.receipt-backdrop span {
-  display: block;
-  width: 70%;
-  height: 7px;
-  margin: 0 auto 22px;
-  background: #dcecdf;
-  border-radius: 999px;
-}
-
-.receipt-backdrop span:nth-child(2) {
-  width: 48%;
-}
-
-.receipt-backdrop span:nth-child(3) {
-  width: 60%;
-}
-
 .device {
   margin: 0;
 }
@@ -376,9 +343,9 @@ h1 {
 .device-laptop {
   position: absolute;
   z-index: 2;
-  right: 4%;
-  bottom: 62px;
-  width: 94%;
+  right: 6%;
+  bottom: 58px;
+  width: 88%;
   filter: drop-shadow(0 26px 36px rgba(24, 33, 40, 0.14));
 }
 
@@ -419,9 +386,9 @@ h1 {
 .device-phone {
   position: absolute;
   z-index: 4;
-  right: -4%;
-  bottom: 18px;
-  width: 28%;
+  right: 2%;
+  bottom: 12px;
+  width: 22%;
   padding: 7px;
   overflow: hidden;
   border: 3px solid #111517;
@@ -649,7 +616,7 @@ h1 {
 
 .feature-media {
   position: relative;
-  min-height: 650px;
+  min-height: 590px;
 }
 
 .paper-canvas {
@@ -658,8 +625,9 @@ h1 {
   right: 0;
   left: 0;
   aspect-ratio: 1280 / 900;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid var(--line);
+  border-radius: 14px;
   background: #fff;
   box-shadow: 0 28px 62px rgba(24, 33, 40, 0.09);
   transform: translateY(-50%);
@@ -670,13 +638,14 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: inherit;
 }
 
 .catalog-phone {
   position: absolute;
-  right: 3%;
-  bottom: 1%;
-  width: 24%;
+  right: 4%;
+  bottom: -5%;
+  width: 21%;
   aspect-ratio: 390 / 844;
   padding: 6px;
   overflow: hidden;
@@ -1339,7 +1308,7 @@ h1 {
 
   .hero-media {
     width: min(100%, 710px);
-    min-height: 520px;
+    min-height: 490px;
     margin: 0 auto;
   }
 
@@ -1362,7 +1331,7 @@ h1 {
   }
 
   .feature-media {
-    min-height: 580px;
+    min-height: 540px;
   }
 
   .principle-list {
@@ -1478,28 +1447,27 @@ h1 {
 
   .hero-media {
     width: 100%;
-    min-height: 430px;
-    overflow: hidden;
-  }
-
-  .receipt-backdrop {
-    top: 6px;
-    right: -4%;
-    width: 82%;
-    height: 350px;
+    min-height: clamp(440px, calc(70vw + 196px), 630px);
   }
 
   .device-laptop {
-    right: -28%;
-    bottom: 64px;
-    width: 126%;
+    top: 0;
+    right: 0;
+    bottom: auto;
+    width: 100%;
+  }
+
+  .device-laptop .laptop-base {
+    width: 100%;
+    margin-left: 0;
   }
 
   .device-phone {
     right: auto;
     bottom: 0;
-    left: 7%;
-    width: 45%;
+    left: 50%;
+    width: min(27%, 105px);
+    transform: translateX(-50%);
   }
 
   .section {
@@ -1572,17 +1540,21 @@ h1 {
   }
 
   .feature-media {
-    min-height: 390px;
+    min-height: clamp(430px, calc(70vw + 180px), 615px);
   }
 
   .paper-canvas {
-    top: 46%;
+    top: 0;
+    transform: none;
   }
 
   .catalog-phone {
-    right: 4%;
-    bottom: 0;
-    width: 34%;
+    top: calc(100% + 18px);
+    right: auto;
+    bottom: auto;
+    left: 50%;
+    width: min(23%, 90px);
+    transform: translateX(-50%);
   }
 
   .principles {
@@ -1710,14 +1682,6 @@ h1 {
   .principles h2,
   .support-grid h2 {
     font-size: 36px;
-  }
-
-  .hero-media {
-    min-height: 390px;
-  }
-
-  .feature-media {
-    min-height: 340px;
   }
 
   .footer-grid {

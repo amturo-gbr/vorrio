@@ -109,6 +109,18 @@ def main() -> None:
             + ", ".join(sorted(reused_german_images))
         )
 
+    website_css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
+    if "receipt-backdrop" in website_css:
+        failures.append("styles.css: decorative receipt backdrop must not obscure product media")
+    for marker in (
+        "top: 0;\n    right: 0;\n    bottom: auto;\n    width: 100%;",
+        "right: auto;\n    bottom: 0;\n    left: 50%;\n    width: min(27%, 105px);",
+        "top: calc(100% + 18px);\n    right: auto;\n    bottom: auto;\n    left: 50%;",
+    ):
+        if marker not in website_css:
+            failures.append("styles.css: responsive product media containment contract changed")
+            break
+
     expected_github = "https://github.com/amturo-gbr/vorrio"
     structured_data_hashes: set[str] = set()
     for locale in ("de", "en"):

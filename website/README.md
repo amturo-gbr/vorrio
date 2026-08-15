@@ -68,6 +68,7 @@ Vercel as the selected host and document international-transfer safeguards.
 - `docs/design/website-features-concept.png`
 - `docs/design/website-install-support-concept.png`
 - `docs/design/website-mobile-concept.png`
+- `docs/design/website-product-media-concept-v2.png`
 
 Product screenshots in `website/assets/` are synthetic design/QA fixtures from
 the checked-in Vorrio design system. Do not replace them with private household
@@ -76,3 +77,5 @@ screenshots.
 Keep localized screenshots paired: the English page uses the `*-en.png` assets,
 while the German page uses the corresponding German captures. Refresh both sets
 from isolated synthetic data whenever the product UI changes materially.
+The shared CSS keeps every laptop and phone frame fully inside its media region;
+language variants change the screenshot source, not the responsive composition.
