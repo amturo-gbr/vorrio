@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.25",
+    version="0.8.26",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.25",
-        "title": "Zuverlässiger scannen",
-        "summary": "Der Kamerascanner bestätigt Codes stabiler, lehnt Platzhalter ab und bleibt auf Desktop übersichtlich.",
+        "version": "0.8.26",
+        "title": "Scan-Aktionen verständlich erklärt",
+        "summary": "Eine kompakte Hilfe erklärt jetzt alle fünf Scan-Aktionen, ohne die schnelle Bedienung zu stören.",
         "highlights": [
-            "Kameracodes werden erst nach zwei übereinstimmenden Bildern übernommen",
-            "Offensichtliche Platzhalter wie ein reiner Nullcode werden abgelehnt",
-            "Alle fünf Scanaktionen bleiben auf Desktop in einer sauberen Reihe",
+            "Alle fünf Aktionen sind gemeinsam und in einfacher Sprache erklärt",
+            "Auf dem Handy öffnet sich eine übersichtliche Hilfe von unten",
+            "Die ausgewählte Aktion und der Bestätigungsablauf bleiben unverändert",
         ],
     },
     "en": {
-        "version": "0.8.25",
-        "title": "More reliable scanning",
-        "summary": "The camera scanner confirms codes more reliably, rejects placeholders and stays clear on desktop.",
+        "version": "0.8.26",
+        "title": "Scan actions explained clearly",
+        "summary": "Compact help now explains all five scan actions without interrupting the fast workflow.",
         "highlights": [
-            "Camera codes are accepted only after two matching frames",
-            "Obvious placeholders such as an all-zero code are rejected",
-            "All five scan actions stay in one clean desktop row",
+            "All five actions are explained together in plain language",
+            "Phones show the overview in a clear bottom sheet",
+            "The selected action and confirmation flow remain unchanged",
         ],
     },
 }

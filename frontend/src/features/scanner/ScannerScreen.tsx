@@ -4,6 +4,7 @@ import {
   Camera,
   Check,
   CheckCircle2,
+  CircleHelp,
   CircleMinus,
   CloudUpload,
   Keyboard,
@@ -126,6 +127,7 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
     return storage ? readOfflineScans(storage) : []
   })
   const [error, setError] = useState('')
+  const [modeHelpOpen, setModeHelpOpen] = useState(false)
   const [cameraState, setCameraState] = useState<'idle' | 'starting' | 'active'>('idle')
   const videoRef = useRef<HTMLVideoElement>(null)
   const scannerControlsRef = useRef<{ stop: () => void } | null>(null)
@@ -133,6 +135,9 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   const cameraAcceptedRef = useRef(false)
   const manualInputRef = useRef<HTMLInputElement>(null)
   const resultRef = useRef<HTMLElement>(null)
+  const modeHelpButtonRef = useRef<HTMLButtonElement>(null)
+  const modeHelpDialogRef = useRef<HTMLElement>(null)
+  const modeHelpCloseRef = useRef<HTMLButtonElement>(null)
 
   const refreshReviewData = useCallback(async () => {
     const [nextUnresolved, nextMasterData, nextProducts] = await Promise.all([
@@ -161,6 +166,41 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
   }, [])
 
   useEffect(() => stopCamera, [stopCamera])
+
+  useEffect(() => {
+    if (!modeHelpOpen) return undefined
+    const previousOverflow = document.body.style.overflow
+    const frame = window.requestAnimationFrame(() => modeHelpCloseRef.current?.focus())
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setModeHelpOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = Array.from(
+        modeHelpDialogRef.current?.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') || [],
+      ).filter((element) => !element.hasAttribute('disabled'))
+      if (!focusable.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      document.body.style.overflow = previousOverflow
+      document.removeEventListener('keydown', handleKeyDown)
+      modeHelpButtonRef.current?.focus()
+    }
+  }, [modeHelpOpen])
 
   useEffect(() => {
     if (!scan || !window.matchMedia('(max-width: 959px)').matches) return undefined
@@ -483,10 +523,71 @@ export function ScannerScreen({ onNotice }: ScannerScreenProps) {
           </button>
         ))}
       </div>
-      <p className="scan-mode-help" aria-live="polite">
-        <ActiveModeIcon />
-        <span><strong>{translate(activeMode.label)}</strong> {translate(activeMode.description)}.</span>
-      </p>
+      <div className="scan-mode-help-row">
+        <p className="scan-mode-help" id="scan-mode-current-description" aria-live="polite">
+          <ActiveModeIcon />
+          <span><strong>{translate(activeMode.label)}</strong> {translate(activeMode.description)}.</span>
+        </p>
+        <button
+          ref={modeHelpButtonRef}
+          className="scan-mode-info-button"
+          type="button"
+          aria-haspopup="dialog"
+          aria-expanded={modeHelpOpen}
+          aria-controls="scan-mode-help-dialog"
+          aria-label={translate('scanner.action_help.trigger')}
+          onClick={() => setModeHelpOpen(true)}
+        >
+          <CircleHelp />
+          <span>{translate('scanner.action_help.trigger')}</span>
+        </button>
+      </div>
+
+      {modeHelpOpen ? (
+        <div className="sheet-backdrop scan-help-backdrop" role="presentation" onMouseDown={() => setModeHelpOpen(false)}>
+          <section
+            ref={modeHelpDialogRef}
+            className="product-sheet scan-help-sheet"
+            id="scan-mode-help-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="scan-mode-help-title"
+            aria-describedby="scan-mode-help-description"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <span className="sheet-handle" />
+            <header>
+              <div>
+                <h2 id="scan-mode-help-title">{translate('scanner.action_help.title')}</h2>
+                <p id="scan-mode-help-description">{translate('scanner.action_help.subtitle')}</p>
+              </div>
+              <button
+                ref={modeHelpCloseRef}
+                className="icon-button"
+                type="button"
+                aria-label={translate('scanner.action_help.close')}
+                onClick={() => setModeHelpOpen(false)}
+              >
+                <X />
+              </button>
+            </header>
+            <div className="scan-help-list">
+              {modes.map(({ id, label, icon: Icon }) => (
+                <article className={mode === id ? 'selected' : ''} key={id}>
+                  <span className="scan-help-icon"><Icon /></span>
+                  <span>
+                    <strong>{translate(label)}</strong>
+                    <small>{translate(`scanner.action_help.mode_${id}`)}</small>
+                  </span>
+                </article>
+              ))}
+            </div>
+            <button className="button primary scan-help-close" type="button" onClick={() => setModeHelpOpen(false)}>
+              <Check /> {translate('scanner.action_help.understood')}
+            </button>
+          </section>
+        </div>
+      ) : null}
 
       {!online || offlineScans.length ? (
         <section className={`offline-scan-panel${online ? '' : ' is-offline'}`} aria-label={translate("Offline-Scans")}>

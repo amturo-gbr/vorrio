@@ -171,6 +171,10 @@ English are split into content-hashed language chunks inside the same image;
 the selected pack is cached on demand. After upgrading, open each account once
 online before relying on a newly selected language offline.
 
+Version 0.8.26 changes no household schema, authentication state, catalog or
+stock history. It adds a bilingual explanation dialog for the five scanner
+actions. No migration or PWA reinstall is required.
+
 Version 0.8.25 changes no household schema, authentication state, confirmed
 products or stock history. It hardens camera consensus and barcode validation;
 existing unresolved drafts remain visible until a household deliberately

@@ -30,6 +30,8 @@ test('language changes update translations and locale-aware number formatting', 
   assert.equal(translate('Einstellungen'), 'Einstellungen')
   assert.equal(translate('{{count}} Produkte', { count: 1 }), '1 Produkt')
   assert.equal(translate('{{count}} Produkte', { count: 2 }), '2 Produkte')
+  assert.equal(translate('scanner.action_help.title'), 'Was machen die Scan-Aktionen?')
+  assert.match(translate('scanner.action_help.mode_open'), /Menge bleibt gleich/)
   assert.equal(formatNumber(1234.5), '1.234,5')
 
   await changeLocale('en')
@@ -37,6 +39,8 @@ test('language changes update translations and locale-aware number formatting', 
   assert.equal(translate('Einstellungen'), 'Settings')
   assert.equal(translate('{{count}} Produkte', { count: 1 }), '1 product')
   assert.equal(translate('{{count}} Produkte', { count: 2 }), '2 products')
+  assert.equal(translate('scanner.action_help.title'), 'What do the scan actions do?')
+  assert.match(translate('scanner.action_help.mode_open'), /quantity remains unchanged/)
   assert.equal(formatNumber(1234.5), '1,234.5')
 
   await changeLocale('de')

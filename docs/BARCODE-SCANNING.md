@@ -24,11 +24,16 @@ The user chooses the intended action before scanning:
 | Open | Mark an appropriate existing lot as opened. |
 | Shopping list | Add or increase the unchecked item for the generic product. |
 
-The mode is always visible and its effect is explained in plain language. On a
-phone, all five actions fit without horizontal scrolling. Once a code resolves,
-the acquisition panel leaves the screen, the review becomes the primary
-content and the final action remains reachable above mobile navigation. Short
-success/error audio feedback is used when the browser permits it.
+The mode is always visible and its effect is explained in plain language. A
+single accessible **Actions explained** control opens all five explanations in
+a mobile bottom sheet or centered desktop dialog; the selected mode is
+highlighted and no nested help target interferes with the action tabs. The
+dialog traps keyboard focus, closes with Escape or its explicit controls and
+returns focus to the trigger. On a phone, all five actions fit without
+horizontal scrolling. Once a code resolves, the acquisition panel leaves the
+screen, the review becomes the primary content and the final action remains
+reachable above mobile navigation. Short success/error audio feedback is used
+when the browser permits it.
 Station-specific pinned defaults and an undo window remain future enhancements.
 
 ## Offline queue

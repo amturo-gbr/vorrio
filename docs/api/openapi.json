@@ -6753,7 +6753,7 @@
     },
     "summary": "Self-hosted household inventory and receipt API",
     "title": "Vorrio REST API",
-    "version": "0.8.25"
+    "version": "0.8.26"
   },
   "openapi": "3.1.0",
   "paths": {
