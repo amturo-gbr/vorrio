@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import DefaultTheme from "vitepress/theme";
 import { inBrowser, useData, useRoute } from "vitepress";
-import { nextTick, watchEffect } from "vue";
+import { nextTick, onMounted, watch } from "vue";
 
 const { lang } = useData();
 const route = useRoute();
 
-watchEffect(() => {
+async function applyLocale() {
   if (!inBrowser) return;
   const locale = route.path.startsWith("/de/") ? "de" : route.path.startsWith("/en/") ? "en" : null;
   if (locale) localStorage.setItem("vorrio-docs-locale", locale);
   document.documentElement.lang = lang.value;
-  void nextTick(() => {
+  await nextTick();
+  requestAnimationFrame(() => {
     const german = locale === "de";
     document.querySelectorAll<HTMLButtonElement>("button.copy").forEach((button) => {
       const label = german ? "Code kopieren" : "Copy code";
@@ -23,7 +24,10 @@ watchEffect(() => {
       anchor.setAttribute("aria-label", german ? `Direktlink zu „${heading}“` : `Permalink to “${heading}”`);
     });
   });
-});
+}
+
+onMounted(() => void applyLocale());
+watch(() => route.path, () => void applyLocale());
 </script>
 
 <template>
