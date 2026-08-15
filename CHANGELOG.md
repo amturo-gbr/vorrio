@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Replaced the completed public-launch website milestone with the actual path
+  toward a stable 1.0 and removed the unplanned Home Assistant roadmap entry.
+- Added localized Open Graph and Twitter sharing cards, crawler directives,
+  a multilingual sitemap, structured software metadata and complete SEO
+  regression checks while keeping legal pages and local card sources out of
+  search results and the public deployment respectively.
+
 ## 0.8.26 – 2026-08-15
 
 - Added one accessible **Actions explained** control beside the current scanner

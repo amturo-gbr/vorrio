@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import base64
+import hashlib
 import json
 import re
+import struct
+import xml.etree.ElementTree as ET
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -106,6 +110,7 @@ def main() -> None:
         )
 
     expected_github = "https://github.com/amturo-gbr/vorrio"
+    structured_data_hashes: set[str] = set()
     for locale in ("de", "en"):
         page_text = pages[locale].read_text(encoding="utf-8")
         if expected_github not in page_text:
@@ -124,6 +129,97 @@ def main() -> None:
             failures.append(f"{pages[locale].name}: GitHub Sponsors must stay hidden")
         if "data-stripe" in page_text or "support-config.js" in page_text:
             failures.append(f"{pages[locale].name}: inactive payment integration must not ship")
+        expected_social_card = f"assets/vorrio-social-card-{locale}.png"
+        seo_markers = (
+            'name="robots" content="index, follow, max-image-preview:large"',
+            'property="og:site_name" content="Vorrio"',
+            f'property="og:image" content="https://vorrio.app/{expected_social_card}"',
+            'property="og:image:width" content="1200"',
+            'property="og:image:height" content="630"',
+            'name="twitter:card" content="summary_large_image"',
+            f'name="twitter:image" content="https://vorrio.app/{expected_social_card}"',
+            'rel="apple-touch-icon"',
+            'type="application/ld+json"',
+        )
+        for marker in seo_markers:
+            if marker not in page_text:
+                failures.append(f"{pages[locale].name}: SEO marker {marker!r} is missing")
+        structured_match = re.search(
+            r'<script type="application/ld\+json">(.*?)</script>', page_text, re.DOTALL
+        )
+        if structured_match:
+            try:
+                structured_data = json.loads(structured_match.group(1))
+            except json.JSONDecodeError as error:
+                failures.append(f"{pages[locale].name}: invalid JSON-LD: {error}")
+            else:
+                if structured_data.get("@type") != "SoftwareApplication":
+                    failures.append(
+                        f"{pages[locale].name}: JSON-LD must describe a SoftwareApplication"
+                    )
+                if structured_data.get("codeRepository") != expected_github:
+                    failures.append(
+                        f"{pages[locale].name}: JSON-LD repository identity is incorrect"
+                    )
+            digest = hashlib.sha256(structured_match.group(1).encode("utf-8")).digest()
+            structured_data_hashes.add("sha256-" + base64.b64encode(digest).decode("ascii"))
+
+    expected_roadmap_copy = {
+        "de": "Richtung stabile 1.0",
+        "en": "Toward a stable 1.0",
+    }
+    for locale, marker in expected_roadmap_copy.items():
+        if marker not in pages[locale].read_text(encoding="utf-8"):
+            failures.append(f"{pages[locale].name}: current public roadmap copy is missing")
+    roadmap_source = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
+    next_milestone_match = re.search(
+        r"## Next family-ready PWA milestone(.*?)(?=\n## |\Z)",
+        roadmap_source,
+        re.DOTALL,
+    )
+    if next_milestone_match and "Home Assistant" in next_milestone_match.group(1):
+        failures.append("docs/ROADMAP.md: unplanned Home Assistant milestone remains")
+
+    for locale in ("de-imprint", "en-imprint", "de-privacy", "en-privacy"):
+        page_text = pages[locale].read_text(encoding="utf-8")
+        if 'name="robots" content="noindex, follow"' not in page_text:
+            failures.append(f"{pages[locale].name}: legal page noindex policy is missing")
+        if 'rel="apple-touch-icon"' not in page_text:
+            failures.append(f"{pages[locale].name}: Apple touch icon is missing")
+
+    for locale in ("de", "en"):
+        card = WEBSITE / "assets" / f"vorrio-social-card-{locale}.png"
+        if not card.exists():
+            failures.append(f"{card.name}: social sharing image is missing")
+            continue
+        payload = card.read_bytes()
+        if payload[:8] != b"\x89PNG\r\n\x1a\n" or len(payload) < 24:
+            failures.append(f"{card.name}: social sharing image must be a valid PNG")
+            continue
+        width, height = struct.unpack(">II", payload[16:24])
+        if (width, height) != (1200, 630):
+            failures.append(
+                f"{card.name}: social sharing image must be 1200x630, got {width}x{height}"
+            )
+
+    robots = (WEBSITE / "robots.txt").read_text(encoding="utf-8")
+    if "User-agent: *" not in robots or "Sitemap: https://vorrio.app/sitemap.xml" not in robots:
+        failures.append("robots.txt: crawl and sitemap directives are incomplete")
+
+    sitemap_path = WEBSITE / "sitemap.xml"
+    try:
+        sitemap_root = ET.parse(sitemap_path).getroot()
+    except ET.ParseError as error:
+        failures.append(f"sitemap.xml: invalid XML: {error}")
+    else:
+        namespace = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        sitemap_urls = {
+            element.text
+            for element in sitemap_root.findall("sm:url/sm:loc", namespace)
+            if element.text
+        }
+        if sitemap_urls != {"https://vorrio.app/", "https://vorrio.app/index-en.html"}:
+            failures.append("sitemap.xml: must contain exactly the two indexable language pages")
 
     support_config = (WEBSITE / "support-config.js").read_text(encoding="utf-8")
     for key in ("oneTime", "monthly"):
@@ -152,6 +248,8 @@ def main() -> None:
     vercel_ignore = (WEBSITE / ".vercelignore").read_text(encoding="utf-8").splitlines()
     if "support-config.js" not in vercel_ignore:
         failures.append(".vercelignore: local Stripe support config must not be deployed")
+    if "social-card-source.html" not in vercel_ignore:
+        failures.append(".vercelignore: social card source must not be deployed")
 
     legal_source = "\n".join(
         pages[key].read_text(encoding="utf-8")
@@ -222,6 +320,9 @@ def main() -> None:
             failures.append(f"vercel.json: missing security header {required_header}")
     if "connect-src 'none'" not in configured_headers.get("content-security-policy", ""):
         failures.append("vercel.json: CSP must keep outbound browser connections disabled")
+    for structured_hash in structured_data_hashes:
+        if f"'{structured_hash}'" not in configured_headers.get("content-security-policy", ""):
+            failures.append("vercel.json: CSP must allow the exact structured-data block hash")
 
     css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
     responsive_css = {
@@ -237,7 +338,10 @@ def main() -> None:
 
     if failures:
         raise SystemExit("\n".join(failures))
-    print("Website contract is valid (bilingual pages, legal data, local assets and no tracking)")
+    print(
+        "Website contract is valid "
+        "(bilingual pages, SEO, legal data, local assets and no tracking)"
+    )
 
 
 if __name__ == "__main__":

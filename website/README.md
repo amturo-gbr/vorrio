@@ -8,6 +8,13 @@ installable PWA available today from the planned native iOS and Android clients,
 links to the detailed repository roadmap and routes demand through GitHub's
 feature-request form.
 
+The two indexable language pages provide canonical and `hreflang` URLs,
+localized 1200×630 Open Graph/Twitter cards, `SoftwareApplication` structured
+data, crawler directives and an XML sitemap. The legal pages deliberately use
+`noindex, follow`: they remain reachable and linked without competing with the
+project landing pages in search results. `social-card-source.html` is the local,
+reproducible card layout and is excluded from Vercel deployments.
+
 ## Preview
 
 From the repository root:

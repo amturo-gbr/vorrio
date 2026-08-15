@@ -7,21 +7,45 @@
       name="description"
       content="Vorrio verbindet Bons, Produktscans und deinen aktuellen Bestand – selbst gehostet und unter deiner Kontrolle."
     />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="Amturo UG (haftungsbeschränkt)" />
     <meta name="theme-color" content="#176b35" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vorrio" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:locale:alternate" content="en_US" />
     <meta property="og:title" content="Vorrio – Dein Einkauf wird zum verlässlichen Vorrat" />
     <meta
       property="og:description"
       content="Die selbst gehostete Haushalts-App für Bons, Bestand, Einkaufsliste, Preise und Budget."
     />
     <meta property="og:url" content="https://vorrio.app/" />
+    <meta property="og:image" content="https://vorrio.app/assets/vorrio-social-card-de.png" />
+    <meta property="og:image:secure_url" content="https://vorrio.app/assets/vorrio-social-card-de.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Vorrio – selbst gehosteter Haushaltsvorrat mit Bons, Scans und Bestand" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Vorrio – Dein Einkauf wird zum verlässlichen Vorrat" />
+    <meta
+      name="twitter:description"
+      content="Die selbst gehostete Haushalts-App für Bons, Bestand, Einkaufsliste, Preise und Budget."
+    />
+    <meta name="twitter:image" content="https://vorrio.app/assets/vorrio-social-card-de.png" />
+    <meta name="twitter:image:alt" content="Vorrio – selbst gehosteter Haushaltsvorrat" />
     <link rel="canonical" href="https://vorrio.app/" />
     <link rel="alternate" hreflang="de" href="https://vorrio.app/" />
     <link rel="alternate" hreflang="en" href="https://vorrio.app/index-en.html" />
     <link rel="alternate" hreflang="x-default" href="https://vorrio.app/" />
-    <link rel="icon" href="assets/vorrio-icon.png" />
+    <link rel="icon" type="image/png" sizes="1024x1024" href="assets/vorrio-icon.png" />
+    <link rel="apple-touch-icon" href="assets/vorrio-icon.png" />
+    <link rel="preload" as="image" href="assets/scanner-desktop.png" fetchpriority="high" />
     <link rel="stylesheet" href="styles.css" />
     <title>Vorrio – Self-hosted Haushaltsvorrat</title>
+    <script type="application/ld+json">
+      {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Vorrio","url":"https://vorrio.app/","applicationCategory":"LifestyleApplication","operatingSystem":"Any modern web browser","isAccessibleForFree":true,"license":"https://www.gnu.org/licenses/agpl-3.0.html","codeRepository":"https://github.com/amturo-gbr/vorrio","author":{"@type":"Organization","name":"Amturo UG (haftungsbeschränkt)","url":"https://amturo.de"}}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -286,10 +310,10 @@
             </li>
             <li class="roadmap-item reveal">
               <span class="roadmap-stage">Als Nächstes</span>
-              <h3>Öffentlich veröffentlichen</h3>
+              <h3>Richtung stabile 1.0</h3>
               <p>
-                Pakete, Dokumentation und Sicherheitsprüfungen für eine verlässliche erste
-                öffentliche Version abschließen.
+                Installation und Updates vereinfachen, Barrierefreiheit und Schnittstellen weiter
+                prüfen und eine verlässliche Kompatibilität festlegen.
               </p>
             </li>
             <li class="roadmap-item reveal">
@@ -349,7 +373,7 @@
       <section class="support section" id="unterstuetzen">
         <div class="shell support-grid">
           <div class="reveal">
-            <h2>Offen entwickelt.<br />Gemeinsam erhalten.</h2>
+            <h2>Offen entwickelt.<br />Gemeinsam gepflegt.</h2>
             <p>
               Vorrio ist freie Software. Melde Fehler, teile Ideen, verbessere Übersetzungen oder
               arbeite direkt am Code mit.

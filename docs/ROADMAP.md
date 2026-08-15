@@ -244,7 +244,9 @@
 
 ## Next family-ready PWA milestone
 
-- optional Home Assistant webhook and dashboard cards.
+- clearer installation and upgrade paths;
+- continued accessibility and localization hardening;
+- stable API compatibility on the way to 1.0.
 
 External live-price comparison stays parked as a later optional connector until
 a licensed, authoritative source can identify current product, package, branch,
