@@ -62,7 +62,7 @@ the raw monetary limit.
 - `PUT /api/v1/insights/budget/settings` sets or clears the shared target.
 
 The request and response schemas are canonical in the checked-in
-[OpenAPI contract](api/openapi.json) and rendered by `/docs` and `/redoc` on a
+[OpenAPI contract](../api/openapi.json) and rendered by `/docs` and `/redoc` on a
 running installation.
 
 ## Deliberate boundaries

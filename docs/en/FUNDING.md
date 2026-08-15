@@ -17,7 +17,7 @@ The prepared website supports two independent links:
 - an optional fixed monthly sponsorship.
 
 Both controls stay hidden while their values in `website/support-config.js` are
-empty. See `docs/STRIPE-SUPPORT.md` for the account, link and activation steps.
+empty. See `STRIPE-SUPPORT.md` for the account, link and activation steps.
 
 Two Stripe test-mode links are now prepared: customer-selected one-time support
 with a EUR 3 minimum and EUR 10 preset, and fixed support at EUR 5 per month.

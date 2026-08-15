@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "prepare:assets": "node scripts/prepare-assets.mjs",
+    "translate:de": "node scripts/translate-docs.mjs",
+    "translate:de:force": "node scripts/translate-docs.mjs --force",
+    "translate:api:de": "node scripts/translate-api.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "check:built-i18n": "node scripts/check-built-i18n.mjs",
     "dev": "npm run prepare:assets && vitepress dev . --host 127.0.0.1",
-    "build": "npm run prepare:assets && vitepress build .",
+    "build": "npm run prepare:assets && npm run check:i18n && vitepress build . && npm run check:built-i18n",
     "preview": "vitepress preview . --host 127.0.0.1",
     "check": "npm run build"
   },

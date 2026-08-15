@@ -12,7 +12,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
 OPENAPI_PATH = ROOT / "docs" / "api" / "openapi.json"
-API_DOC_PATH = ROOT / "docs" / "API.md"
+API_DOC_PATH = ROOT / "docs" / "en" / "API.md"
 
 
 def render_api_markdown(schema: dict[str, Any]) -> str:

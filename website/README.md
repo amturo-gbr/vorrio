@@ -38,7 +38,7 @@ the Vercel project and verified. The canonical repository is
 rehearsal. GitHub Sponsors is not shown. Stripe Payment Links are prepared as
 the first funding option, but the public HTML and JavaScript contain no payment
 controls or payment copy. The local `support-config.js` placeholder is excluded
-from Vercel deployments. See `docs/STRIPE-SUPPORT.md` for the future activation
+from Vercel deployments. See `docs/en/STRIPE-SUPPORT.md` for the future activation
 contract.
 
 IONOS keeps the authoritative nameservers. Configure these apex records and

@@ -23,12 +23,15 @@ REQUIRED_FILES = {
     "SUPPORT.md",
     "docker-compose.release.yml",
     "stack.yml",
-    "docs/API.md",
-    "docs/INSTALLATION.md",
-    "docs/PUBLIC-LAUNCH-CHECKLIST.md",
-    "docs/STRIPE-SUPPORT.md",
-    "docs/TRANSLATION-COMMUNITY.md",
+    "docs/en/API.md",
+    "docs/en/INSTALLATION.md",
+    "docs/en/PUBLIC-LAUNCH-CHECKLIST.md",
+    "docs/en/STRIPE-SUPPORT.md",
+    "docs/en/TRANSLATION-COMMUNITY.md",
     "docs/api/openapi.json",
+    "docs/api/openapi.de.json",
+    "docs/de/index.md",
+    "docs/i18n-source-lock.json",
     "frontend/src/locales/de/manifest.json",
     "frontend/src/locales/en/manifest.json",
     "language-packs/README.md",
@@ -135,8 +138,10 @@ FORBIDDEN_TEXT = {
 }
 ALLOWED_TEXT_MATCHES = {
     ("backend/tests/test_app.py", "private IPv4 address"): {"192.168.1.10", "172.20.0.0"},
-    ("docs/DEPLOYMENT-PROFILES.md", "private IPv4 address"): {"172.20.0.0"},
-    ("docs/EXTERNAL-ACCESS-SECURITY-REVIEW.md", "private IPv4 address"): {"172.20.0.0"},
+    ("docs/en/DEPLOYMENT-PROFILES.md", "private IPv4 address"): {"172.20.0.0"},
+    ("docs/en/EXTERNAL-ACCESS-SECURITY-REVIEW.md", "private IPv4 address"): {"172.20.0.0"},
+    ("docs/de/DEPLOYMENT-PROFILES.md", "private IPv4 address"): {"172.20.0.0"},
+    ("docs/de/EXTERNAL-ACCESS-SECURITY-REVIEW.md", "private IPv4 address"): {"172.20.0.0"},
     ("scripts/check_release_package.py", "private IPv4 address"): {"192.168.1.10", "172.20.0.0"},
 }
 

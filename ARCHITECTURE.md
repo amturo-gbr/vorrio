@@ -49,7 +49,7 @@ names, receipt text, currency and deployment timezone remain domain data.
 Two explicit Web App Manifests keep install metadata aligned with the active
 language. The static `website/` entry points are translated separately and do
 not share application sessions or runtime configuration. The complete contract
-and extension procedure are documented in `docs/LOCALIZATION.md`.
+and extension procedure are documented in `docs/en/LOCALIZATION.md`.
 
 ## Domain model
 
@@ -85,7 +85,7 @@ suggestion and idempotency keys. Confirmation links or creates the variant and
 then calls one transactional stock/list operation. The result is stored on the
 draft so a retry returns the original action instead of mutating twice.
 
-See [Data model](docs/DATA-MODEL.md) for table responsibilities.
+See [Data model](docs/en/DATA-MODEL.md) for table responsibilities.
 
 ## Receipt pipeline
 
@@ -286,7 +286,7 @@ hostname do not require separate frontend builds. The target deployment model
 uses one canonical HTTPS hostname internally and externally. Accepted hostnames
 and trusted proxy networks remain separate settings; a canonical URL never
 implicitly grants network trust. See
-[deployment profiles](docs/DEPLOYMENT-PROFILES.md).
+[deployment profiles](docs/en/DEPLOYMENT-PROFILES.md).
 
 Audit events are explicit domain objects in 0.8.3. The first named Owner,
 membership role constraint and revocable browser sessions shipped in 0.8.9;
@@ -314,8 +314,8 @@ and installation erasure include this media. Browser
 clients retain same-origin cookie sessions. Native clients use
 browser-based Authorization Code with PKCE and revocable device tokens rather
 than copying a browser cookie. See
-[identity architecture](docs/IDENTITY-SECURITY.md) and
-[mobile apps](docs/MOBILE-APPS.md).
+[identity architecture](docs/en/IDENTITY-SECURITY.md) and
+[mobile apps](docs/en/MOBILE-APPS.md).
 
 Version 0.8.19 adds a small `user_experience` record per account. The REST API
 returns first-run and current-release state without exposing it to automation
@@ -337,7 +337,7 @@ The 0.7 scan surface provides camera, manual and keyboard-wedge inputs,
 explicit action modes, cached enrichment and an unresolved-code inbox. ZXing is
 loaded only when the camera starts and decodes frames locally; only the decoded
 code is submitted. Camera access requires a secure HTTPS context.
-See [product scanning](docs/BARCODE-SCANNING.md).
+See [product scanning](docs/en/BARCODE-SCANNING.md).
 
 ## Responsive client
 

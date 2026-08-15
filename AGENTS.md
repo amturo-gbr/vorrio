@@ -8,7 +8,7 @@ Required before completion:
 - update user documentation, architecture notes and the changelog;
 - update request/response models, endpoint summaries and examples in the
   versioned REST API;
-- regenerate `docs/api/openapi.json` and `docs/API.md`;
+- regenerate `docs/api/openapi.json` and `docs/en/API.md`;
 - run `make check`, including the documentation synchronization check;
 - never expose private installation data, credentials, local addresses or
   personal paths in public documentation or examples.
@@ -19,8 +19,8 @@ documentation is available at `/docs`, ReDoc at `/redoc`, and the
 machine-readable contract at `/openapi.json`.
 
 Deployment, authentication or mobile-client changes must also update
-`docs/DEPLOYMENT-PROFILES.md`, `docs/IDENTITY-SECURITY.md`,
-`docs/MOBILE-APPS.md` and `docs/FOUNDATION-CHECKLIST.md` as applicable.
+`docs/en/DEPLOYMENT-PROFILES.md`, `docs/en/IDENTITY-SECURITY.md`,
+`docs/en/MOBILE-APPS.md` and `docs/en/FOUNDATION-CHECKLIST.md` as applicable.
 Never hardcode an installation origin into the web client. A canonical URL,
 accepted hostnames, trusted proxy networks and CORS origins are separate
 security concepts. Do not describe direct internet exposure as supported until

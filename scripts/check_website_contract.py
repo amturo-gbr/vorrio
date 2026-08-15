@@ -127,13 +127,14 @@ def main() -> None:
     structured_data_hashes: set[str] = set()
     for locale in ("de", "en"):
         page_text = pages[locale].read_text(encoding="utf-8")
+        docs_locale = locale
         if expected_github not in page_text:
             failures.append(f"{pages[locale].name}: canonical GitHub repository link is missing")
         for marker in (
             'id="roadmap"',
-            "https://docs.vorrio.app/ROADMAP",
-            "https://docs.vorrio.app/INSTALLATION",
-            "https://docs.vorrio.app/api-reference",
+            f"https://docs.vorrio.app/{docs_locale}/ROADMAP",
+            f"https://docs.vorrio.app/{docs_locale}/INSTALLATION",
+            f"https://docs.vorrio.app/{docs_locale}/api-reference",
             "PWA",
             "iOS",
             "Android",
@@ -187,14 +188,14 @@ def main() -> None:
     for locale, marker in expected_roadmap_copy.items():
         if marker not in pages[locale].read_text(encoding="utf-8"):
             failures.append(f"{pages[locale].name}: current public roadmap copy is missing")
-    roadmap_source = (ROOT / "docs" / "ROADMAP.md").read_text(encoding="utf-8")
+    roadmap_source = (ROOT / "docs" / "en" / "ROADMAP.md").read_text(encoding="utf-8")
     next_milestone_match = re.search(
         r"## Next family-ready PWA milestone(.*?)(?=\n## |\Z)",
         roadmap_source,
         re.DOTALL,
     )
     if next_milestone_match and "Home Assistant" in next_milestone_match.group(1):
-        failures.append("docs/ROADMAP.md: unplanned Home Assistant milestone remains")
+        failures.append("docs/en/ROADMAP.md: unplanned Home Assistant milestone remains")
 
     for locale in ("de-imprint", "en-imprint", "de-privacy", "en-privacy"):
         page_text = pages[locale].read_text(encoding="utf-8")

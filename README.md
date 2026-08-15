@@ -137,9 +137,9 @@ Never commit `.env`. The Compose templates stop with a clear error while
 `APP_SECRET_KEY` is empty, and the readiness check rejects documented example
 values as unsafe.
 
-See [Installation](docs/INSTALLATION.md),
-[Configuration](docs/CONFIGURATION.md) and
-[Backup and restore](docs/BACKUP-RESTORE.md) for production use.
+See [Installation](docs/en/INSTALLATION.md),
+[Configuration](docs/en/CONFIGURATION.md) and
+[Backup and restore](docs/en/BACKUP-RESTORE.md) for production use.
 The same maintained guides and a read-only reference generated from the checked-in
 OpenAPI contract are published at [docs.vorrio.app](https://docs.vorrio.app).
 
@@ -152,7 +152,7 @@ with the dedicated language pull-request checklist. Automated checks reject
 unsafe files, invalid placeholders and inaccurate completeness metadata;
 fluent reviewers and an Amturo maintainer decide when a language is ready for
 an official signed release. Read the [translation community
-guide](docs/TRANSLATION-COMMUNITY.md) before starting.
+guide](docs/en/TRANSLATION-COMMUNITY.md) before starting.
 
 ## Daily workflow
 
@@ -223,7 +223,7 @@ shared EUR monthly target; every account can see the confirmed spending,
 remaining amount, simple calendar-pace forecast, comparable prior-month period,
 history and store shares. Pending reviews, missing totals and other currencies
 stay visible and do not silently enter the calculation. See
-[Household budget](docs/BUDGET.md) for the exact rules and limitations.
+[Household budget](docs/en/BUDGET.md) for the exact rules and limitations.
 
 ## REST API
 
@@ -234,7 +234,7 @@ The canonical API is versioned under `/api/v1`.
 - OpenAPI 3.1: `/openapi.json`
 - Health check: `/api/health`
 - Deployment readiness: `/api/readiness`
-- Endpoint index: [REST API](docs/API.md)
+- Endpoint index: [REST API](docs/en/API.md)
 
 API documentation is generated from the running request and response models.
 `make api-docs-check` fails when the checked-in contract is stale.
@@ -245,33 +245,33 @@ required permission as `x-vorrio-required-scope`.
 ## Documentation
 
 - [Architecture](ARCHITECTURE.md)
-- [Getting started and update notes](docs/GETTING-STARTED.md)
-- [Localization](docs/LOCALIZATION.md)
-- [Translation community](docs/TRANSLATION-COMMUNITY.md)
+- [Getting started and update notes](docs/en/GETTING-STARTED.md)
+- [Localization](docs/en/LOCALIZATION.md)
+- [Translation community](docs/en/TRANSLATION-COMMUNITY.md)
 - [Language-pack format](language-packs/README.md)
-- [Installation](docs/INSTALLATION.md)
-- [Deployment profiles and URLs](docs/DEPLOYMENT-PROFILES.md)
-- [Configuration](docs/CONFIGURATION.md)
-- [Identity and authentication](docs/IDENTITY-SECURITY.md)
-- [Automation API tokens](docs/AUTOMATION-TOKENS.md)
-- [Web Push notifications](docs/NOTIFICATIONS.md)
-- [Household budget](docs/BUDGET.md)
-- [iOS and Android plan](docs/MOBILE-APPS.md)
-- [Foundation checklist](docs/FOUNDATION-CHECKLIST.md)
-- [Workflow](docs/WORKFLOW.md)
-- [Data model](docs/DATA-MODEL.md)
-- [Product data and licenses](docs/DATA-SOURCES.md)
-- [Product and barcode scanning concept](docs/BARCODE-SCANNING.md)
-- [Grocy migration](docs/MIGRATION-GROCY.md)
-- [Backup and restore](docs/BACKUP-RESTORE.md)
-- [Data privacy, export and erasure](docs/DATA-PRIVACY.md)
-- [Release and upgrade policy](docs/RELEASES.md)
-- [Public launch checklist](docs/PUBLIC-LAUNCH-CHECKLIST.md)
-- [AI providers](docs/AI-PROVIDERS.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Funding](docs/FUNDING.md)
+- [Installation](docs/en/INSTALLATION.md)
+- [Deployment profiles and URLs](docs/en/DEPLOYMENT-PROFILES.md)
+- [Configuration](docs/en/CONFIGURATION.md)
+- [Identity and authentication](docs/en/IDENTITY-SECURITY.md)
+- [Automation API tokens](docs/en/AUTOMATION-TOKENS.md)
+- [Web Push notifications](docs/en/NOTIFICATIONS.md)
+- [Household budget](docs/en/BUDGET.md)
+- [iOS and Android plan](docs/en/MOBILE-APPS.md)
+- [Foundation checklist](docs/en/FOUNDATION-CHECKLIST.md)
+- [Workflow](docs/en/WORKFLOW.md)
+- [Data model](docs/en/DATA-MODEL.md)
+- [Product data and licenses](docs/en/DATA-SOURCES.md)
+- [Product and barcode scanning concept](docs/en/BARCODE-SCANNING.md)
+- [Grocy migration](docs/en/MIGRATION-GROCY.md)
+- [Backup and restore](docs/en/BACKUP-RESTORE.md)
+- [Data privacy, export and erasure](docs/en/DATA-PRIVACY.md)
+- [Release and upgrade policy](docs/en/RELEASES.md)
+- [Public launch checklist](docs/en/PUBLIC-LAUNCH-CHECKLIST.md)
+- [AI providers](docs/en/AI-PROVIDERS.md)
+- [Roadmap](docs/en/ROADMAP.md)
+- [Funding](docs/en/FUNDING.md)
 - [Project website](website/README.md)
-- [Governance](docs/GOVERNANCE.md)
+- [Governance](docs/en/GOVERNANCE.md)
 - [Security](SECURITY.md)
 - [Support](SUPPORT.md)
 - [Community code of conduct](CODE_OF_CONDUCT.md)

@@ -6,5 +6,7 @@
 /language-packs/ @adrian-amturo
 /scripts/create_language_pack.py @adrian-amturo
 /scripts/validate_language_pack.py @adrian-amturo
-/docs/LOCALIZATION.md @adrian-amturo
-/docs/TRANSLATION-COMMUNITY.md @adrian-amturo
+/docs/en/LOCALIZATION.md @adrian-amturo
+/docs/de/LOCALIZATION.md @adrian-amturo
+/docs/en/TRANSLATION-COMMUNITY.md @adrian-amturo
+/docs/de/TRANSLATION-COMMUNITY.md @adrian-amturo

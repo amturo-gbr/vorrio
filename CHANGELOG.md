@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Published the complete documentation in German and English under `/de/` and
+  `/en/`, with first-visit language detection, a remembered language choice,
+  localized navigation, local search and API explanations, plus canonical and
+  `hreflang` metadata for every paired page.
+- Added build gates that reject missing, stale or structurally divergent
+  translations while keeping API methods, paths, operation IDs, schemas and the
+  canonical OpenAPI contract language-independent.
 - Reframed every German and English website product capture with complete,
   consistently scaled laptop and phone devices; removed the decorative receipt
   fold and the intentional mobile crops that made the screenshots look broken,

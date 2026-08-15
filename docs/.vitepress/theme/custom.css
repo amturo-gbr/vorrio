@@ -34,6 +34,70 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.locale-gateway {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  padding: 40px 24px;
+  color: var(--vp-c-text-1);
+  text-align: center;
+}
+
+.locale-brand {
+  margin: 12px 0 30px;
+  color: var(--vp-c-brand-1);
+  font-size: 20px;
+  font-weight: 760;
+}
+
+.locale-gateway h1 {
+  max-width: 760px;
+  margin: 0 0 18px;
+  font-size: clamp(36px, 7vw, 64px);
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+.locale-gateway > p:not(.locale-brand, .locale-status) {
+  max-width: 580px;
+  margin: 3px 0;
+  color: var(--vp-c-text-2);
+  font-size: 17px;
+}
+
+.locale-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.locale-actions a {
+  display: inline-flex;
+  min-width: 138px;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--vp-c-brand-1);
+  border-radius: 8px;
+  color: #fff;
+  background: var(--vp-c-brand-1);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.locale-actions a:last-child {
+  color: var(--vp-c-brand-1);
+  background: #fff;
+}
+
+.locale-status {
+  min-height: 24px;
+  margin-top: 20px;
+  color: var(--vp-c-text-3);
+  font-size: 14px;
+}
+
 :focus-visible {
   outline: 3px solid rgba(23, 107, 53, 0.24);
   outline-offset: 3px;

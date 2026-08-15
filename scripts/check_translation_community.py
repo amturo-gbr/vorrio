@@ -57,7 +57,7 @@ def main() -> None:
     )
     failures.extend(
         require_markers(
-            "docs/TRANSLATION-COMMUNITY.md",
+            "docs/en/TRANSLATION-COMMUNITY.md",
             (
                 "language:requested",
                 "language:in-progress",
@@ -69,7 +69,7 @@ def main() -> None:
             ),
         )
     )
-    for path in ("README.md", "CONTRIBUTING.md", "docs/LOCALIZATION.md"):
+    for path in ("README.md", "CONTRIBUTING.md", "docs/en/LOCALIZATION.md"):
         failures.extend(require_markers(path, ("TRANSLATION-COMMUNITY.md",)))
 
     if failures:

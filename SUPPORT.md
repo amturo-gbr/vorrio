@@ -6,9 +6,9 @@ are enabled for the public repository.
 
 Before asking for help:
 
-1. read [Installation](docs/INSTALLATION.md),
-   [Configuration](docs/CONFIGURATION.md) and
-   [Backup and restore](docs/BACKUP-RESTORE.md);
+1. read [Installation](docs/en/INSTALLATION.md),
+   [Configuration](docs/en/CONFIGURATION.md) and
+   [Backup and restore](docs/en/BACKUP-RESTORE.md);
 2. record the exact Vorrio version or immutable image digest;
 3. check `/api/health` and `/api/readiness`;
 4. reproduce with synthetic data where possible;

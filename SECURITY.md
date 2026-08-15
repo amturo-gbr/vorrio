@@ -155,7 +155,7 @@ alone still does not make an installation safe: `public_https` refuses normal
 application traffic until canonical host/origin, trusted proxy, Secure-cookie,
 secret and explicit acknowledgement checks all pass. Private VPN/HTTPS remains
 the preferred household profile. See the documented residual operator duties
-in [External-access security review](docs/EXTERNAL-ACCESS-SECURITY-REVIEW.md).
+in [External-access security review](docs/en/EXTERNAL-ACCESS-SECURITY-REVIEW.md).
 
 Treat an API token like a password. Transmit it only in the
 `Authorization: Bearer` header over a trusted HTTPS/VPN path, store it in the
@@ -165,6 +165,6 @@ revoke it when a device is retired. Never place bearer values in URLs or logs.
 Use HTTPS, keep authentication enabled, restrict administrative networks and
 back up the data volume. Never expose the SQLite file, `APP_SECRET_KEY`,
 provider keys or connector keys through a web server. See
-[Identity and authentication](docs/IDENTITY-SECURITY.md),
-[Deployment profiles](docs/DEPLOYMENT-PROFILES.md) and the
-[foundation checklist](docs/FOUNDATION-CHECKLIST.md).
+[Identity and authentication](docs/en/IDENTITY-SECURITY.md),
+[Deployment profiles](docs/en/DEPLOYMENT-PROFILES.md) and the
+[foundation checklist](docs/en/FOUNDATION-CHECKLIST.md).

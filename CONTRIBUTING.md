@@ -25,7 +25,7 @@ Every feature or behavior change must update, in the same change:
 - `ARCHITECTURE.md` when boundaries or data flow change;
 - `CHANGELOG.md`;
 - request/response models and endpoint summaries;
-- `docs/api/openapi.json` and `docs/API.md`.
+- `docs/api/openapi.json` and `docs/en/API.md`.
 
 Deployment, identity and mobile changes must update their threat assumptions,
 supported profiles and foundation-gate documentation. A feature that weakens
@@ -34,6 +34,13 @@ the internet-exposure gate is incomplete even when its happy-path test passes.
 The API documentation drift, local documentation-link and public-package
 hygiene checks must pass. A matching, stock, migration or connector change
 needs a regression test.
+
+The public documentation has paired English and German sources in `docs/en/`
+and `docs/de/`. After changing an English page, update its German counterpart
+with `npm --prefix docs run translate:de:force -- --file=<PAGE>.md`, review the
+wording, and run `npm --prefix docs run check`. API changes additionally require
+`npm --prefix docs run translate:api:de`. The build rejects missing pages,
+outdated source hashes, changed technical snippets and stale API explanations.
 
 ## Translation contributions
 
@@ -52,7 +59,7 @@ Run `make language-pack-check` before submission. A technically valid draft can
 remain a community candidate; official status additionally requires complete
 product integration, independent fluent review and Amturo maintainer approval.
 Machine-assisted drafts must be disclosed and cannot review themselves. See
-[Translation community](docs/TRANSLATION-COMMUNITY.md) for roles, status labels
+[Translation community](docs/en/TRANSLATION-COMMUNITY.md) for roles, status labels
 and the promotion gate.
 
 ## Pull requests

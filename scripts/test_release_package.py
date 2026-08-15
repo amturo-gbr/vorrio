@@ -22,7 +22,7 @@ class ReleasePackageSecurityTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertIsNotNone(forbidden_path_reason(Path(value)))
 
-        self.assertIsNone(forbidden_path_reason(Path("docs/INSTALLATION.md")))
+        self.assertIsNone(forbidden_path_reason(Path("docs/en/INSTALLATION.md")))
         self.assertIsNone(forbidden_path_reason(Path("website/assets/vorrio-icon.png")))
         self.assertIsNone(forbidden_path_reason(Path(".env.example")))
 
@@ -51,7 +51,7 @@ class ReleasePackageSecurityTests(unittest.TestCase):
 
         self.assertEqual(
             forbidden_text_labels(
-                Path("docs/DEPLOYMENT-PROFILES.md"),
+                Path("docs/en/DEPLOYMENT-PROFILES.md"),
                 f"FORWARDED_ALLOW_IPS={docker_network}/16",
             ),
             set(),
@@ -61,7 +61,7 @@ class ReleasePackageSecurityTests(unittest.TestCase):
             {"private IPv4 address"},
         )
         self.assertEqual(
-            forbidden_text_labels(Path("docs/INSTALLATION.md"), actual_household_address),
+            forbidden_text_labels(Path("docs/en/INSTALLATION.md"), actual_household_address),
             {"private IPv4 address"},
         )
 

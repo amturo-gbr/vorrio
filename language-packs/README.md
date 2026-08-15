@@ -4,7 +4,7 @@ Vorrio keeps translations as data-only language packs. Official packs ship in
 the versioned container image and are loaded by the PWA only when selected.
 This directory defines the public manifest contract used by official and
 community contributions. The complete people, review and promotion workflow is
-documented in [Translation community](../docs/TRANSLATION-COMMUNITY.md).
+documented in [Translation community](../docs/en/TRANSLATION-COMMUNITY.md).
 
 ## Current status
 

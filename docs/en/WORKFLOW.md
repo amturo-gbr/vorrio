@@ -66,8 +66,8 @@ candidate metadata needed for ranking. Search results are cached for 30 days.
 
 Responsive implementation references:
 
-- [mobile product candidates](design/product-candidates-mobile-final-0.8.0.png)
-- [desktop product candidates](design/product-candidates-desktop-final-0.8.0.png)
+- [mobile product candidates](../design/product-candidates-mobile-final-0.8.0.png)
+- [desktop product candidates](../design/product-candidates-desktop-final-0.8.0.png)
 
 The product scanner is a separate primary workflow with identify, add,
 consume, open and shopping-list modes. It supports phone cameras over HTTPS,
@@ -99,10 +99,10 @@ rejects the stale save and asks for a reload rather than overwriting it.
 
 Responsive implementation references:
 
-- [mobile product editor](design/catalog-editor-mobile-final-0.8.1.png)
-- [desktop product editor](design/catalog-editor-desktop-final-0.8.1.png)
-- [mobile master-data editor](design/master-data-editor-mobile-final-0.8.1.png)
-- [desktop master-data editor](design/master-data-editor-desktop-final-0.8.1.png)
+- [mobile product editor](../design/catalog-editor-mobile-final-0.8.1.png)
+- [desktop product editor](../design/catalog-editor-desktop-final-0.8.1.png)
+- [mobile master-data editor](../design/master-data-editor-mobile-final-0.8.1.png)
+- [desktop master-data editor](../design/master-data-editor-desktop-final-0.8.1.png)
 
 ## Opening and cycle count
 
@@ -129,10 +129,10 @@ product or master-data entry.
 
 Responsive implementation references:
 
-- [mobile count entry](design/stock-count-mobile-final-0.8.2.png)
-- [mobile count review](design/stock-count-review-mobile-final-0.8.2.png)
-- [desktop count entry](design/stock-count-desktop-final-0.8.2.png)
-- [desktop count review](design/stock-count-review-desktop-final-0.8.2.png)
+- [mobile count entry](../design/stock-count-mobile-final-0.8.2.png)
+- [mobile count review](../design/stock-count-review-mobile-final-0.8.2.png)
+- [desktop count entry](../design/stock-count-desktop-final-0.8.2.png)
+- [desktop count review](../design/stock-count-review-desktop-final-0.8.2.png)
 
 ## Minimum stock and shopping list
 
@@ -158,10 +158,10 @@ does not invent stock.
 
 Responsive implementation references:
 
-- [mobile shopping list](design/shopping-list-mobile-final-0.8.3.png)
-- [mobile refill review](design/shopping-refill-mobile-final-0.8.3.png)
-- [desktop shopping list](design/shopping-list-desktop-final-0.8.3.png)
-- [desktop refill review](design/shopping-refill-desktop-final-0.8.3.png)
+- [mobile shopping list](../design/shopping-list-mobile-final-0.8.3.png)
+- [mobile refill review](../design/shopping-refill-mobile-final-0.8.3.png)
+- [desktop shopping list](../design/shopping-list-desktop-final-0.8.3.png)
+- [desktop refill review](../design/shopping-refill-desktop-final-0.8.3.png)
 
 ## Package scan
 
@@ -192,8 +192,8 @@ desired quantity. Identify changes no stock quantity.
 
 Responsive implementation references:
 
-- [mobile scanner entry](design/scanner-entry-mobile-final-0.8.5.png)
-- [mobile result-first review](design/scanner-review-mobile-final-0.8.5.png)
+- [mobile scanner entry](../design/scanner-entry-mobile-final-0.8.5.png)
+- [mobile result-first review](../design/scanner-review-mobile-final-0.8.5.png)
 
 ## Master data suggestions
 

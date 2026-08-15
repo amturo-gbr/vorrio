@@ -1,0 +1,536 @@
+{
+  "sourceSha256": "6be9316afdd517fd258928530680b6f64b46686ec049a3d6bd4fb7e7f34631ab",
+  "tags": {
+    "System": "System",
+    "Authentication": "Authentifizierung",
+    "Catalog": "Katalog",
+    "Experience": "Nutzungserlebnis",
+    "Legacy Grocy": "Grocy-Kompatibilität",
+    "Insights": "Auswertungen",
+    "Integrations": "Integrationen",
+    "Notifications": "Benachrichtigungen",
+    "Privacy & Operations": "Datenschutz und Betrieb",
+    "Receipts": "Kassenbons",
+    "Scanning": "Scannen",
+    "Settings": "Einstellungen",
+    "Shopping": "Einkäufe",
+    "Stock": "Vorrat"
+  },
+  "operations": {
+    "get /api/health": {
+      "key": "get /api/health",
+      "summary": "Überprüfen Sie den Zustand der Instanz",
+      "description": ""
+    },
+    "get /api/readiness": {
+      "key": "get /api/readiness",
+      "summary": "Überprüfen Sie die Bereitstellungsbereitschaft",
+      "description": ""
+    },
+    "get /api/v1/auth/api-token-scopes": {
+      "key": "get /api/v1/auth/api-token-scopes",
+      "summary": "Verfügbare Bereiche für Automatisierungstoken auflisten",
+      "description": ""
+    },
+    "get /api/v1/auth/api-tokens": {
+      "key": "get /api/v1/auth/api-tokens",
+      "summary": "Listen Sie die Automatisierungstoken des aktuellen Kontos auf",
+      "description": ""
+    },
+    "post /api/v1/auth/api-tokens": {
+      "key": "post /api/v1/auth/api-tokens",
+      "summary": "Erstellen Sie ein bereichsbezogenes Automatisierungstoken",
+      "description": "Gibt den Rohträger-Token genau einmal zurück. Vorrio speichert nur seinen SHA-256-Hash. Der Token ist auf die ausgewählten Bereiche beschränkt und läuft nach maximal 365 Tagen ab."
+    },
+    "delete /api/v1/auth/api-tokens/{token_id}": {
+      "key": "delete /api/v1/auth/api-tokens/{token_id}",
+      "summary": "Widerrufen Sie ein Automatisierungstoken",
+      "description": ""
+    },
+    "get /api/v1/auth/invitations": {
+      "key": "get /api/v1/auth/invitations",
+      "summary": "Listen Sie aktive Haushaltseinladungen auf",
+      "description": ""
+    },
+    "post /api/v1/auth/invitations": {
+      "key": "post /api/v1/auth/invitations",
+      "summary": "Erstellen Sie eine Einwegeinladung für den Haushalt",
+      "description": "Gibt das rohe Einladungstoken genau einmal zurück. Es wird nur sein SHA-256-Hash gespeichert. Der Einladende gibt den PWA-Link desselben Ursprungs privat weiter."
+    },
+    "delete /api/v1/auth/invitations/{invitation_id}": {
+      "key": "delete /api/v1/auth/invitations/{invitation_id}",
+      "summary": "Widerrufen Sie eine ungenutzte Haushaltseinladung",
+      "description": ""
+    },
+    "get /api/v1/auth/invitations/{token}": {
+      "key": "get /api/v1/auth/invitations/{token}",
+      "summary": "Lesen Sie eine Einladung zur einmaligen Verwendung",
+      "description": ""
+    },
+    "post /api/v1/auth/invitations/{token}/accept": {
+      "key": "post /api/v1/auth/invitations/{token}/accept",
+      "summary": "Nehmen Sie eine Einladung an und erstellen Sie das Mitgliedskonto",
+      "description": ""
+    },
+    "post /api/v1/auth/login": {
+      "key": "post /api/v1/auth/login",
+      "summary": "Erstellen Sie eine Haushaltssitzung",
+      "description": ""
+    },
+    "post /api/v1/auth/logout": {
+      "key": "post /api/v1/auth/logout",
+      "summary": "Beenden Sie die aktuelle Sitzung",
+      "description": ""
+    },
+    "get /api/v1/auth/me": {
+      "key": "get /api/v1/auth/me",
+      "summary": "Validieren Sie die aktuelle Sitzung",
+      "description": ""
+    },
+    "get /api/v1/auth/members": {
+      "key": "get /api/v1/auth/members",
+      "summary": "Listen Sie die Haushaltsmitglieder auf",
+      "description": ""
+    },
+    "patch /api/v1/auth/members/{user_id}": {
+      "key": "patch /api/v1/auth/members/{user_id}",
+      "summary": "Ändern Sie eine Mitgliedsrolle oder einen Zugriffsstatus",
+      "description": "Die Eigentümermitgliedschaft kann über diesen Endpunkt nicht geändert werden. Administratoren können Mitglieder und Zuschauer verwalten, jedoch keinen Administratorzugriff gewähren oder verwalten."
+    },
+    "post /api/v1/auth/mfa/verify": {
+      "key": "post /api/v1/auth/mfa/verify",
+      "summary": "Beenden Sie eine Passwort-Anmeldung mit einem zweiten Faktor",
+      "description": ""
+    },
+    "post /api/v1/auth/passkeys/authentication/begin": {
+      "key": "post /api/v1/auth/passkeys/authentication/begin",
+      "summary": "Starten Sie die passwortlose Passkey-Authentifizierung",
+      "description": ""
+    },
+    "post /api/v1/auth/passkeys/authentication/complete": {
+      "key": "post /api/v1/auth/passkeys/authentication/complete",
+      "summary": "Vollständige passwortlose Passkey-Authentifizierung",
+      "description": ""
+    },
+    "post /api/v1/auth/passkeys/registration/begin": {
+      "key": "post /api/v1/auth/passkeys/registration/begin",
+      "summary": "Starten Sie die Passkey-Registrierung",
+      "description": ""
+    },
+    "post /api/v1/auth/passkeys/registration/complete": {
+      "key": "post /api/v1/auth/passkeys/registration/complete",
+      "summary": "Überprüfen und speichern Sie einen Passkey",
+      "description": ""
+    },
+    "delete /api/v1/auth/passkeys/{credential_id}": {
+      "key": "delete /api/v1/auth/passkeys/{credential_id}",
+      "summary": "Löschen Sie einen Passkey",
+      "description": ""
+    },
+    "put /api/v1/auth/password": {
+      "key": "put /api/v1/auth/password",
+      "summary": "Ändern Sie das aktuelle Kontopasswort",
+      "description": ""
+    },
+    "patch /api/v1/auth/preferences": {
+      "key": "patch /api/v1/auth/preferences",
+      "summary": "Aktualisieren Sie die persönlichen Benutzeroberflächeneinstellungen",
+      "description": "Speichert das unterstützte BCP 47-Schnittstellengebietsschema des angemeldeten Benutzers. Die Präferenz ist persönlich und hat keinen Einfluss auf die Produktdaten, die Währung oder die Installationszeitzone des Haushalts."
+    },
+    "patch /api/v1/auth/profile": {
+      "key": "patch /api/v1/auth/profile",
+      "summary": "Vervollständigen oder aktualisieren Sie das Eigentümerprofil",
+      "description": "Benennt den ersten Besitzer, der aus dem früheren Haushaltspasswort erstellt wurde. Die optionale E-Mail wird lokal gespeichert und identifiziert das Konto bei der Anmeldung mit dem Wiederherstellungscode."
+    },
+    "post /api/v1/auth/reauthenticate": {
+      "key": "post /api/v1/auth/reauthenticate",
+      "summary": "Bestätigen Sie die Identität vor einer sensiblen Änderung",
+      "description": ""
+    },
+    "post /api/v1/auth/recovery": {
+      "key": "post /api/v1/auth/recovery",
+      "summary": "Stellen Sie ein Konto mit einem einmaligen Wiederherstellungscode wieder her",
+      "description": ""
+    },
+    "post /api/v1/auth/recovery-codes": {
+      "key": "post /api/v1/auth/recovery-codes",
+      "summary": "Ersetzen Sie alle Einweg-Wiederherstellungscodes",
+      "description": ""
+    },
+    "get /api/v1/auth/security": {
+      "key": "get /api/v1/auth/security",
+      "summary": "Lesen Sie Passkey, TOTP und Wiederherstellungsstatus",
+      "description": ""
+    },
+    "get /api/v1/auth/sessions": {
+      "key": "get /api/v1/auth/sessions",
+      "summary": "Aktive Browsersitzungen auflisten",
+      "description": ""
+    },
+    "post /api/v1/auth/sessions/revoke-others": {
+      "key": "post /api/v1/auth/sessions/revoke-others",
+      "summary": "Widerrufen Sie jede zweite Browsersitzung",
+      "description": ""
+    },
+    "delete /api/v1/auth/sessions/{session_id}": {
+      "key": "delete /api/v1/auth/sessions/{session_id}",
+      "summary": "Widerrufen Sie eine Browsersitzung",
+      "description": ""
+    },
+    "post /api/v1/auth/setup": {
+      "key": "post /api/v1/auth/setup",
+      "summary": "Komplette Ersteinrichtung",
+      "description": ""
+    },
+    "get /api/v1/auth/state": {
+      "key": "get /api/v1/auth/state",
+      "summary": "Lesen Sie den Setup- und Sitzungsstatus",
+      "description": ""
+    },
+    "delete /api/v1/auth/totp": {
+      "key": "delete /api/v1/auth/totp",
+      "summary": "Deaktivieren Sie die Authentifizierungs-App-Überprüfung",
+      "description": ""
+    },
+    "post /api/v1/auth/totp/enable": {
+      "key": "post /api/v1/auth/totp/enable",
+      "summary": "Überprüfen und aktivieren Sie eine Authentifizierungs-App",
+      "description": ""
+    },
+    "post /api/v1/auth/totp/setup": {
+      "key": "post /api/v1/auth/totp/setup",
+      "summary": "Erstellen Sie ein ausstehendes Authentifikator-App-Geheimnis",
+      "description": ""
+    },
+    "get /api/v1/catalog/barcodes/{barcode}/lookup": {
+      "key": "get /api/v1/catalog/barcodes/{barcode}/lookup",
+      "summary": "Lösen Sie einen Barcode lokal oder über Open Facts auf",
+      "description": ""
+    },
+    "get /api/v1/catalog/master-data": {
+      "key": "get /api/v1/catalog/master-data",
+      "summary": "Listen Sie Standorte, Einheiten und Produktgruppen auf",
+      "description": ""
+    },
+    "post /api/v1/catalog/master-data/{kind}": {
+      "key": "post /api/v1/catalog/master-data/{kind}",
+      "summary": "Erstellen Sie einen Katalogstammdateneintrag",
+      "description": "Unterstützte Arten sind Standorte, Mengeneinheiten und Produktgruppen."
+    },
+    "delete /api/v1/catalog/master-data/{kind}/{item_id}": {
+      "key": "delete /api/v1/catalog/master-data/{kind}/{item_id}",
+      "summary": "Archivieren Sie einen nicht verwendeten Katalogstammdateneintrag",
+      "description": "Der Eintrag wird archiviert statt physisch gelöscht. Die Archivierung wird blockiert, solange ein aktives Produkt sie noch verwendet."
+    },
+    "patch /api/v1/catalog/master-data/{kind}/{item_id}": {
+      "key": "patch /api/v1/catalog/master-data/{kind}/{item_id}",
+      "summary": "Benennen Sie einen Katalogstammdateneintrag um oder bearbeiten Sie ihn",
+      "description": ""
+    },
+    "get /api/v1/catalog/products": {
+      "key": "get /api/v1/catalog/products",
+      "summary": "Suchen Sie nach Katalogprodukten",
+      "description": ""
+    },
+    "post /api/v1/catalog/products": {
+      "key": "post /api/v1/catalog/products",
+      "summary": "Erstellen Sie ein lokales Katalogprodukt",
+      "description": ""
+    },
+    "get /api/v1/catalog/products/{product_id}": {
+      "key": "get /api/v1/catalog/products/{product_id}",
+      "summary": "Lesen Sie ein Produkt mit Varianten und Barcodes",
+      "description": ""
+    },
+    "patch /api/v1/catalog/products/{product_id}": {
+      "key": "patch /api/v1/catalog/products/{product_id}",
+      "summary": "Bearbeiten Sie ein lokales Katalogprodukt",
+      "description": "Aktualisiert bestätigte Haushaltsfelder mit optimistischer Parallelität. Ein umbenanntes Produkt behält seinen alten normalisierten Namen als Alias, sodass frühere Quittungsformulierungen weiterhin aufgelöst werden."
+    },
+    "delete /api/v1/catalog/products/{product_id}/image": {
+      "key": "delete /api/v1/catalog/products/{product_id}/image",
+      "summary": "Entfernen Sie das aktuelle Produktbild",
+      "description": ""
+    },
+    "get /api/v1/catalog/products/{product_id}/image": {
+      "key": "get /api/v1/catalog/products/{product_id}/image",
+      "summary": "Lesen Sie ein lokal verwaltetes Produktbild",
+      "description": ""
+    },
+    "post /api/v1/catalog/products/{product_id}/image": {
+      "key": "post /api/v1/catalog/products/{product_id}/image",
+      "summary": "Laden Sie ein privates Produktbild hoch",
+      "description": "Akzeptiert JPEG, PNG oder WebP, entfernt Kamerametadaten und speichert ein optimiertes WebP im lokalen Datenvolumen Vorrio."
+    },
+    "get /api/v1/catalog/products/{product_id}/price-history": {
+      "key": "get /api/v1/catalog/products/{product_id}/price-history",
+      "summary": "Listen Sie die Quittungspreise für ein Katalogprodukt auf",
+      "description": "Gibt vom Beleg abgeleitete Preise mit Filial- und Paketvariantenkontext zurück. Es werden keine Bank- oder Zahlungsdaten gespeichert."
+    },
+    "post /api/v1/catalog/products/{product_id}/variants": {
+      "key": "post /api/v1/catalog/products/{product_id}/variants",
+      "summary": "Fügen Sie eine verkaufsfähige Produktvariante hinzu",
+      "description": ""
+    },
+    "post /api/v1/catalog/reconcile": {
+      "key": "post /api/v1/catalog/reconcile",
+      "summary": "Bewerten Sie nicht aufgelöste Wareneingangszeilen neu",
+      "description": "Verwendet nur den lokalen Produktkatalog und erlernte Zuordnungen. Genaue Übereinstimmungen können automatisch zugewiesen werden; Fuzzy-Kandidaten bleiben immer Vorschläge."
+    },
+    "delete /api/v1/catalog/variants/{variant_id}": {
+      "key": "delete /api/v1/catalog/variants/{variant_id}",
+      "summary": "Löschen Sie eine nicht verwendete Produktvariante",
+      "description": "Das Löschen ist gesperrt, solange ein Beleg, ein Bestandslos oder ein Scan noch auf die Variante verweist."
+    },
+    "patch /api/v1/catalog/variants/{variant_id}": {
+      "key": "patch /api/v1/catalog/variants/{variant_id}",
+      "summary": "Bearbeiten Sie eine Produktvariante",
+      "description": ""
+    },
+    "post /api/v1/catalog/variants/{variant_id}/barcodes": {
+      "key": "post /api/v1/catalog/variants/{variant_id}/barcodes",
+      "summary": "Fügen Sie einer Produktvariante einen Barcode hinzu",
+      "description": ""
+    },
+    "delete /api/v1/catalog/variants/{variant_id}/barcodes/{barcode}": {
+      "key": "delete /api/v1/catalog/variants/{variant_id}/barcodes/{barcode}",
+      "summary": "Trennen Sie einen Barcode von einer Produktvariante",
+      "description": ""
+    },
+    "get /api/v1/experience": {
+      "key": "get /api/v1/experience",
+      "summary": "Lesen Sie den persönlichen Onboarding- und Release-Note-Status",
+      "description": ""
+    },
+    "put /api/v1/experience": {
+      "key": "put /api/v1/experience",
+      "summary": "Schließen Sie das Onboarding ab oder bestätigen Sie die aktuelle Version",
+      "description": ""
+    },
+    "get /api/v1/grocy/master-data": {
+      "key": "get /api/v1/grocy/master-data",
+      "summary": "Grocy-Stammdaten lesen",
+      "description": ""
+    },
+    "get /api/v1/grocy/products": {
+      "key": "get /api/v1/grocy/products",
+      "summary": "Suchen Sie nach Grocy-Produkten",
+      "description": ""
+    },
+    "get /api/v1/insights/budget": {
+      "key": "get /api/v1/insights/budget",
+      "summary": "Fassen Sie das Haushaltsbudget anhand der bestätigten Belege zusammen",
+      "description": "Gibt die monatlichen Ausgaben, eine tempobasierte Prognose, einen vergleichbaren Vorzeitraum, den monatlichen Verlauf, Filialanteile und eine explizite Abdeckungsdiagnose zurück. Es werden nur Zugänge mit mindestens einem bestätigten Bestandsimport gezählt; Historische Quittungswerte werden niemals als Live-Marktpreise dargestellt."
+    },
+    "put /api/v1/insights/budget/settings": {
+      "key": "put /api/v1/insights/budget/settings",
+      "summary": "Legen Sie das gemeinsame monatliche Haushaltsbudget fest oder löschen Sie es",
+      "description": "Besitzer- und Administratorsitzungen können ein EUR Monatslimit und einen Warnschwellenwert für den Haushalt festlegen. Ein Null-Limit entfernt das Ziel, ohne die Belege zu ändern."
+    },
+    "get /api/v1/insights/prices": {
+      "key": "get /api/v1/insights/prices",
+      "summary": "Fassen Sie bestätigte Empfangspreise nach Produkt und Geschäft zusammen",
+      "description": "Erstellt eine schreibgeschützte Haushaltspreisübersicht aus bestätigten Belegimporten. Bei den Store-Werten handelt es sich um historische Beobachtungen, nicht um aktuelle Preise oder Verfügbarkeiten."
+    },
+    "post /api/v1/integrations/grocy/import-catalog": {
+      "key": "post /api/v1/integrations/grocy/import-catalog",
+      "summary": "Importieren oder aktualisieren Sie den lokalen Katalog von Grocy",
+      "description": ""
+    },
+    "get /api/v1/integrations/grocy/stock-preview": {
+      "key": "get /api/v1/integrations/grocy/stock-preview",
+      "summary": "Vorschau der zugeordneten Grocy-Guthaben, ohne Vorrio zu ändern",
+      "description": "Liest den konfigurierten Grocy-Bestand und ordnet ihn zuvor importierten Katalogprodukten zu. Bei der Antwort handelt es sich lediglich um einen Überprüfungsvorschlag; Bestandsänderungen erfordern eine separate Bestätigung von POST bis /api/v1/stock/counts."
+    },
+    "put /api/v1/notifications/preferences": {
+      "key": "put /api/v1/notifications/preferences",
+      "summary": "Aktualisieren Sie die Einstellungen für persönliche Aktienbenachrichtigungen",
+      "description": ""
+    },
+    "get /api/v1/notifications/state": {
+      "key": "get /api/v1/notifications/state",
+      "summary": "Persönliche Web Push-Einstellungen und Geräte lesen",
+      "description": ""
+    },
+    "post /api/v1/notifications/subscriptions": {
+      "key": "post /api/v1/notifications/subscriptions",
+      "summary": "Registrieren oder aktualisieren Sie ein Browser-Push-Gerät",
+      "description": ""
+    },
+    "delete /api/v1/notifications/subscriptions/{subscription_id}": {
+      "key": "delete /api/v1/notifications/subscriptions/{subscription_id}",
+      "summary": "Ein persönliches Push-Gerät widerrufen",
+      "description": ""
+    },
+    "post /api/v1/notifications/test": {
+      "key": "post /api/v1/notifications/test",
+      "summary": "Senden Sie eine sichtbare Testbenachrichtigung an ein persönliches Gerät",
+      "description": ""
+    },
+    "get /api/v1/operations/overview": {
+      "key": "get /api/v1/operations/overview",
+      "summary": "Lesen Sie die Übersicht über datenschutzsichere Eigentümervorgänge",
+      "description": ""
+    },
+    "get /api/v1/privacy/export": {
+      "key": "get /api/v1/privacy/export",
+      "summary": "Laden Sie einen geheimnisfreien tragbaren Haushaltsexport herunter",
+      "description": ""
+    },
+    "get /api/v1/privacy/export/preview": {
+      "key": "get /api/v1/privacy/export/preview",
+      "summary": "Vorschau des tragbaren Haushaltsexports",
+      "description": ""
+    },
+    "delete /api/v1/privacy/household": {
+      "key": "delete /api/v1/privacy/household",
+      "summary": "Löschen Sie diese Einfamilienhausinstallation endgültig",
+      "description": ""
+    },
+    "get /api/v1/privacy/retention": {
+      "key": "get /api/v1/privacy/retention",
+      "summary": "Vorschau der Aufbewahrung von Belegdateien",
+      "description": ""
+    },
+    "post /api/v1/privacy/retention/run": {
+      "key": "post /api/v1/privacy/retention/run",
+      "summary": "Wenden Sie jetzt die Aufbewahrung von Belegdateien an",
+      "description": ""
+    },
+    "get /api/v1/receipts": {
+      "key": "get /api/v1/receipts",
+      "summary": "Listen Sie aktuelle Belege auf",
+      "description": ""
+    },
+    "post /api/v1/receipts/analyze": {
+      "key": "post /api/v1/receipts/analyze",
+      "summary": "Analysieren Sie ein Bild oder eine PDF-Quittung",
+      "description": ""
+    },
+    "get /api/v1/receipts/{receipt_id}": {
+      "key": "get /api/v1/receipts/{receipt_id}",
+      "summary": "Holen Sie sich eine Quittung mit allen Zeilen",
+      "description": ""
+    },
+    "post /api/v1/receipts/{receipt_id}/import": {
+      "key": "post /api/v1/receipts/{receipt_id}/import",
+      "summary": "Übertragen Sie überprüfte Zeilen auf den lokalen Bestand",
+      "description": ""
+    },
+    "patch /api/v1/receipts/{receipt_id}/items/{item_id}": {
+      "key": "patch /api/v1/receipts/{receipt_id}/items/{item_id}",
+      "summary": "Ordnen Sie eine Wareneingangsposition einem Katalogprodukt zu",
+      "description": ""
+    },
+    "post /api/v1/receipts/{receipt_id}/items/{item_id}/candidate": {
+      "key": "post /api/v1/receipts/{receipt_id}/items/{item_id}/candidate",
+      "summary": "Bestätigen und lernen Sie einen echten Produktkandidaten kennen",
+      "description": "Lädt den ausgewählten Kandidaten aus dem serverseitigen Cache, verknüpft seinen Barcode, sein Bild und seine Verpackungsvariante mit einem vorhandenen oder neu erstellten lokalen Produkt, ordnet die Bonzeile zu und merkt sich den Händlertext."
+    },
+    "get /api/v1/receipts/{receipt_id}/items/{item_id}/candidates": {
+      "key": "get /api/v1/receipts/{receipt_id}/items/{item_id}/candidates",
+      "summary": "Finden Sie echte Produktkandidaten für eine Wareneingangslinie",
+      "description": "Durchsucht echte Open Facts-Datensätze nur nach einer expliziten Überprüfungsaktion, speichert das Ergebnis 30 Tage lang im Cache und lässt optional den konfigurierten KI-Anbieter die zurückgegebenen Datensätze bewerten. Kandidaten werden niemals automatisch zugewiesen."
+    },
+    "post /api/v1/receipts/{receipt_id}/items/{item_id}/catalog-product": {
+      "key": "post /api/v1/receipts/{receipt_id}/items/{item_id}/catalog-product",
+      "summary": "Erstellen und ordnen Sie ein lokales Katalogprodukt zu",
+      "description": ""
+    },
+    "post /api/v1/receipts/{receipt_id}/items/{item_id}/create-product": {
+      "key": "post /api/v1/receipts/{receipt_id}/items/{item_id}/create-product",
+      "summary": "Erstellen und ordnen Sie ein Grocy-Produkt zu",
+      "description": ""
+    },
+    "post /api/v1/scans/resolve": {
+      "key": "post /api/v1/scans/resolve",
+      "summary": "Lösen Sie einen Paketcode auf, ohne den Lagerbestand zu ändern",
+      "description": "Normalisiert den dekodierten Code, überprüft zuerst den lokalen Katalog und den neuen Cache, lehnt Platzhalter-GTINs mit wiederholten Ziffern ab und fragt dann Open Facts nach EAN/UPC/GTIN Codes ab. Interne Codes verlassen niemals die Installation. Unbekannte und Upstream-fehlgeschlagene Codes werden im ungelösten Posteingang gespeichert. Die Wiederverwendung von client_mutation_id gibt denselben Entwurf zurück."
+    },
+    "get /api/v1/scans/unresolved": {
+      "key": "get /api/v1/scans/unresolved",
+      "summary": "Listen Sie ungelöste Paketscans auf",
+      "description": ""
+    },
+    "delete /api/v1/scans/{scan_id}": {
+      "key": "delete /api/v1/scans/{scan_id}",
+      "summary": "Verwerfen Sie einen nicht aufgelösten Scan",
+      "description": ""
+    },
+    "get /api/v1/scans/{scan_id}": {
+      "key": "get /api/v1/scans/{scan_id}",
+      "summary": "Lesen Sie einen Scan-Entwurf",
+      "description": ""
+    },
+    "patch /api/v1/scans/{scan_id}": {
+      "key": "patch /api/v1/scans/{scan_id}",
+      "summary": "Bearbeiten oder ordnen Sie einen ungelösten Scan zu",
+      "description": "Aktualisiert Bewertungsvorschläge oder ordnet den Code einem vorhandenen lokalen Produkt zu."
+    },
+    "post /api/v1/scans/{scan_id}/confirm": {
+      "key": "post /api/v1/scans/{scan_id}/confirm",
+      "summary": "Bestätigen Sie die ausgewählte Paketaktion",
+      "description": "Erstellt oder ordnet optional das lokale Produkt zu und führt dann genau eine Aktion zum Identifizieren, Hinzufügen, Konsumieren, Öffnen oder zur Einkaufsliste aus. Der Bestätigungsschlüssel macht Wiederholungsversuche sicher."
+    },
+    "get /api/v1/settings": {
+      "key": "get /api/v1/settings",
+      "summary": "Öffentliche Einstellungen lesen",
+      "description": ""
+    },
+    "put /api/v1/settings": {
+      "key": "put /api/v1/settings",
+      "summary": "Instanzeinstellungen ersetzen",
+      "description": ""
+    },
+    "post /api/v1/settings/test-grocy": {
+      "key": "post /api/v1/settings/test-grocy",
+      "summary": "Testen Sie den Grocy-Anschluss",
+      "description": ""
+    },
+    "post /api/v1/settings/test-provider": {
+      "key": "post /api/v1/settings/test-provider",
+      "summary": "Testen Sie den ausgewählten Analyseanbieter",
+      "description": ""
+    },
+    "get /api/v1/shopping-list": {
+      "key": "get /api/v1/shopping-list",
+      "summary": "Listen Sie offene Haushaltseinkäufe auf",
+      "description": ""
+    },
+    "post /api/v1/shopping-list/generate": {
+      "key": "post /api/v1/shopping-list/generate",
+      "summary": "Generieren Sie überprüfte Artikel auf der Einkaufsliste aus geringen Lagerbeständen",
+      "description": "Überprüft jedes ausgewählte Produkt erneut transaktionsmäßig. Vorhandene offene Posten werden nur dann erhöht, wenn der berechnete Mangel größer ist, und ein Idempotenzschlüssel verhindert, dass Netzwerkwiederholungsversuche zweimal hinzugefügt werden."
+    },
+    "get /api/v1/shopping-list/low-stock": {
+      "key": "get /api/v1/shopping-list/low-stock",
+      "summary": "Sehen Sie sich Produkte unterhalb des konfigurierten Mindestbestands in der Vorschau an",
+      "description": "Gibt einen schreibgeschützten Vorschlag zurück. Produkte ohne aktives Nachfüllziel werden ausgelassen, und bis zur Bestätigung der Generierung ändert sich kein Artikel auf der Einkaufsliste."
+    },
+    "patch /api/v1/shopping-list/{item_id}": {
+      "key": "patch /api/v1/shopping-list/{item_id}",
+      "summary": "Bearbeiten oder vervollständigen Sie einen Einkaufslisteneintrag",
+      "description": ""
+    },
+    "get /api/v1/status": {
+      "key": "get /api/v1/status",
+      "summary": "Instanz- und Connector-Status lesen",
+      "description": ""
+    },
+    "get /api/v1/stock/count/products": {
+      "key": "get /api/v1/stock/count/products",
+      "summary": "Listen Sie Produkte für eine überprüfte Bestandszählung auf",
+      "description": "Gibt den kompletten aktiven Katalog inklusive aktueller Summen, Varianten und Standardstammdaten zurück. Das Lesen dieses Endpunkts ändert nie den Bestand."
+    },
+    "get /api/v1/stock/counts": {
+      "key": "get /api/v1/stock/counts",
+      "summary": "Listen Sie abgeschlossene Bestandszählungen auf",
+      "description": ""
+    },
+    "post /api/v1/stock/counts": {
+      "key": "post /api/v1/stock/counts",
+      "summary": "Wenden Sie eine überprüfte Öffnungs- oder Korrekturzählung an",
+      "description": "Es werden nur explizit eingereichte Produkte geändert. Jede Zeile legt die gezählte Summe für ein Produkt fest; Ausgelassene Produkte bleiben davon unberührt. Positive und negative Differenzen führen zu reinen Anhang-Bestandsbewegungen. Die Wiederverwendung derselben Client-Mutations-ID gibt das ursprüngliche Ergebnis zurück."
+    }
+  }
+}
