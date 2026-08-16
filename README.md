@@ -270,6 +270,7 @@ required permission as `x-vorrio-required-scope`.
 - [AI providers](docs/en/AI-PROVIDERS.md)
 - [Roadmap](docs/en/ROADMAP.md)
 - [Funding](docs/en/FUNDING.md)
+- [Stripe support](docs/en/STRIPE-SUPPORT.md)
 - [Project website](website/README.md)
 - [Governance](docs/en/GOVERNANCE.md)
 - [Security](SECURITY.md)

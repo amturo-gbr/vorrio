@@ -23,7 +23,7 @@ Two Stripe test-mode links are now prepared: customer-selected one-time support
 with a EUR 3 minimum and EUR 10 preset, and fixed support at EUR 5 per month.
 Both hosted pages are reachable, but neither test link is placed on the public
 website. The idempotent setup is in
-`scripts/setup_stripe_test_support.mjs`; local keys, IDs and test URLs remain in
+`scripts/setup_stripe_support.mjs`; local keys, IDs and test URLs remain in
 the Git-ignored `.env.stripe.local` file.
 
 The sandbox rehearsal covers successful one-time and monthly card payments,
@@ -34,7 +34,13 @@ again before launch rather than promising a fixed public method list.
 
 ## Verified current status
 
-Checked on 13 August 2026: `amturo-gbr/vorrio` is the canonical repository and
+Checked on 16 August 2026: the Stripe account can accept charges and payouts,
+has no outstanding verification requirements and uses EUR. Its public support
+contact, Vorrio branding, tax/bookkeeping approvals and live Stripe objects are
+not complete, so the live creation gate and all public payment controls remain
+closed.
+
+Also checked on 13 August 2026: `amturo-gbr/vorrio` is the canonical repository and
 is still private; the public `amturo-gbr` organization currently exposes no
 public repositories. Neither `@amturo-gbr` nor `@adrian-amturo` has applied to
 join GitHub Sponsors. No `.github/FUNDING.yml` exists, which is intentional

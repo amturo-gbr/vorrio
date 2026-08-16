@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+!.env.stripe.live.example
 data/
 output/
 frontend/node_modules/

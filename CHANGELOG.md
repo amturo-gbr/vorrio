@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Re-audited Stripe support against API `2026-06-24.dahlia`, added guarded live
+  preflight and approval gates plus unit and sandbox integration checks, and
+  kept all payment controls hidden until the live profile, branding, tax and
+  bookkeeping requirements are approved.
 - Published the complete documentation in German and English under `/de/` and
   `/en/`, with first-visit language detection, a remembered language choice,
   localized navigation, local search and API explanations, plus canonical and

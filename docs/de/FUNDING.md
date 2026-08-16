@@ -19,12 +19,12 @@ Die vorbereitete Website unterstützt zwei unabhängige Links:
 Beide Steuerelemente bleiben ausgeblendet, während ihre Werte in `website/support-config.js` verborgen bleiben
 leer. Informationen zu Konto, Link und Aktivierungsschritten finden Sie unter `STRIPE-SUPPORT.md`.
 
-Zwei Stripe-Testmodus-Links sind jetzt vorbereitet: vom Kunden ausgewählter einmaliger Support
-mit einem Mindestbetrag von 3 Euro und einem voreingestellten Betrag von 10 Euro sowie einem festen Support von 5 Euro pro Monat.
-Beide gehosteten Seiten sind erreichbar, aber keiner der Testlinks wird öffentlich platziert
-Website. Das idempotente Setup ist da
-`scripts/setup_stripe_test_support.mjs`; Lokale Schlüssel, IDs und Test-URLs bleiben erhalten
-die von Git ignorierte `.env.stripe.local`-Datei.
+Zwei Stripe-Links im Testmodus sind vorbereitet: einmalige Unterstützung mit
+frei gewähltem Betrag, mindestens 3 EUR und voreingestellt 10 EUR, sowie eine
+feste monatliche Unterstützung von 5 EUR. Beide gehosteten Seiten sind
+erreichbar, aber kein Testlink wird auf der öffentlichen Website verwendet. Das
+idempotente Setup liegt in `scripts/setup_stripe_support.mjs`; lokale Schlüssel,
+IDs und Test-URLs bleiben in der von Git ignorierten Datei `.env.stripe.local`.
 
 Die Sandbox-Probe umfasst erfolgreiche einmalige und monatliche Kartenzahlungen,
 herunterladbare PDF-Rechnungen, eine abgelehnte Zahlung, das gehostete Kundenportal,
@@ -34,7 +34,13 @@ noch einmal vor dem Start, anstatt eine feste öffentliche Methodenliste zu vers
 
 ## Aktuellen Status überprüft
 
-Geprüft am 13. August 2026: `amturo-gbr/vorrio` ist das kanonische Repository und
+Geprüft am 16. August 2026: Das Stripe-Konto kann Zahlungen und Auszahlungen
+verarbeiten, hat keine offenen Verifizierungsanforderungen und verwendet EUR.
+Öffentliche Support-Kontaktdaten, Vorrio-Branding, Steuer- und
+Buchhaltungsfreigaben sowie die Live-Stripe-Objekte fehlen noch. Deshalb bleiben
+die Live-Erstellung und alle öffentlichen Zahlungselemente gesperrt.
+
+Ebenfalls überprüft am 13. August 2026: `amturo-gbr/vorrio` ist das kanonische Repository und
 ist immer noch privat; Die öffentliche `amturo-gbr`-Organisation stellt derzeit Nr. offen
 öffentliche Repositories. Weder `@amturo-gbr` noch `@adrian-amturo` haben sich beworben
 Treten Sie GitHub-Sponsoren bei. Es existiert kein `.github/FUNDING.yml`, was beabsichtigt ist

@@ -2,10 +2,17 @@
 
 import { chmod, readFile, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
+import {
+  STRIPE_API_VERSION,
+  assertRestrictedKey,
+  liveAccountReadiness,
+  missingLiveApprovals,
+} from './stripe_support_contract.mjs'
 
 const STRIPE_API = 'https://api.stripe.com/v1'
-const STRIPE_API_VERSION = '2026-02-25.clover'
-const ENV_PATH = fileURLToPath(new URL('../.env.stripe.local', import.meta.url))
+const mode = process.argv.includes('--live') ? 'live' : 'test'
+const apply = process.argv.includes('--apply')
+const ENV_PATH = fileURLToPath(new URL(mode === 'live' ? '../.env.stripe.live.local' : '../.env.stripe.local', import.meta.url))
 
 function parseEnv(source) {
   const values = new Map()
@@ -34,11 +41,12 @@ function encode(entries) {
 
 const envSource = await readFile(ENV_PATH, 'utf8')
 const env = parseEnv(envSource)
-const stripeKey = env.get('STRIPE_SECRET_KEY')?.trim()
+const stripeKey = (env.get('STRIPE_RESTRICTED_KEY') ?? env.get('STRIPE_SECRET_KEY'))?.trim()
 
-if (env.get('STRIPE_MODE') !== 'test' || !stripeKey?.startsWith('rk_test_')) {
-  throw new Error('Refusing to run without a restricted Stripe test key')
+if (env.get('STRIPE_MODE') !== mode) {
+  throw new Error(`STRIPE_MODE must be ${mode}`)
 }
+assertRestrictedKey(mode, stripeKey)
 
 async function stripeRequest(method, endpoint, entries = {}, idempotencyKey) {
   const params = encode(entries)
@@ -66,6 +74,29 @@ async function stripeRequest(method, endpoint, entries = {}, idempotencyKey) {
   return payload
 }
 
+if (mode === 'live') {
+  const account = await stripeRequest('GET', '/account')
+  const readiness = liveAccountReadiness(account, env.get('STRIPE_ACCOUNT_ID'))
+  const missingApprovals = missingLiveApprovals(env)
+  const preflight = {
+    mode,
+    accountId: account.id,
+    ready: readiness.blockers.length === 0 && missingApprovals.length === 0,
+    blockers: readiness.blockers,
+    warnings: readiness.warnings,
+    missingApprovals,
+    writesRequested: apply,
+  }
+
+  if (!apply) {
+    console.log(JSON.stringify(preflight, null, 2))
+    process.exit(preflight.ready ? 0 : 1)
+  }
+  if (readiness.blockers.length || missingApprovals.length) {
+    throw new Error(`Live Stripe preflight failed: ${JSON.stringify(preflight)}`)
+  }
+}
+
 async function findOrCreateProduct(definition) {
   const products = await stripeRequest('GET', '/products', {
     active: true,
@@ -84,9 +115,9 @@ async function findOrCreateProduct(definition) {
       description: definition.description,
       'metadata[vorrio_support_key]': definition.key,
       'metadata[vorrio_project]': 'vorrio',
-      'metadata[vorrio_environment]': 'test',
+      'metadata[vorrio_environment]': mode,
     },
-    `vorrio-test-product-${definition.key}`,
+    `vorrio-${mode}-product-${definition.key}`,
   )
 }
 
@@ -119,13 +150,13 @@ async function findOrCreatePrice(definition, product) {
       currency: 'eur',
       product: product.id,
       nickname: definition.nickname,
-      lookup_key: `vorrio_support_${definition.key}_test`,
+      lookup_key: `vorrio_support_${definition.key}_${mode}`,
       'metadata[vorrio_support_key]': definition.key,
       'metadata[vorrio_project]': 'vorrio',
-      'metadata[vorrio_environment]': 'test',
+      'metadata[vorrio_environment]': mode,
       ...priceFields,
     },
-    `vorrio-test-price-${definition.key}`,
+    `vorrio-${mode}-price-${definition.key}`,
   )
 }
 
@@ -147,9 +178,9 @@ async function configurePaymentLink(definition, price) {
         'line_items[0][quantity]': 1,
         'metadata[vorrio_support_key]': definition.key,
         'metadata[vorrio_project]': 'vorrio',
-        'metadata[vorrio_environment]': 'test',
+        'metadata[vorrio_environment]': mode,
       },
-      `vorrio-test-payment-link-${definition.key}-v2`,
+      `vorrio-${mode}-payment-link-${definition.key}-v3`,
     )
   }
 
@@ -178,7 +209,7 @@ async function configurePaymentLink(definition, price) {
       'Unterstützung für Vorrio; keine steuerlich absetzbare Spende. / Support for Vorrio; not a tax-deductible donation.',
     'metadata[vorrio_support_key]': definition.key,
     'metadata[vorrio_project]': 'vorrio',
-    'metadata[vorrio_environment]': 'test',
+    'metadata[vorrio_environment]': mode,
     ...invoiceFields,
   })
 }
@@ -193,7 +224,7 @@ async function configureCustomerPortal() {
   )
 
   const fields = {
-    name: 'Vorrio Support – Test',
+    name: mode === 'test' ? 'Vorrio Support – Test' : 'Vorrio Support',
     'business_profile[headline]':
       'Vorrio-Unterstützung verwalten / Manage Vorrio support',
     'features[customer_update][enabled]': true,
@@ -213,7 +244,7 @@ async function configureCustomerPortal() {
     'login_page[enabled]': true,
     'metadata[vorrio_support_key]': 'customer_portal_v1',
     'metadata[vorrio_project]': 'vorrio',
-    'metadata[vorrio_environment]': 'test',
+    'metadata[vorrio_environment]': mode,
   }
 
   if (!configuration) {
@@ -221,7 +252,7 @@ async function configureCustomerPortal() {
       'POST',
       '/billing_portal/configurations',
       fields,
-      'vorrio-test-customer-portal-v2',
+      `vorrio-${mode}-customer-portal-v3`,
     )
   } else {
     configuration = await stripeRequest(
@@ -232,16 +263,17 @@ async function configureCustomerPortal() {
   }
 
   if (
-    configuration.livemode ||
+    configuration.livemode !== (mode === 'live') ||
     !configuration.active ||
     !configuration.features?.invoice_history?.enabled ||
     !configuration.features?.payment_method_update?.enabled ||
     !configuration.features?.subscription_cancel?.enabled ||
     configuration.features.subscription_cancel.mode !== 'at_period_end' ||
     !configuration.login_page?.enabled ||
-    !configuration.login_page.url?.includes('/test_')
+    (mode === 'test' && !configuration.login_page.url?.includes('/test_')) ||
+    (mode === 'live' && configuration.login_page.url?.includes('/test_'))
   ) {
-    throw new Error('Unexpected Stripe test customer portal configuration')
+    throw new Error(`Unexpected Stripe ${mode} customer portal configuration`)
   }
 
   return configuration
@@ -250,7 +282,7 @@ async function configureCustomerPortal() {
 const definitions = [
   {
     key: 'one_time_v1',
-    envPrefix: 'STRIPE_TEST_ONE_TIME',
+    envPrefix: `STRIPE_${mode.toUpperCase()}_ONE_TIME`,
     name: 'Vorrio Support – einmalig / one-time',
     description:
       'Frei wählbare Unterstützung für das Open-Source-Projekt Vorrio. / Flexible support for the Vorrio open-source project.',
@@ -261,7 +293,7 @@ const definitions = [
   },
   {
     key: 'monthly_v1',
-    envPrefix: 'STRIPE_TEST_MONTHLY',
+    envPrefix: `STRIPE_${mode.toUpperCase()}_MONTHLY`,
     name: 'Vorrio Support – monatlich / monthly',
     description:
       'Monatliche Unterstützung für das Open-Source-Projekt Vorrio. / Monthly support for the Vorrio open-source project.',
@@ -277,8 +309,8 @@ for (const definition of definitions) {
   const price = await findOrCreatePrice(definition, product)
   const paymentLink = await configurePaymentLink(definition, price)
 
-  if (product.livemode || price.livemode || paymentLink.livemode) {
-    throw new Error(`Refusing unexpected live Stripe object for ${definition.key}`)
+  if ([product, price, paymentLink].some((item) => item.livemode !== (mode === 'live'))) {
+    throw new Error(`Unexpected Stripe mode for ${definition.key}`)
   }
   if (!paymentLink.active) {
     throw new Error(`Payment Link is not active for ${definition.key}`)
@@ -327,8 +359,8 @@ for (const definition of definitions) {
 }
 
 const portal = await configureCustomerPortal()
-env.set('STRIPE_TEST_CUSTOMER_PORTAL_CONFIGURATION_ID', portal.id)
-env.set('STRIPE_TEST_CUSTOMER_PORTAL_LOGIN_URL', portal.login_page.url)
+env.set(`STRIPE_${mode.toUpperCase()}_CUSTOMER_PORTAL_CONFIGURATION_ID`, portal.id)
+env.set(`STRIPE_${mode.toUpperCase()}_CUSTOMER_PORTAL_LOGIN_URL`, portal.login_page.url)
 
 const nextEnv = `${[...env.entries()].map(([key, value]) => `${key}=${value}`).join('\n')}\n`
 await writeFile(ENV_PATH, nextEnv, { encoding: 'utf8', mode: 0o600 })
@@ -337,7 +369,7 @@ await chmod(ENV_PATH, 0o600)
 console.log(
   JSON.stringify(
     {
-      mode: 'test',
+      mode,
       results,
       customerPortal: {
         configurationId: portal.id,

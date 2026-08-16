@@ -25,6 +25,7 @@ class ReleasePackageSecurityTests(unittest.TestCase):
         self.assertIsNone(forbidden_path_reason(Path("docs/en/INSTALLATION.md")))
         self.assertIsNone(forbidden_path_reason(Path("website/assets/vorrio-icon.png")))
         self.assertIsNone(forbidden_path_reason(Path(".env.example")))
+        self.assertIsNone(forbidden_path_reason(Path(".env.stripe.live.example")))
 
     def test_private_network_and_cloudflare_account_endpoints_are_rejected(self) -> None:
         private_address = ".".join(("192", "168", "1", "209"))

@@ -30,26 +30,32 @@ Datei, eine andere Datei unter `website/`, Git, Screenshots oder Browsercode.
 
 ## Aktueller Teststatus
 
-Erstellt am 13. August 2026:
+Am 16. August 2026 erneut mit der Stripe-API `2026-06-24.dahlia` geprüft:
 
-- `scripts/setup_stripe_test_support.mjs` erstellt oder verwendet idempotently das
-  zwei Produkte im Testmodus, Preise und Zahlungslinks über die API von Stripe;
-- Der einmalige Testpreis akzeptiert einen vom Kunden gewählten EUR-Betrag mit a
-  Mindestens 3 EUR und voreingestellt 10 EUR;
-- Der wiederkehrende Testpreis ist auf 5 EUR pro Monat festgelegt.
-- Beide von Stripe gehosteten Testlinks sind aktiv und geben HTTP 200 zurück;
-- Der einmalige Link erstellt eine bezahlte Stripe-Rechnung mit herunterladbarem PDF;
-- Der monatliche Link erstellt ein Abonnement und die erste bezahlte Rechnung;
-- Das gehostete Kundenportal zeigt den Rechnungsverlauf, Rechnungsdetails und Zahlungsinformationen an.
-  Methodenaktualisierungen und Stornierung am Ende des Abrechnungszeitraums;
-- Ihre Test-IDs und URLs werden lokal unter `.env.stripe.local` gespeichert
-  wird von Git ignoriert und muss privat bleiben;
-- `website/support-config.js` bleibt leer und wird von Vercel ausgeschlossen, also testen
-  Links und inaktive Zahlungsformulierungen dürfen nicht auf der öffentlichen Website erscheinen.
+- `scripts/setup_stripe_support.mjs` erstellt die beiden Produkte, Preise und
+  Payment Links im Testmodus idempotent oder verwendet die vorhandenen Objekte;
+- beim einmaligen Testpreis wählen Unterstützende den EUR-Betrag selbst, mit
+  einem Mindestbetrag von 3 EUR und einer Voreinstellung von 10 EUR;
+- der wiederkehrende Testpreis beträgt fest 5 EUR pro Monat;
+- beide von Stripe gehosteten Testlinks sind aktiv und liefern HTTP 200;
+- der einmalige Link erstellt eine bezahlte Stripe-Rechnung als PDF;
+- der monatliche Link erstellt ein Abonnement und die erste bezahlte Rechnung;
+- das gehostete Kundenportal bietet Rechnungsverlauf, Rechnungsdaten,
+  Zahlungsmitteländerungen und Kündigung zum Ende des Abrechnungszeitraums;
+- Test-IDs und URLs liegen ausschließlich in der von Git ignorierten privaten
+  Datei `.env.stripe.local`;
+- `website/support-config.js` bleibt leer und von Vercel ausgeschlossen. Damit
+  gelangen weder Testlinks noch inaktive Zahlungstexte auf die öffentliche Seite.
 
-Das Setup-Skript akzeptiert nur einen eingeschränkten `rk_test_`-Schlüssel und lehnt die Live-Version ab
-Modus. Bei einer erneuten Ausführung müssen die vorhandenen Objekte zurückgegeben und nicht erstellt werden
-Duplikate.
+Das Setup-Skript verwendet standardmäßig den Testmodus und akzeptiert dort nur
+einen eingeschränkten `rk_test_`-Schlüssel. Bei erneuter Ausführung verwendet es
+die vorhandenen Objekte, statt Duplikate anzulegen. Eine separate,
+schreibgeschützte Integrationsprüfung kontrolliert die Stripe-Sandbox, ohne
+Zugangsdaten auszugeben:
+
+```bash
+node scripts/check_stripe_test_support.mjs
+```
 
 Die komplette Sandbox-Probe fand ebenfalls am 13. August 2026 statt:
 
@@ -65,6 +71,41 @@ Die komplette Sandbox-Probe fand ebenfalls am 13. August 2026 statt:
 An der Kasse wurde die dynamische Zahlungsmethodenauswahl von Stripe angezeigt und nicht eine
 hartcodierte Liste. Die genauen Methoden variieren je nach Unterstützer, Browser, Gerät und Währung
 und Stripe-Kontoberechtigung und muss daher im Live-Modus erneut überprüft werden.
+
+## Prüfung des Live-Kontos
+
+Das empfangende Stripe-Konto wurde am 16. August 2026 geprüft. Die
+Unternehmensdaten sind eingereicht, Zahlungen und Auszahlungen sind aktiviert,
+EUR ist die Standardwährung und es bestehen keine offenen
+Verifizierungsanforderungen. Der Abrechnungstext weist auf Amturo hin. Es wurden
+noch keine Live-Produkte, Preise, Payment Links oder Kundenportal-Konfigurationen
+angelegt.
+
+Die Live-Erstellung bleibt gesperrt, bis alle folgenden Punkte abgeschlossen sind:
+
+- öffentliche Support-E-Mail und Support-URL im Stripe-Unternehmensprofil ergänzen;
+- Vorrio-Logo oder -Icon hochladen und `#176B35` als Primärfarbe festlegen;
+- den manuellen Auszahlungsrhythmus mit der Buchhaltung bestätigen;
+- öffentliche Rechtstexte, Steuer-/Umsatzsteuerbehandlung und Buchhaltungsablauf freigeben;
+- die vorgesehenen Steuerregistrierungen bestätigen. Aktuell ist keine Stripe-
+  Tax-Registrierung hinterlegt, deshalb bleibt `automatic_tax` deaktiviert.
+
+Für Live ausschließlich einen separaten eingeschränkten Schlüssel verwenden:
+Lesezugriff auf grundlegende Konto- und Geschäftskontaktdaten sowie Lese- und
+Schreibzugriff nur auf Produkte, Preise, Payment Links und das Kundenportal.
+Test- und Live-Schlüssel bleiben getrennt. Die private lokale Vorlage außerhalb
+von Git ausfüllen und anschließend die schreibgeschützte Vorprüfung starten:
+
+```bash
+cp .env.stripe.live.example .env.stripe.live.local
+node scripts/setup_stripe_support.mjs --live
+```
+
+Ohne `--apply` prüft der Live-Modus nur das Konto und die Freigaben und erstellt
+nichts. Auch `--live --apply` ist abgesichert und verweigert die Erstellung,
+solange ein Pflichtfeld oder eine Freigabe fehlt. Erzeugte Live-IDs und URLs
+bleiben ausschließlich in `.env.stripe.live.local`; das Skript verändert die
+öffentliche Website nicht.
 
 ## Empfohlene Einrichtung eines Stripe-Kontos
 
@@ -117,13 +158,15 @@ Kopier- und Buchhaltungskomplexität.
 3. Testen Sie erfolgreiche einmalige und monatliche Zahlungen, eine fehlgeschlagene Zahlung, PDF
    Rechnungen, Zugang zum Kundenportal, wiederkehrende Stornierung und Rückerstattung.
    **Im Stripe-Testmodus überprüft.**
-4. Bestätigen Sie den Datenschutztext, die Bedingungen und den Abrechnungsprozess.
-5. Erstellen oder aktivieren Sie die Live-Zahlungslinks.
-6. Fügen Sie nur die beiden Live-URLs `https://buy.stripe.com/...` zusammen mit „guarded“ hinzu
+4. Vervollständigen Sie das öffentliche Stripe-Profil und das Vorrio-Branding.
+5. Bestätigen Sie den Datenschutztext, die Bedingungen, die steuerliche Behandlung und den Abrechnungsprozess.
+6. Führen Sie den geschützten Live-Preflight aus und führen Sie ihn dann explizit erneut mit aus
+   `--live --apply`, nachdem alle Genehmigungen bestanden wurden.
+7. Fügen Sie nur die beiden Live-URLs `https://buy.stripe.com/...` zusammen mit „guarded“ hinzu
    öffentliche Kontrollen und die entsprechende deutsche und englische Datenschutzerklärung.
-7. Entfernen Sie `support-config.js` nur in der überprüften Änderung aus `.vercelignore`.
-8. Führen Sie `make website-check` aus und überprüfen Sie die deutschen und englischen Seiten.
-9. Testen Sie die öffentlichen Links vor dem Start in einem abgemeldeten Browser.
+8. Entfernen Sie `support-config.js` nur in der überprüften Änderung aus `.vercelignore`.
+9. Führen Sie `make website-check` aus und überprüfen Sie die deutschen und englischen Seiten.
+10. Testen Sie die öffentlichen Links vor dem Start in einem abgemeldeten Browser.
 
 Die öffentliche Website benötigt bewusst keine Stripe-API-Integration. Lokale API
 Die Automatisierung wird nur für die wiederholbare Einrichtung eines Stripe-Kontos verwendet. Besucher nutzen es immer noch

@@ -12,6 +12,7 @@ REQUIRED_FILES = {
     ".github/ISSUE_TEMPLATE/language_request.yml",
     ".github/PULL_REQUEST_TEMPLATE/language_pack.md",
     ".env.example",
+    ".env.stripe.live.example",
     "AUTHORS.md",
     "CHANGELOG.md",
     "CODE_OF_CONDUCT.md",
@@ -37,7 +38,11 @@ REQUIRED_FILES = {
     "language-packs/README.md",
     "language-packs/schema-v1.json",
     "scripts/create_language_pack.py",
+    "scripts/check_stripe_test_support.mjs",
     "scripts/check_translation_community.py",
+    "scripts/setup_stripe_support.mjs",
+    "scripts/stripe_support_contract.mjs",
+    "scripts/test_stripe_support.mjs",
     "website/datenschutz.html",
     "website/.vercelignore",
     "website/impressum.html",
@@ -147,8 +152,9 @@ ALLOWED_TEXT_MATCHES = {
 
 
 def forbidden_path_reason(path: Path) -> str | None:
+    allowed_env_examples = {".env.example", ".env.stripe.live.example"}
     if path.name in FORBIDDEN_NAMES or (
-        path.name != ".env.example" and path.name.startswith(FORBIDDEN_PREFIXES)
+        path.name not in allowed_env_examples and path.name.startswith(FORBIDDEN_PREFIXES)
     ):
         return "private/generated file"
     if path.suffix.lower() in FORBIDDEN_SUFFIXES:

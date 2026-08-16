@@ -30,9 +30,9 @@ file, another file under `website/`, Git, screenshots or browser code.
 
 ## Current test status
 
-Prepared on 13 August 2026:
+Rechecked on 16 August 2026 against Stripe API `2026-06-24.dahlia`:
 
-- `scripts/setup_stripe_test_support.mjs` idempotently creates or reuses the
+- `scripts/setup_stripe_support.mjs` idempotently creates or reuses the
   two test-mode Products, Prices and Payment Links through Stripe's API;
 - the one-time test price accepts a customer-selected EUR amount with a
   EUR 3 minimum and EUR 10 preset;
@@ -47,9 +47,14 @@ Prepared on 13 August 2026:
 - `website/support-config.js` remains empty and is excluded from Vercel, so test
   links and inactive payment wording cannot appear on the public website.
 
-The setup script only accepts a restricted `rk_test_` key and refuses live
-mode. Re-running it must return the existing objects instead of creating
-duplicates.
+The setup script defaults to test mode and accepts only a restricted `rk_test_`
+key there. Re-running it returns the existing objects instead of creating
+duplicates. A separate read-only integration check validates the current Stripe
+sandbox without exposing credentials:
+
+```bash
+node scripts/check_stripe_test_support.mjs
+```
 
 The complete sandbox rehearsal also passed on 13 August 2026:
 
@@ -65,6 +70,40 @@ The complete sandbox rehearsal also passed on 13 August 2026:
 Checkout displayed Stripe's dynamic payment-method selection rather than a
 hard-coded list. The exact methods vary by supporter, browser, device, currency
 and Stripe account eligibility and must therefore be rechecked in live mode.
+
+## Live account audit
+
+The receiving Stripe account was audited on 16 August 2026. Business details
+are submitted, charges and payouts are enabled, EUR is the default currency,
+there are no outstanding verification requirements, and the statement
+descriptor identifies Amturo. No live Product, Price, Payment Link or customer-
+portal configuration has been created yet.
+
+The live creation gate intentionally remains closed until all of the following
+are complete:
+
+- add a public support email and support URL to the Stripe business profile;
+- upload the Vorrio logo or icon and set `#176B35` as the primary colour;
+- confirm the manual payout schedule with bookkeeping;
+- approve the public legal copy, tax/VAT handling and bookkeeping workflow;
+- confirm the intended tax registrations. The account currently contains no
+  active Stripe Tax registration, so `automatic_tax` remains disabled.
+
+Create a separate restricted live key with read access to basic account and
+business-contact information and read/write access only to Products, Prices,
+Payment Links and the customer portal. Keep test and live keys separate. Copy
+the private local template, fill it outside Git and run the read-only preflight:
+
+```bash
+cp .env.stripe.live.example .env.stripe.live.local
+node scripts/setup_stripe_support.mjs --live
+```
+
+Without `--apply`, live mode performs account and approval checks and creates
+nothing. `--live --apply` is also gate-protected and refuses to create live
+objects while any required profile field or approval is missing. Generated live
+IDs and URLs remain only in `.env.stripe.live.local`; the public website is not
+changed by this script.
 
 ## Recommended Stripe account setup
 
@@ -117,13 +156,15 @@ copy and accounting complexity.
 3. Test successful one-time and monthly payments, a failed payment, PDF
    invoices, customer-portal access, recurring cancellation and a refund.
    **Verified in Stripe test mode.**
-4. Confirm the privacy text, terms and accounting process.
-5. Create or activate the live Payment Links.
-6. Add only the two live `https://buy.stripe.com/...` URLs together with guarded
+4. Complete the Stripe public profile and Vorrio branding.
+5. Confirm the privacy text, terms, tax treatment and accounting process.
+6. Run the guarded live preflight, then explicitly run it again with
+   `--live --apply` after all approvals pass.
+7. Add only the two live `https://buy.stripe.com/...` URLs together with guarded
    public controls and the corresponding German and English privacy disclosure.
-7. Remove `support-config.js` from `.vercelignore` only in that reviewed change.
-8. Run `make website-check` and inspect German and English pages.
-9. Test the public links in a signed-out browser before launch.
+8. Remove `support-config.js` from `.vercelignore` only in that reviewed change.
+9. Run `make website-check` and inspect German and English pages.
+10. Test the public links in a signed-out browser before launch.
 
 The public website deliberately needs no Stripe API integration. Local API
 automation is used only for repeatable Stripe account setup; visitors still use
