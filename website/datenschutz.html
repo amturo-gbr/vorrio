@@ -15,6 +15,21 @@
     <link rel="apple-touch-icon" href="assets/vorrio-icon.png" />
     <link rel="stylesheet" href="styles.css" />
     <title>Datenschutz – Vorrio</title>
+    <script src="consent-default.js"></script>
+    <script
+      id="usercentrics-cmp"
+      src="https://web.cmp.usercentrics.eu/ui/loader.js"
+      data-draft="true"
+      data-settings-id="efAFn9iH-1OtnG"
+      async
+    ></script>
+    <script
+      type="text/plain"
+      data-usercentrics="Google Analytics 4"
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-C1E2XBE47T"
+    ></script>
+    <script type="text/plain" data-usercentrics="Google Analytics 4" src="ga4-init.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -41,10 +56,11 @@
 
         <div class="legal-content">
           <aside class="legal-note">
-            <strong>Auf einen Blick:</strong> Die Website verwendet keine Analyse- oder
-            Marketingdienste, keine Cookies und keinen Local oder Session Storage. Daher wird kein
-            Einwilligungsbanner angezeigt. Die statische Projektwebsite wird über Vercel
-            bereitgestellt.
+            <strong>Auf einen Blick:</strong> Notwendige Technologien stellen die Website und die
+            Einwilligungsverwaltung bereit. Google Analytics 4 wird erst nach einer freiwilligen
+            Einwilligung geladen. Ohne diese Einwilligung stellt die Website keine Verbindung zu
+            Google Analytics her. Die Auswahl kann jederzeit über „Cookie-Einstellungen“ im Footer
+            geändert oder widerrufen werden.
           </aside>
 
           <section class="legal-card">
@@ -92,23 +108,72 @@
           </section>
 
           <section class="legal-card">
-            <h2>4. Cookies, lokaler Speicher und Analyse</h2>
+            <h2>4. Einwilligungsverwaltung mit Usercentrics</h2>
             <p>
-              Die aktuelle Website setzt keine Cookies und greift nicht auf Informationen im
-              Endgerät über Local Storage oder Session Storage zu. Es werden weder Nutzungsprofile
-              erstellt noch Analyse-, Werbe- oder Trackingdienste geladen. Auch Schriften, Skripte
-              und Bilder werden als lokale Dateien der Website ausgeliefert.
+              Wir verwenden die Usercentrics Consent Management Platform der Usercentrics GmbH,
+              Sendlinger Straße 7, 80331 München, um Einwilligungen einzuholen, zu verwalten und
+              nachzuweisen. Dabei können insbesondere eine Consent-ID, Zeitpunkt und Inhalt der
+              Einwilligung oder Ablehnung, Banner-Sprache, Konfigurations- und Template-Version
+              sowie Geräte-, Browser-, Referrer- und IP-Informationen verarbeitet werden. Eine
+              technisch notwendige Speicherung im Browser merkt sich die Auswahl.
             </p>
             <p>
-              Für diesen Technikstand ist keine Einwilligung nach § 25 Abs. 1 TDDDG erforderlich
-              und deshalb kein Cookiebanner vorgesehen. Sollte künftig eine einwilligungspflichtige
-              Technik hinzukommen, wird sie erst nach einer wirksamen Einwilligung geladen und diese
-              Erklärung entsprechend aktualisiert.
+              Die Verarbeitung dient der Erfüllung unserer Nachweispflichten aus Art. 7 Abs. 1
+              DSGVO und beruht auf Art. 6 Abs. 1 lit. c DSGVO. Die technisch erforderliche
+              Bereitstellung und Sicherheit der Einwilligungsverwaltung stützen wir ergänzend auf
+              Art. 6 Abs. 1 lit. f DSGVO. Usercentrics verarbeitet die Daten als Auftragsverarbeiter.
+              Consent-Daten werden nach Angaben von Usercentrics grundsätzlich ein Jahr gespeichert;
+              die Verarbeitung erfolgt vorrangig in der Europäischen Union. Eine Übermittlung in
+              die USA kann bei eingesetzten Unterauftragnehmern nicht vollständig ausgeschlossen
+              werden und wird nach Angaben von Usercentrics durch die gesetzlichen
+              Übermittlungsinstrumente, insbesondere Standardvertragsklauseln, abgesichert. Weitere
+              Informationen stehen in der
+              <a href="https://usercentrics.com/privacy-policy/">Datenschutzerklärung von Usercentrics</a>.
             </p>
           </section>
 
           <section class="legal-card">
-            <h2>5. Freiwillige Unterstützung über Stripe</h2>
+            <h2>5. Google Analytics 4 und Consent Mode</h2>
+            <p>
+              Mit Ihrer Einwilligung verwenden wir Google Analytics 4 der Google Ireland Limited,
+              Gordon House, Barrow Street, Dublin 4, Irland, um Seitenaufrufe, Scrolltiefe und Klicks
+              auf externe Links auszuwerten. Dabei können insbesondere aufgerufene Seite, Referrer,
+              Zeitpunkt, Browser- und Geräteinformationen, Sitzungsinformationen sowie eine aus der
+              IP-Adresse abgeleitete ungefähre Region verarbeitet werden. Google gibt an, IP-Adressen
+              von Nutzenden aus der EU bereits bei der Erhebung für die Standortbestimmung zu
+              verwenden und vor einer Speicherung zu verwerfen.
+            </p>
+            <p>
+              Rechtsgrundlage ist Ihre Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO sowie, soweit
+              Informationen auf Ihrem Endgerät gespeichert oder ausgelesen werden, § 25 Abs. 1
+              TDDDG. Die GA4-Cookies <code>_ga</code> und <code>_ga_&lt;Container-ID&gt;</code> haben
+              nach Angaben von Google standardmäßig eine Laufzeit von bis zu zwei Jahren; die
+              Aufbewahrung von Nutzer- und Ereignisdaten in unserer Property ist auf zwei Monate
+              begrenzt und wird bei neuer Aktivität nicht zurückgesetzt. Google-Signale,
+              bereitgestellte Nutzerdaten, Werbepersonalisierung, User-ID und Google Ads sind nicht
+              aktiviert.
+            </p>
+            <p>
+              Wir verwenden den Basic Google Consent Mode v2. Vor einer Entscheidung beginnen
+              Analyse- und Werbe-Consent mit „denied“ und der Google-Tag wird nicht geladen; auch
+              cookielose Analyse-Pings werden nicht versendet. Nur nach Zustimmung zu „Google
+              Analytics 4“ wird <code>analytics_storage</code> freigegeben. Die Werbe-Consent-Werte
+              bleiben abgelehnt. Empfänger können neben Google Ireland Limited auch Google LLC und
+              weitere verbundene Unternehmen oder Auftragsverarbeiter sein. Eine Verarbeitung in
+              den USA ist möglich; Google verweist hierfür insbesondere auf das EU-US Data Privacy
+              Framework und Standardvertragsklauseln.
+            </p>
+            <p>
+              Sie können Ihre Einwilligung jederzeit mit Wirkung für die Zukunft über die
+              Schaltfläche „Cookie-Einstellungen“ im Footer ändern oder widerrufen. Ohne
+              Einwilligung oder nach einem Widerruf werden künftig keine neuen Analysedaten durch
+              unsere Website an Google Analytics übermittelt. Weitere Informationen enthält die
+              <a href="https://policies.google.com/privacy?hl=de">Datenschutzerklärung von Google</a>.
+            </p>
+          </section>
+
+          <section class="legal-card">
+            <h2>6. Freiwillige Unterstützung über Stripe</h2>
             <p>
               Wer Vorrio finanziell unterstützen möchte, wird erst nach dem aktiven Aufruf einer
               Unterstützungsschaltfläche auf eine von Stripe gehostete Zahlungsseite weitergeleitet.
@@ -131,7 +196,7 @@
           </section>
 
           <section class="legal-card">
-            <h2>6. Externe Links</h2>
+            <h2>7. Externe Links</h2>
             <p>
               Die Website verlinkt auf externe Angebote, insbesondere GitHub. Erst wenn ein solcher
               Link aufgerufen wird, wird eine Verbindung zum jeweiligen Anbieter hergestellt. Für
@@ -142,7 +207,7 @@
           </section>
 
           <section class="legal-card">
-            <h2>7. Kontakt per E-Mail oder Telefon</h2>
+            <h2>8. Kontakt per E-Mail oder Telefon</h2>
             <p>
               Bei einer Kontaktaufnahme verarbeiten wir die von Ihnen übermittelten Angaben zur
               Bearbeitung und Beantwortung der Anfrage. Soweit es um einen Vertrag oder
@@ -158,7 +223,7 @@
           </section>
 
           <section class="legal-card">
-            <h2>8. Ihre Rechte</h2>
+            <h2>9. Ihre Rechte</h2>
             <p>
               Sie haben im Rahmen der gesetzlichen Voraussetzungen insbesondere das Recht auf
               Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung,
@@ -173,7 +238,7 @@
           </section>
 
           <section class="legal-card">
-            <h2>9. Sicherheit und Aktualisierung</h2>
+            <h2>10. Sicherheit und Aktualisierung</h2>
             <p>
               Für die Website wird TLS-Verschlüsselung eingesetzt. Wir aktualisieren
               diese Erklärung, wenn sich Hosting, Dienste, Rechtslage oder Verarbeitungsvorgänge
@@ -189,9 +254,9 @@
         <div class="footer-brand"><a class="brand brand-inverse" href="index.html"><img src="assets/brand/vorrio-mark-white.png" alt="" aria-hidden="true" /><span>Vorrio</span></a><p>Selbst gehosteter Vorrat für deinen Haushalt.</p></div>
         <nav aria-label="Projektlinks"><strong>Projekt</strong><a href="https://github.com/amturo-gbr/vorrio">GitHub</a><a href="https://github.com/amturo-gbr/vorrio/tree/main/docs">Dokumentation</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/de/ROADMAP.md">Roadmap</a><a href="https://github.com/amturo-gbr/vorrio/releases">Releases</a></nav>
         <nav aria-label="Mitmachen"><strong>Mitmachen</strong><a href="https://github.com/amturo-gbr/vorrio/issues">Issues</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/de/TRANSLATION-COMMUNITY.md">Übersetzen</a><a href="https://github.com/amturo-gbr/vorrio/discussions">Diskussionen</a><a href="https://github.com/amturo-gbr/vorrio/security/advisories/new">Sicherheit</a></nav>
-        <nav aria-label="Rechtliche Hinweise"><strong>Rechtliches</strong><a href="impressum.html">Impressum</a><a href="datenschutz.html" aria-current="page">Datenschutz</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/de/DATA-PRIVACY.md">Produktdatenschutz</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/LICENSE">AGPL-3.0</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/NOTICE">Hinweise</a></nav>
+        <nav aria-label="Rechtliche Hinweise"><strong>Rechtliches</strong><a href="impressum.html">Impressum</a><a href="datenschutz.html" aria-current="page">Datenschutz</a><button class="footer-link-button" type="button" data-privacy-settings>Cookie-Einstellungen</button><a href="https://github.com/amturo-gbr/vorrio/blob/main/docs/de/DATA-PRIVACY.md">Produktdatenschutz</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/LICENSE">AGPL-3.0</a><a href="https://github.com/amturo-gbr/vorrio/blob/main/NOTICE">Hinweise</a></nav>
       </div>
-      <div class="shell footer-bottom"><span>© 2026 Amturo UG (haftungsbeschränkt)</span><span>Ohne Analyse-Cookies oder Tracking</span></div>
+      <div class="shell footer-bottom"><span>© 2026 Amturo UG (haftungsbeschränkt)</span><span>Analyse nur mit Einwilligung</span></div>
     </footer>
     <script src="script.js"></script>
   </body>

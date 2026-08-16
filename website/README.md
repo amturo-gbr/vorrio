@@ -56,11 +56,26 @@ Vercel provisions and renews TLS automatically after DNS propagation.
 redirect to `vorrio.app`.
 
 `impressum.html` / `imprint.html` and `datenschutz.html` / `privacy.html` provide
-the bilingual legal pages. The current static implementation uses no cookies,
-browser storage, analytics, remote fonts or embedded Stripe scripts, so no
-consent banner is present. A Stripe connection begins only after the visitor
-opens a payment or portal link. The privacy pages describe Vercel and Stripe and
-document international-transfer safeguards.
+the bilingual legal pages. Usercentrics manages consent under Settings ID
+`efAFn9iH-1OtnG`. The checked-in loader deliberately uses `data-draft="true"`
+for local and staging acceptance only. Do not deploy this state: publishing the
+CMP and replacing the draft loader with the reviewed production loader must be
+part of the same release change.
+
+Google Analytics 4 uses Measurement ID `G-C1E2XBE47T` with Basic Consent Mode
+v2. Consent defaults are set synchronously before the CMP loads. Both GA scripts
+are manually blocked as the exact Usercentrics service `Google Analytics 4`;
+advertising consent remains denied, Google signals and ads personalization are
+disabled, and no User ID, Google Ads integration or additional marketing event
+is configured. The footer control opens the Usercentrics second layer so a
+visitor can change or withdraw consent at any time.
+
+Fonts and website images remain local, and no Stripe script is embedded. A
+Stripe connection begins only after the visitor opens a payment or portal link.
+Before replacing the draft loader, repeat the fresh, reject, accept and withdraw
+flows, derive CSP hosts from the current observed requests, publish the approved
+Usercentrics configuration first, then switch the loader and rerun the release
+checks before deploying.
 
 ## Design references
 

@@ -1210,16 +1210,33 @@ h1 {
   font-size: 16px;
 }
 
-.footer-grid nav a {
+.footer-grid nav a,
+.footer-link-button {
   color: rgba(255, 255, 255, 0.82);
   font-size: 15px;
   text-decoration: none;
 }
 
-.footer-grid nav a:hover {
+.footer-link-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.footer-grid nav a:hover,
+.footer-link-button:hover {
   color: #fff;
   text-decoration: underline;
   text-underline-offset: 4px;
+}
+
+.footer-link-button:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #fff;
+  outline-offset: 4px;
 }
 
 .footer-bottom {

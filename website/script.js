@@ -29,6 +29,12 @@ function updateHeader() {
 window.addEventListener('scroll', updateHeader, { passive: true })
 updateHeader()
 
+document.querySelectorAll('[data-privacy-settings]').forEach((button) => {
+  button.addEventListener('click', () => {
+    window.__ucCmp?.showSecondLayer()
+  })
+})
+
 const revealObserver = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {

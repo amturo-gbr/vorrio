@@ -63,8 +63,9 @@ def main() -> None:
     parsers: dict[str, WebsiteParser] = {}
 
     for locale, page in pages.items():
+        page_source = page.read_text(encoding="utf-8")
         parser = WebsiteParser()
-        parser.feed(page.read_text(encoding="utf-8"))
+        parser.feed(page_source)
         parsers[locale] = parser
         if parser.html_lang != page_locales[locale]:
             failures.append(f"{page.name}: html lang must be {page_locales[locale]}")
@@ -74,8 +75,25 @@ def main() -> None:
             failures.append(f"{page.name}: responsive viewport contract is missing")
         if not {"de", "en", "x-default"}.issubset(parser.alternates):
             failures.append(f"{page.name}: missing de/en/x-default alternate links")
-        if 'rel="canonical" href="https://vorrio.app' not in page.read_text(encoding="utf-8"):
+        if 'rel="canonical" href="https://vorrio.app' not in page_source:
             failures.append(f"{page.name}: canonical vorrio.app URL is missing")
+        consent_markers = (
+            'src="consent-default.js"',
+            'id="usercentrics-cmp"',
+            'src="https://web.cmp.usercentrics.eu/ui/loader.js"',
+            'data-draft="true"',
+            'data-settings-id="efAFn9iH-1OtnG"',
+            'type="text/plain"',
+            'data-usercentrics="Google Analytics 4"',
+            'src="https://www.googletagmanager.com/gtag/js?id=G-C1E2XBE47T"',
+            'src="ga4-init.js"',
+            'data-privacy-settings',
+        )
+        for marker in consent_markers:
+            if marker not in page_source:
+                failures.append(f"{page.name}: consent marker {marker!r} is missing")
+        if "gMclgpYl0oy_fV" in page_source:
+            failures.append(f"{page.name}: Amturo Usercentrics Settings ID must not be reused")
         for target in parser.links:
             parsed = urlsplit(target)
             if parsed.scheme or parsed.netloc or target.startswith(("#", "mailto:")):
@@ -289,13 +307,27 @@ def main() -> None:
         "full legal entity": "Amturo UG (haftungsbeschränkt)",
         "commercial register": "HRB 12569",
         "privacy contact": "info@amturo.de",
-        "privacy no-cookie statement": "keine Cookies",
+        "consent management provider": "Usercentrics GmbH",
+        "analytics provider": "Google Analytics 4",
+        "consent legal basis": "Art. 6 Abs. 1 lit. a DSGVO",
+        "analytics retention": "zwei Monate",
+        "consent withdrawal": "Cookie-Einstellungen",
         "privacy hosting provider": "Vercel Inc.",
         "privacy transfer safeguards": "EU-Standardvertragsklauseln",
     }
     for label, marker in legal_markers.items():
         if marker not in legal_source:
             failures.append(f"legal pages: missing {label}")
+    english_privacy_source = pages["en-privacy"].read_text(encoding="utf-8")
+    for marker in (
+        "Article 6(1)(a) GDPR",
+        "two months",
+        "Privacy settings",
+        "Basic Google Consent Mode v2",
+        "Standard Contractual Clauses",
+    ):
+        if marker not in english_privacy_source:
+            failures.append(f"privacy.html: missing translated privacy marker {marker!r}")
 
     public_copy = "\n".join(page.read_text(encoding="utf-8") for page in pages.values())
     internal_or_inactive_markers = (
@@ -319,7 +351,6 @@ def main() -> None:
         ]
     ).lower()
     tracking_markers = (
-        "googletagmanager",
         "google-analytics",
         "plausible.io",
         "posthog",
@@ -330,6 +361,27 @@ def main() -> None:
     for marker in tracking_markers:
         if marker in implementation_source:
             failures.append(f"website implementation: unexpected tracking/storage marker {marker}")
+
+    consent_default = (WEBSITE / "consent-default.js").read_text(encoding="utf-8")
+    for marker in (
+        "analytics_storage: 'denied'",
+        "ad_storage: 'denied'",
+        "ad_user_data: 'denied'",
+        "ad_personalization: 'denied'",
+        "security_storage: 'granted'",
+        "wait_for_update: 500",
+    ):
+        if marker not in consent_default:
+            failures.append(f"consent-default.js: missing Consent Mode default {marker!r}")
+
+    ga4_init = (WEBSITE / "ga4-init.js").read_text(encoding="utf-8")
+    for marker in (
+        "gtag('config', 'G-C1E2XBE47T'",
+        "allow_google_signals: false",
+        "allow_ad_personalization_signals: false",
+    ):
+        if marker not in ga4_init:
+            failures.append(f"ga4-init.js: missing restricted GA4 setting {marker!r}")
 
     vercel_config = json.loads((WEBSITE / "vercel.json").read_text(encoding="utf-8"))
     configured_headers = {
@@ -347,11 +399,41 @@ def main() -> None:
     ):
         if required_header not in configured_headers:
             failures.append(f"vercel.json: missing security header {required_header}")
-    if "connect-src 'none'" not in configured_headers.get("content-security-policy", ""):
-        failures.append("vercel.json: CSP must keep outbound browser connections disabled")
+    csp = configured_headers.get("content-security-policy", "")
+    for required_csp_marker in (
+        "script-src 'self'",
+        "https://web.cmp.usercentrics.eu",
+        "https://www.googletagmanager.com",
+        "https://app.usercentrics.eu",
+        "https://uct.service.usercentrics.eu",
+        "https://v1.api.service.cmp.usercentrics.eu",
+        "https://consent-api.service.consent.usercentrics.eu",
+        "https://region1.google-analytics.com",
+        "https://vorrio.app",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "frame-ancestors 'none'",
+    ):
+        if required_csp_marker not in csp:
+            failures.append(f"vercel.json: CSP is missing {required_csp_marker!r}")
+    if "*" in csp or "'unsafe-inline'" in csp or "'unsafe-eval'" in csp:
+        failures.append("vercel.json: CMP/GA4 CSP must not use wildcards or unsafe script/style sources")
     for structured_hash in structured_data_hashes:
-        if f"'{structured_hash}'" not in configured_headers.get("content-security-policy", ""):
+        if f"'{structured_hash}'" not in csp:
             failures.append("vercel.json: CSP must allow the exact structured-data block hash")
+
+    logo_rules = [
+        rule
+        for rule in vercel_config.get("headers", [])
+        if rule.get("source") == "/assets/brand/vorrio-mark.png"
+    ]
+    if not any(
+        header.get("key", "").lower() == "cross-origin-resource-policy"
+        and header.get("value") == "cross-origin"
+        for rule in logo_rules
+        for header in rule.get("headers", [])
+    ):
+        failures.append("vercel.json: Vorrio CMP logo must allow cross-origin embedding")
 
     css = (WEBSITE / "styles.css").read_text(encoding="utf-8")
     responsive_css = {
@@ -369,7 +451,7 @@ def main() -> None:
         raise SystemExit("\n".join(failures))
     print(
         "Website contract is valid "
-        "(bilingual pages, public docs links, SEO, legal data, local assets and no tracking)"
+        "(bilingual pages, public docs links, SEO, legal data, local assets and consent-controlled analytics)"
     )
 
 

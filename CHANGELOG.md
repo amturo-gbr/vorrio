@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Prepared the bilingual public website for consent-controlled GA4 with a
+  dedicated Usercentrics draft configuration, Basic Consent Mode v2, manually
+  blocked analytics tags, persistent privacy-settings controls, updated privacy
+  notices and a narrowly scoped cross-origin logo exception. This is a local
+  acceptance state only and must not be deployed until the CMP is published and
+  the draft loader is replaced in the same reviewed release.
 - Activated Stripe-hosted support on the bilingual public website with a
   customer-selected one-time amount from EUR 2, monthly EUR 5/10/25 tiers and
   the hosted customer portal, without adding Stripe scripts, tracking or secret
