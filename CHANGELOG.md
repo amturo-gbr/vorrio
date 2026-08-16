@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- CI now rejects application and deployment changes whose changelog or paired
+  English/German user documentation was not updated in the same pull request;
+  the existing OpenAPI synchronization gate continues to reject API drift.
+
 ## 0.8.27 – 2026-08-16
 
 - Updated the digest-pinned Python runtime base and installed Debian's exact
