@@ -1,6 +1,7 @@
-.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test docs-check docs-site-deps docs-site-check external-path-test frontend-deps frontend-build frontend-test image image-scan language-pack-check sbom pwa-check release-package-check secret-scan stripe-support-check stripe-support-integration-check website-check check
+.PHONY: api-docs api-docs-check backend-i18n-check backend-test acceptance-test change-docs-check docs-check docs-site-deps docs-site-check external-path-test frontend-deps frontend-build frontend-test image image-scan language-pack-check sbom pwa-check release-package-check secret-scan stripe-support-check stripe-support-integration-check website-check check
 
 CHECK_IMAGE ?= vorrio:check
+CHANGE_DOCS_BASE ?= HEAD^
 GRYPE_IMAGE ?= anchore/grype:v0.110.0@sha256:af65fbc0c664691067788fe95ff88760b435543e45595eb2ca6f102fc476fbe1
 SYFT_IMAGE ?= anchore/syft:v1.42.3@sha256:5999d209a342e55e9edf70bf8930fb5b86d8f2a783fa401178372c50e21b1d36
 GITLEAKS_IMAGE ?= zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f
@@ -88,6 +89,10 @@ pwa-check:
 docs-check:
 	python3 scripts/check_docs_links.py
 
+change-docs-check:
+	python3 -m unittest scripts.test_change_documentation -v
+	python3 scripts/check_change_documentation.py --base "$(CHANGE_DOCS_BASE)"
+
 docs-site-deps:
 	cd docs && npm ci
 
@@ -122,4 +127,4 @@ secret-scan:
 		-w /repository \
 		$(GITLEAKS_IMAGE) git . --config=.gitleaks.toml --redact=100 --no-banner
 
-check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check docs-site-check backend-i18n-check language-pack-check website-check stripe-support-check release-package-check api-docs-check
+check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check docs-site-check backend-i18n-check language-pack-check website-check stripe-support-check release-package-check api-docs-check change-docs-check

@@ -32,8 +32,12 @@ supported profiles and foundation-gate documentation. A feature that weakens
 the internet-exposure gate is incomplete even when its happy-path test passes.
 
 The API documentation drift, local documentation-link and public-package
-hygiene checks must pass. A matching, stock, migration or connector change
-needs a regression test.
+hygiene checks must pass. CI additionally compares every pull request with its
+base revision: application or deployment changes are rejected unless the same
+change updates `CHANGELOG.md` and paired English/German user documentation.
+Deployment files specifically require installation, configuration or deployment
+profile documentation. A matching, stock, migration or connector change needs
+a regression test.
 
 The public documentation has paired English and German sources in `docs/en/`
 and `docs/de/`. After changing an English page, update its German counterpart

@@ -20,6 +20,8 @@ jobs:
           persist-credentials: false
 
       - name: Run contract, backend, frontend and launch tests
+        env:
+          CHANGE_DOCS_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: make check CHECK_IMAGE=vorrio:ci
 
       - name: Scan the built image
