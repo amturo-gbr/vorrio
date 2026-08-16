@@ -82,6 +82,7 @@ def main() -> None:
             'id="usercentrics-cmp"',
             'src="https://web.cmp.usercentrics.eu/ui/loader.js"',
             'data-settings-id="efAFn9iH-1OtnG"',
+            'data-nonce="dW3Nq8eRV6Bb1Zs9cK4Pm2Jx"',
             'type="text/plain"',
             'data-usercentrics="Google Analytics 4"',
             'src="https://www.googletagmanager.com/gtag/js?id=G-C1E2XBE47T"',
@@ -403,6 +404,7 @@ def main() -> None:
     csp = configured_headers.get("content-security-policy", "")
     for required_csp_marker in (
         "script-src 'self'",
+        "style-src 'self' 'nonce-dW3Nq8eRV6Bb1Zs9cK4Pm2Jx'",
         "https://web.cmp.usercentrics.eu",
         "https://www.googletagmanager.com",
         "https://app.usercentrics.eu",

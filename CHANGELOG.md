@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Passed the website CSP nonce to Usercentrics so the production consent banner
+  renders its Shadow DOM styles without allowing unrestricted inline CSS.
 - Added consent-controlled GA4 to the bilingual public website with the
   published dedicated Usercentrics configuration, Basic Consent Mode v2,
   manually blocked analytics tags, persistent privacy-settings controls,

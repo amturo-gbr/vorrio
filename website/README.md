@@ -57,8 +57,10 @@ redirect to `vorrio.app`.
 
 `impressum.html` / `imprint.html` and `datenschutz.html` / `privacy.html` provide
 the bilingual legal pages. Usercentrics manages consent under Settings ID
-`efAFn9iH-1OtnG`. Usercentrics configuration version `2.0.17` was published
-after local acceptance, and the checked-in pages use the production loader.
+`efAFn9iH-1OtnG`. The Usercentrics configuration was published after local
+acceptance, and the checked-in pages use the production loader.
+The loader receives the CSP nonce declared by `vercel.json` so its Shadow DOM
+styles render without enabling unrestricted inline styles.
 Future CMP changes must be tested with the draft loader locally and published
 before a matching production-loader release is deployed.
 
