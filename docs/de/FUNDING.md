@@ -1,94 +1,102 @@
-# Finanzierung Vorrio
+# Finanzierung von Vorrio
 
-Vorrio ist eine Open-Source-Software, die von der Amturo UG verwaltet wird. Die Finanzierung soll unterstützen
-Wartung, Sicherheitsarbeiten, Dokumentation, Community-Unterstützung und öffentlicher Bau
-Infrastruktur ohne Reduzierung des selbstgehosteten Kerns.
+Vorrio ist freie Software und wird von der Amturo UG gepflegt. Finanzielle
+Unterstützung soll Wartung, Sicherheitsarbeit, Dokumentation,
+Community-Unterstützung und öffentliche Build-Infrastruktur finanzieren, ohne
+den selbst gehosteten Kern einzuschränken.
 
-## Geplante erste Option: Stripe Payment Links
+## Erste Option: Stripe Payment Links
 
-Stripe Payment Links ist die bevorzugte Startoption. Die statischen Website-Links
-zum von Stripe gehosteten Checkout und lädt weder Stripe-JavaScript noch stellt es eine API bereit
-Schlüssel. Dies hält die Website unabhängig von Abhängigkeiten und vermeidet die Kontaktaufnahme mit Stripe
-Der Besucher entscheidet sich aktiv für die finanzielle Unterstützung.
+Stripe Payment Links ist die bevorzugte Lösung zum Start. Die statische Website
+verweist auf den von Stripe gehosteten Checkout und lädt weder Stripe-JavaScript
+noch API-Schlüssel. Dadurch bleibt die Website unabhängig und kontaktiert
+Stripe erst, nachdem sich ein Besucher aktiv für finanzielle Unterstützung
+entschieden hat.
 
-Die vorbereitete Website unterstützt zwei unabhängige Links:
+Die Website verwendet vier getrennte Live-Links:
 
-- eine einmalige Zahlung, deren Höhe der Unterstützer selbst bestimmt;
-- eine optionale feste monatliche Patenschaft.
+- eine einmalige Zahlung mit frei wählbarem Betrag;
+- feste monatliche Unterstützung über 5 EUR, 10 EUR oder 25 EUR.
 
-Beide Steuerelemente bleiben ausgeblendet, während ihre Werte in `website/support-config.js` verborgen bleiben
-leer. Informationen zu Konto, Link und Aktivierungsschritten finden Sie unter `STRIPE-SUPPORT.md`.
+Die öffentlichen URLs stehen in `website/support-config.js`; dort befinden sich
+keine API-Schlüssel. Konto-, Link- und Betriebsdetails stehen in
+`STRIPE-SUPPORT.md`.
 
-Zwei Stripe-Links im Testmodus sind vorbereitet: einmalige Unterstützung mit
-frei gewähltem Betrag, mindestens 3 EUR und voreingestellt 10 EUR, sowie eine
-feste monatliche Unterstützung von 5 EUR. Beide gehosteten Seiten sind
-erreichbar, aber kein Testlink wird auf der öffentlichen Website verwendet. Das
-idempotente Setup liegt in `scripts/setup_stripe_support.mjs`; lokale Schlüssel,
-IDs und Test-URLs bleiben in der von Git ignorierten Datei `.env.stripe.local`.
+Vier Stripe-Testlinks sind vorbereitet: eine frei wählbare Einmalzahlung ab
+2 EUR mit einem Vorschlagsbetrag von 10 EUR sowie monatliche Unterstützung über
+5 EUR, 10 EUR oder 25 EUR. Alle gehosteten Seiten sind erreichbar, aber kein
+Testlink steht auf der öffentlichen Website. Das idempotente Setup befindet
+sich in `scripts/setup_stripe_support.mjs`; lokale Schlüssel, IDs und Test-URLs
+bleiben in der von Git ignorierten `.env.stripe.local`.
 
-Die Sandbox-Probe umfasst erfolgreiche einmalige und monatliche Kartenzahlungen,
-herunterladbare PDF-Rechnungen, eine abgelehnte Zahlung, das gehostete Kundenportal,
-Kündigung des Abonnements am Ende des Zeitraums und vollständige Rückerstattung. Stripe wählt das
-Die verfügbaren Zahlungsmethoden werden dynamisch angezeigt, daher muss das Live-Konto überprüft werden
-noch einmal vor dem Start, anstatt eine feste öffentliche Methodenliste zu versprechen.
+Der Sandbox-Durchlauf umfasst erfolgreiche einmalige und monatliche
+Kartenzahlungen, herunterladbare PDF-Rechnungen, eine abgelehnte Zahlung, das
+gehostete Kundenportal, eine Kündigung zum Ende des Abrechnungszeitraums und
+eine vollständige Erstattung. Stripe wählt die angebotenen Zahlungsmethoden
+dynamisch. Deshalb muss das Live-Konto vor dem Start erneut kontrolliert werden,
+statt öffentlich eine feste Methodenliste zu versprechen.
 
-## Aktuellen Status überprüft
+## Bestätigter aktueller Stand
 
 Geprüft am 16. August 2026: Das Stripe-Konto kann Zahlungen und Auszahlungen
 verarbeiten, hat keine offenen Verifizierungsanforderungen und verwendet EUR.
-Öffentliche Support-Kontaktdaten, Vorrio-Branding, Steuer- und
-Buchhaltungsfreigaben sowie die Live-Stripe-Objekte fehlen noch. Deshalb bleiben
-die Live-Erstellung und alle öffentlichen Zahlungselemente gesperrt.
+Der öffentliche Supportkontakt, das gemeinsame Amturo-Checkout-Branding,
+automatische Belege, tägliche Auszahlungen, vier Live-Payment-Links und das
+Kundenportal sind eingerichtet. Vorrio ist die Identität der einzelnen Produkte
+und Payment Links und ersetzt nicht die globale Identität des Amturo-Kontos.
+Da keine aktive Stripe-Tax-Registrierung besteht, bleibt `automatic_tax` aus.
 
-Ebenfalls überprüft am 13. August 2026: `amturo-gbr/vorrio` ist das kanonische Repository und
-ist immer noch privat; Die öffentliche `amturo-gbr`-Organisation stellt derzeit Nr. offen
-öffentliche Repositories. Weder `@amturo-gbr` noch `@adrian-amturo` haben sich beworben
-Treten Sie GitHub-Sponsoren bei. Es existiert kein `.github/FUNDING.yml`, was beabsichtigt ist
-während GitHub Sponsors zurückgestellt wird. Alle Formulierungen und Kontrollen der GitHub-Sponsoren sind
-auf der Projektwebsite verborgen.
+Ebenfalls geprüft am 13. August 2026: `amturo-gbr/vorrio` ist das kanonische
+Repository und weiterhin privat; die öffentliche Organisation `amturo-gbr`
+enthält derzeit keine öffentlichen Repositories. Weder `@amturo-gbr` noch
+`@adrian-amturo` hat GitHub Sponsors beantragt. Eine `.github/FUNDING.yml`
+existiert daher bewusst noch nicht. Sämtliche GitHub-Sponsors-Texte und
+Schaltflächen sind auf der Projektwebsite verborgen.
 
-Belohnungen dürfen Sicherheitskorrekturen nicht verzögern oder wesentliche selbst gehostete Funktionen ermöglichen
-exklusiv. Sponsorlogos und öffentliche Namen sind freiwillig.
+Gegenleistungen dürfen Sicherheitskorrekturen nicht verzögern und keine
+wesentlichen Self-Hosting-Funktionen exklusiv machen. Sponsorlogos und
+öffentliche Namensnennung sind freiwillig.
 
 ## Spätere Optionen
 
-Open Collective ist nützlich, wenn die Community ein öffentliches Budget und öffentliche Ausgaben haben möchte
-Hauptbuch. Denn die Amturo UG ist bereits eine juristische Person, ein unabhängiges Kollektiv
-oder die direkte Buchhaltung kann einfacher sein als ein Fiskal-Host; Buchhaltungsberatung ist
-vor der Aktivierung erforderlich.
+Open Collective kann sinnvoll werden, wenn die Community ein öffentliches
+Budget und Ausgabenregister wünscht. Da die Amturo UG bereits eine juristische
+Person ist, kann eine eigene Abrechnung einfacher als ein Fiscal Host sein;
+hierzu ist vor der Aktivierung eine buchhalterische Beratung erforderlich.
 
-## Wortlaut und Steuern
+## Formulierung und Steuern
 
-Die finanzielle Unterstützung einer gewerblichen UG ist nicht steuerlich absetzbar
-Spende, und Vorrio verspricht keine Spendenbescheinigungen. Öffentliche Kopie
-verwendet „Unterstützung“ oder „Sponsoring“. Die Amturo UG erfasst Auszahlungen und anfallende Steuern
-durch seinen normalen Buchhaltungsprozess.
+Finanzielle Unterstützung einer gewerblichen UG wird nicht als steuerlich
+absetzbare Spende dargestellt, und Vorrio verspricht keine
+Spendenbescheinigungen. Öffentlich werden „Unterstützung“ oder „Sponsoring“
+verwendet. Die Amturo UG verbucht Auszahlungen und gegebenenfalls anfallende
+Steuern in ihrem regulären Buchhaltungsprozess.
 
-In 0.8.26 ist kein Live-Zahlungslink öffentlich aktiv. Stripe-Unterstützung ist aktiviert
-erst nach Erhalt des Amturo-Kontos, Live-Zahlungslinks, legaler Kopie und
-Der Buchhaltungsprozess ist fertig. Geheime Stripe-Schlüssel gehören niemals in `website/` oder
-ein Browser-Bundle.
+Die Live-Payment-Links werden ab dem 16. August 2026 öffentlich verwendet.
+Geheime Stripe-Schlüssel gehören niemals in `website/` oder ein Browser-Bundle.
 
-## Website-Aktivierungssequenz
+## Aktivierungsreihenfolge für die Website
 
-Aufgrund der statischen Projektwebsite ist bis zum Start keine finanzielle Unterstützung verfügbar
-Tore sind fertig:
+Die statische Projektwebsite lässt finanzielle Unterstützung deaktiviert, bis
+alle Startbedingungen erfüllt sind:
 
-1. Vervollständigen und überprüfen Sie das Amturo Stripe-Geschäftskonto, das Auszahlungskonto und
-   Steuerdetails;
-2. den Wortlaut des öffentlichen Sponsorings, die Mehrwertsteuerbehandlung und den Buchhaltungsablauf genehmigen;
-3. Erstellen Sie im Testmodus die einmaligen und optionalen monatlichen Stripe Payment Links
-   (**vorbereitet**);
-4. Überprüfen Sie den Checkout, PDF-Rechnungen, eine fehlgeschlagene Zahlung, das Kundenportal,
-   Rückerstattungen und Abonnementkündigung (**im Testmodus überprüft**);
-5. Erstellen Sie die Live-Links und fügen Sie nur deren öffentliche `buy.stripe.com`-URLs hinzu
-   `website/support-config.js`;
-6. Überprüfen Sie beide Sprachen und Zahlungsflüsse in einem abgemeldeten Browser.
+1. Amturo-Stripe-Geschäftskonto, Auszahlungskonto und Steuerdaten vollständig
+   prüfen;
+2. öffentliche Sponsoring-Texte, Umsatzsteuerbehandlung und Buchungsablauf
+   freigeben;
+3. den einmaligen und die drei monatlichen Stripe-Payment-Links im Testmodus
+   anlegen (**vorbereitet**);
+4. Checkout, PDF-Rechnungen, fehlgeschlagene Zahlung, Kundenportal,
+   Erstattungen und Abo-Kündigung prüfen (**im Testmodus bestätigt**);
+5. die Live-Links erzeugen und ausschließlich deren öffentliche
+   `buy.stripe.com`-URLs in `website/support-config.js` eintragen;
+6. beide Sprachen und Zahlungsabläufe in einem abgemeldeten Browser prüfen.
 
-PayPal ist nicht die Standardeinstellung beim Start. Ein eigenständiger PayPal-Button würde einen weiteren hinzufügen
-Checkout, Abgleich und Legal-Copy-Pfad ohne Verbesserung der Quelle-zu-Kopie
-Support-Flow, der bereits von Stripe bereitgestellt wird. Es kann später noch einmal überdacht werden
-nur, wenn die Unterstützer es nachweislich benötigen und Amturo dem Geschäft zugestimmt hat
-Konto, Gebühren, Rückerstattungen, Datenschutzbestimmungen und buchhalterische Behandlung. Offen
-Kollektiv bleibt eine spätere Transparenzoption, wenn Vorrio eine Community aufbaut
-Budget, das über ein öffentliches Einnahmen- und Ausgabenbuch verfügt.
+PayPal ist zum Start keine separate Standardoption. Eine zusätzliche
+PayPal-Schaltfläche würde einen weiteren Checkout-, Abstimmungs- und
+Rechtstextpfad schaffen, ohne den bereits über Stripe angebotenen Ablauf zu
+verbessern. PayPal kann später erneut bewertet werden, wenn Unterstützer es
+nachweislich benötigen und Amturo Geschäftskonto, Gebühren, Erstattungen,
+Datenschutztexte und buchhalterische Behandlung freigegeben hat. Open Collective
+bleibt eine spätere Transparenzoption, falls Vorrio ein Community-Budget mit
+öffentlichem Einnahmen- und Ausgabenregister entwickelt.

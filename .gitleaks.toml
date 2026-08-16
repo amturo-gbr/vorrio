@@ -7,3 +7,7 @@ useDefault = true
 description = "Documented bearer-token placeholder"
 targetRules = ["curl-auth-header"]
 stopwords = ["YOUR_TOKEN"]
+
+[[allowlists]]
+description = "The documentation locale lock contains SHA-256 content digests, not credentials."
+paths = ['''^docs/i18n-source-lock\.json$''']

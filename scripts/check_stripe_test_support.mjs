@@ -36,7 +36,7 @@ const definitions = [
     productKey: 'one_time_v1',
     verifyPrice(price) {
       assert.equal(price.type, 'one_time')
-      assert.equal(price.custom_unit_amount?.minimum, 300)
+      assert.equal(price.custom_unit_amount?.minimum, 200)
       assert.equal(price.custom_unit_amount?.preset, 1000)
     },
     verifyLink(link) {
@@ -44,10 +44,28 @@ const definitions = [
     },
   },
   {
-    prefix: 'STRIPE_TEST_MONTHLY',
+    prefix: 'STRIPE_TEST_MONTHLY_5',
     productKey: 'monthly_v1',
     verifyPrice(price) {
       assert.equal(price.unit_amount, 500)
+      assert.equal(price.recurring?.interval, 'month')
+    },
+    verifyLink() {},
+  },
+  {
+    prefix: 'STRIPE_TEST_MONTHLY_10',
+    productKey: 'monthly_v1',
+    verifyPrice(price) {
+      assert.equal(price.unit_amount, 1000)
+      assert.equal(price.recurring?.interval, 'month')
+    },
+    verifyLink() {},
+  },
+  {
+    prefix: 'STRIPE_TEST_MONTHLY_25',
+    productKey: 'monthly_v1',
+    verifyPrice(price) {
+      assert.equal(price.unit_amount, 2500)
       assert.equal(price.recurring?.interval, 'month')
     },
     verifyLink() {},
@@ -88,4 +106,4 @@ assert.equal(portal.features?.subscription_cancel?.mode, 'at_period_end')
 assert.equal(portal.login_page?.enabled, true)
 assert.match(portal.login_page?.url ?? '', /^https:\/\/billing\.stripe\.com\/p\/login\/test_/)
 
-console.log('Stripe test support is healthy (2 hosted links, dynamic methods, invoices and customer portal).')
+console.log('Stripe test support is healthy (4 hosted links, dynamic methods, invoices and customer portal).')

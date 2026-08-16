@@ -4,25 +4,25 @@ Vorrio is open-source software maintained by Amturo UG. Funding should support
 maintenance, security work, documentation, community support and public build
 infrastructure without reducing the self-hosted core.
 
-## Planned first option: Stripe Payment Links
+## First option: Stripe Payment Links
 
 Stripe Payment Links is the preferred launch option. The static website links
 to Stripe-hosted Checkout and does not load Stripe JavaScript or expose an API
 key. This keeps the website dependency-free and avoids contacting Stripe until
 the visitor actively chooses financial support.
 
-The prepared website supports two independent links:
+The website uses four independent live links:
 
 - a one-time payment where the supporter chooses the amount;
-- an optional fixed monthly sponsorship.
+- optional fixed monthly support at EUR 5, EUR 10 or EUR 25.
 
-Both controls stay hidden while their values in `website/support-config.js` are
-empty. See `STRIPE-SUPPORT.md` for the account, link and activation steps.
+Their public URLs live in `website/support-config.js`, which contains no API
+keys. See `STRIPE-SUPPORT.md` for account, link and operating details.
 
-Two Stripe test-mode links are now prepared: customer-selected one-time support
-with a EUR 3 minimum and EUR 10 preset, and fixed support at EUR 5 per month.
-Both hosted pages are reachable, but neither test link is placed on the public
-website. The idempotent setup is in
+Four Stripe test-mode links are now prepared: customer-selected one-time support
+with a EUR 2 minimum and EUR 10 preset, and fixed support at EUR 5, EUR 10 or
+EUR 25 per month. All hosted pages are reachable, but no test link is placed on
+the public website. The idempotent setup is in
 `scripts/setup_stripe_support.mjs`; local keys, IDs and test URLs remain in
 the Git-ignored `.env.stripe.local` file.
 
@@ -36,9 +36,11 @@ again before launch rather than promising a fixed public method list.
 
 Checked on 16 August 2026: the Stripe account can accept charges and payouts,
 has no outstanding verification requirements and uses EUR. Its public support
-contact, Vorrio branding, tax/bookkeeping approvals and live Stripe objects are
-not complete, so the live creation gate and all public payment controls remain
-closed.
+contact, shared Amturo Checkout branding, automatic receipts, daily payouts,
+four live Payment Links and customer portal are configured. Vorrio remains a
+Product and Payment Link identity and does not replace the global Amturo
+account identity. Because there is no active Stripe Tax registration,
+`automatic_tax` remains disabled.
 
 Also checked on 13 August 2026: `amturo-gbr/vorrio` is the canonical repository and
 is still private; the public `amturo-gbr` organization currently exposes no
@@ -64,25 +66,22 @@ charitable donation, and Vorrio does not promise donation receipts. Public copy
 uses “support” or “sponsorship”. Amturo UG records payouts and applicable taxes
 through its normal accounting process.
 
-No live payment link is publicly active in 0.8.26. Stripe support is activated
-only after the receiving Amturo account, live Payment Links, legal copy and
-bookkeeping process are ready. Stripe secret keys never belong in `website/` or
-a browser bundle.
+Live Payment Links are public from 16 August 2026. Stripe secret keys never
+belong in `website/` or a browser bundle.
 
 ## Website activation sequence
 
-The static project website keeps financial support unavailable until all launch
-gates are complete:
+The launch sequence is:
 
 1. complete and verify the Amturo Stripe business account, payout account and
    tax details;
 2. approve the public sponsorship wording, VAT treatment and bookkeeping flow;
-3. create the one-time and optional monthly Stripe Payment Links in test mode
-   (**prepared**);
+3. create the one-time and three optional monthly Stripe Payment Links in test mode
+   (**complete**);
 4. verify checkout, PDF invoices, a failed payment, the customer portal,
    refunds and subscription cancellation (**verified in test mode**);
 5. create the live links and add only their public `buy.stripe.com` URLs to
-   `website/support-config.js`;
+   `website/support-config.js` (**complete**);
 6. verify both languages and payment flows from a signed-out browser.
 
 PayPal is not the launch default. A standalone PayPal button would add another

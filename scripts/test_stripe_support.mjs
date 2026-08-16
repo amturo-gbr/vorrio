@@ -19,7 +19,7 @@ const readyAccount = {
   business_profile: { support_email: 'support@example.test', support_url: 'https://example.test/support' },
   settings: {
     branding: { logo: 'file_logo', icon: null, primary_color: '#176b35' },
-    payments: { statement_descriptor: 'VORRIO' },
+    payments: { statement_descriptor: 'AMTURO.DE' },
     payouts: { schedule: { interval: 'daily' } },
   },
   external_accounts: { data: [{ status: 'verified' }] },
@@ -47,6 +47,14 @@ test('live preflight reports missing public profile and branding', () => {
   ])
 })
 
+test('live preflight keeps the shared account descriptor on Amturo', () => {
+  const account = structuredClone(readyAccount)
+  account.settings.payments.statement_descriptor = 'VORRIO'
+  assert.deepEqual(liveAccountReadiness(account, 'acct_expected').blockers, [
+    'statement descriptor must identify Amturo',
+  ])
+})
+
 test('live writes require every independent approval gate', () => {
   const env = new Map([
     ['STRIPE_LEGAL_COPY_APPROVED', 'YES'],
@@ -68,4 +76,12 @@ test('setup never hard-codes payment method types or automatic tax', async () =>
   assert.doesNotMatch(source, /['"]payment_method_types(?:\[[^\]]+\])?['"]\s*:/)
   assert.doesNotMatch(source, /automatic_tax/)
   assert.match(source, /paymentLink\.payment_method_types !== null/)
+})
+
+test('support setup defines the approved one-time and monthly test prices', async () => {
+  const source = await readFile(new URL('./setup_stripe_support.mjs', import.meta.url), 'utf8')
+  assert.match(source, /key: 'one_time_v2'[\s\S]*?minimum: 200,[\s\S]*?preset: 1000,/)
+  assert.match(source, /key: 'monthly_v1'[\s\S]*?unitAmount: 500,/)
+  assert.match(source, /key: 'monthly_10_v1'[\s\S]*?unitAmount: 1000,/)
+  assert.match(source, /key: 'monthly_25_v1'[\s\S]*?unitAmount: 2500,/)
 })

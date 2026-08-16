@@ -28,7 +28,7 @@ export function liveAccountReadiness(account, expectedAccountId) {
   if (!account?.settings?.branding?.primary_color) blockers.push('Stripe Checkout brand colour is missing')
 
   const descriptor = account?.settings?.payments?.statement_descriptor ?? ''
-  if (!/AMTURO|VORRIO/i.test(descriptor)) blockers.push('statement descriptor must identify Amturo or Vorrio')
+  if (!/AMTURO/i.test(descriptor)) blockers.push('statement descriptor must identify Amturo')
   if (account?.default_currency !== 'eur') blockers.push('default currency must be EUR')
 
   if (account?.settings?.payouts?.schedule?.interval === 'manual') {

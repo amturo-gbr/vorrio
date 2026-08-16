@@ -1,175 +1,195 @@
-# Stripe-Unterstützungsintegration
+# Stripe-Unterstützung
 
-Vorrio nutzt für die finanzielle Unterstützung von Stripe gehostete Zahlungslinks. Das ist das
-kleinste Integration, die eine statische Website unterstützt: Zahlungsdaten bleiben bestehen
-Stripe Checkout, die Vorrio-Website lädt kein Stripe-JavaScript und kein Geheimnis oder
-Im Browser ist ein veröffentlichbarer API-Schlüssel erforderlich.
+Vorrio nutzt von Stripe gehostete Payment Links für finanzielle Unterstützung.
+Dies ist die kleinste sinnvolle Integration für eine statische Website:
+Zahlungsdaten verbleiben bei Stripe Checkout, die Vorrio-Website lädt kein
+Stripe-JavaScript und benötigt im Browser weder einen geheimen noch einen
+veröffentlichbaren API-Schlüssel.
 
 ## Grenze der öffentlichen Website
 
-Die öffentliche Vercel-Bereitstellung enthält keine Stripe-Steuerelemente, Stripe-Kopie oder Stripe
-Laufzeitcode. `website/.vercelignore` schließt den lokalen Platzhalter aus
-`website/support-config.js`, dessen zwei leere URL-Slots für später reserviert sind
-Aktivierungsänderung:
+Die öffentliche Vercel-Bereitstellung enthält fünf öffentliche Stripe-Ziele:
+vier gehostete Checkout-Seiten und das gehostete Kundenportal. Die statische
+Website lädt weiterhin kein Stripe-Skript. `website/support-config.js` enthält
+nur öffentliche URLs und wird zusammen mit der Website ausgeliefert:
 
 ```js
 window.VORRIO_SUPPORT_LINKS = Object.freeze({
-  oneTime: '',
-  monthly: '',
+  oneTime: 'https://buy.stripe.com/...',
+  monthly5: 'https://buy.stripe.com/...',
+  monthly10: 'https://buy.stripe.com/...',
+  monthly25: 'https://buy.stripe.com/...',
+  portal: 'https://billing.stripe.com/p/login/...',
 })
 ```
 
-Der Platzhalter wird nicht von öffentlichem HTML oder JavaScript referenziert. Aktivierend
-Zahlungen erfordern eine überprüfte Änderung, die die Live-Kontrollen und strengen Kontrollen hinzufügt
-`https://buy.stripe.com/` URL-Validierung, entfernt den Vercel-Ausschluss, aktualisiert
-die Datenschutzerklärung und verifiziert beide Sprachen. Testlinks dürfen niemals kopiert werden
-in öffentliche Website-Dateien.
+`support.js` akzeptiert ausschließlich HTTPS-Links der Hosts `buy.stripe.com`
+und `billing.stripe.com`; ungültige Ziele werden ausgeblendet. Testlinks dürfen
+niemals in öffentliche Website-Dateien kopiert werden.
 
-Geben Sie hier niemals `sk_test_`, `sk_live_`, eingeschränkte Schlüssel oder Webhook-Geheimnisse ein
-Datei, eine andere Datei unter `website/`, Git, Screenshots oder Browsercode.
+`sk_test_`, `sk_live_`, eingeschränkte Schlüssel oder Webhook-Geheimnisse dürfen
+niemals in dieser Datei, anderen Dateien unter `website/`, Git, Screenshots oder
+Browsercode erscheinen.
 
 ## Aktueller Teststatus
 
-Am 16. August 2026 erneut mit der Stripe-API `2026-06-24.dahlia` geprüft:
+Am 16. August 2026 erneut gegen Stripe API `2026-06-24.dahlia` geprüft:
 
-- `scripts/setup_stripe_support.mjs` erstellt die beiden Produkte, Preise und
-  Payment Links im Testmodus idempotent oder verwendet die vorhandenen Objekte;
-- beim einmaligen Testpreis wählen Unterstützende den EUR-Betrag selbst, mit
-  einem Mindestbetrag von 3 EUR und einer Voreinstellung von 10 EUR;
-- der wiederkehrende Testpreis beträgt fest 5 EUR pro Monat;
-- beide von Stripe gehosteten Testlinks sind aktiv und liefern HTTP 200;
-- der einmalige Link erstellt eine bezahlte Stripe-Rechnung als PDF;
-- der monatliche Link erstellt ein Abonnement und die erste bezahlte Rechnung;
+- `scripts/setup_stripe_support.mjs` erstellt oder verwendet die Testprodukte,
+  vier Preise und vier Payment Links idempotent über die Stripe-API;
+- der einmalige Testpreis erlaubt einen frei gewählten Eurobetrag ab 2 EUR und
+  schlägt 10 EUR vor;
+- die drei wiederkehrenden Testpreise betragen 5 EUR, 10 EUR und 25 EUR pro
+  Monat;
+- alle vier von Stripe gehosteten Testlinks sind aktiv und liefern HTTP 200;
+- der einmalige Link kann eine bezahlte Stripe-Rechnung mit herunterladbarer PDF
+  erzeugen;
+- die monatlichen Links erzeugen ein Abonnement und die erste bezahlte Rechnung;
 - das gehostete Kundenportal bietet Rechnungsverlauf, Rechnungsdaten,
-  Zahlungsmitteländerungen und Kündigung zum Ende des Abrechnungszeitraums;
-- Test-IDs und URLs liegen ausschließlich in der von Git ignorierten privaten
-  Datei `.env.stripe.local`;
-- `website/support-config.js` bleibt leer und von Vercel ausgeschlossen. Damit
-  gelangen weder Testlinks noch inaktive Zahlungstexte auf die öffentliche Seite.
+  Zahlungsmitteländerung und Kündigung zum Ende des Abrechnungszeitraums;
+- Test-IDs und Test-URLs liegen ausschließlich in der von Git ignorierten
+  `.env.stripe.local` und müssen privat bleiben;
+- Testlinks bleiben vollständig von den öffentlichen Live-URLs getrennt.
 
 Das Setup-Skript verwendet standardmäßig den Testmodus und akzeptiert dort nur
-einen eingeschränkten `rk_test_`-Schlüssel. Bei erneuter Ausführung verwendet es
-die vorhandenen Objekte, statt Duplikate anzulegen. Eine separate,
-schreibgeschützte Integrationsprüfung kontrolliert die Stripe-Sandbox, ohne
-Zugangsdaten auszugeben:
+einen eingeschränkten `rk_test_`-Schlüssel. Eine erneute Ausführung verwendet
+vorhandene Objekte, statt Duplikate anzulegen. Eine separate, nur lesende
+Integrationsprüfung kontrolliert die Stripe-Sandbox, ohne Zugangsdaten
+auszugeben:
 
 ```bash
 node scripts/check_stripe_test_support.mjs
 ```
 
-Die komplette Sandbox-Probe fand ebenfalls am 13. August 2026 statt:
+Der vollständige Sandbox-Durchlauf wurde am 13. August 2026 außerdem mit den
+ursprünglichen Links für einmalig mindestens 3 EUR und monatlich 5 EUR geprüft:
 
-- Eine einmalige Kartenzahlung in Höhe von 10 EUR wurde erfolgreich abgeschlossen.
-- ein erfolgreich abgeschlossenes Kartenabonnement im Wert von 5 EUR pro Monat;
-- Stripe erstellte herunterladbare PDF-Rechnungen für beide erfolgreichen Abläufe;
-- eine abgelehnte Testkarte blieb erfolglos und führte zu keiner bezahlten Transaktion;
-- Das Monatsabonnement wurde im gehosteten Portal gekündigt und endet nun um
-  das Ende des aktuellen Abrechnungszeitraums;
-- Die Einmalzahlung wurde vollständig zurückerstattet und wird im Konto als zurückerstattet ausgewiesen
-  Streifen-Dashboard.
+- Eine einmalige Kartenzahlung über 10 EUR war erfolgreich.
+- Ein monatliches Kartenabonnement über 5 EUR war erfolgreich.
+- Stripe erzeugte für beide erfolgreichen Abläufe herunterladbare
+  PDF-Rechnungen.
+- Eine abgelehnte Testkarte blieb ohne bezahlte Transaktion.
+- Das Monatsabonnement wurde im Portal gekündigt und endet zum Ablauf des
+  aktuellen Abrechnungszeitraums.
+- Die Einmalzahlung wurde vollständig erstattet und im Stripe-Dashboard als
+  erstattet ausgewiesen.
 
-An der Kasse wurde die dynamische Zahlungsmethodenauswahl von Stripe angezeigt und nicht eine
-hartcodierte Liste. Die genauen Methoden variieren je nach Unterstützer, Browser, Gerät und Währung
-und Stripe-Kontoberechtigung und muss daher im Live-Modus erneut überprüft werden.
+Checkout verwendete Stripes dynamische Zahlungsmittelauswahl und keine
+hartcodierte Liste. Die tatsächlich angebotenen Methoden hängen von
+unterstützender Person, Browser, Gerät, Währung und Stripe-Berechtigung ab und
+müssen daher im Live-Modus erneut kontrolliert werden.
+
+Am 16. August 2026 wurden die überarbeiteten Seiten erneut über die API sowie in
+Desktop- und Mobilbrowsern geprüft. Stripe lehnte 1 EUR mit dem erwarteten
+Hinweis auf den Mindestbetrag von 2 EUR ab, zeigte den Vorschlagswert von 10 EUR
+und stellte die Monatsstufen 5 EUR, 10 EUR und 25 EUR korrekt dar. Es wurde keine
+reale Zahlung ausgeführt.
 
 ## Prüfung des Live-Kontos
 
 Das empfangende Stripe-Konto wurde am 16. August 2026 geprüft. Die
 Unternehmensdaten sind eingereicht, Zahlungen und Auszahlungen sind aktiviert,
-EUR ist die Standardwährung und es bestehen keine offenen
-Verifizierungsanforderungen. Der Abrechnungstext weist auf Amturo hin. Es wurden
-noch keine Live-Produkte, Preise, Payment Links oder Kundenportal-Konfigurationen
-angelegt.
+EUR ist die Standardwährung, es bestehen keine offenen
+Verifizierungsanforderungen und die Zahlungsbeschreibung weist Amturo aus. Die
+zwei Live-Produkte, vier Live-Preise, vier Payment Links und das gehostete
+Kundenportal sind angelegt. Amturo-Branding, Supportadresse, automatische
+Zahlungsbelege und tägliche Auszahlungen sind kontoweit eingerichtet.
 
-Die Live-Erstellung bleibt gesperrt, bis alle folgenden Punkte abgeschlossen sind:
+Öffentliche Support-E-Mail, Amturo-Support-URL, Amturo-Website und
+Amturo-Datenschutz-URL sind im gemeinsamen Konto eingetragen.
 
-- öffentliche Support-E-Mail und Support-URL im Stripe-Unternehmensprofil ergänzen;
-- Vorrio-Logo oder -Icon hochladen und `#176B35` als Primärfarbe festlegen;
-- den manuellen Auszahlungsrhythmus mit der Buchhaltung bestätigen;
-- öffentliche Rechtstexte, Steuer-/Umsatzsteuerbehandlung und Buchhaltungsablauf freigeben;
-- die vorgesehenen Steuerregistrierungen bestätigen. Aktuell ist keine Stripe-
-  Tax-Registrierung hinterlegt, deshalb bleibt `automatic_tax` deaktiviert.
+Das Konto enthält derzeit keine aktive Stripe-Tax-Registrierung;
+`automatic_tax` bleibt daher bewusst aus. Stripe legt die steuerliche und
+umsatzsteuerliche Einordnung nicht fest; sie muss im Jahresabschluss der Amturo
+UG korrekt behandelt werden.
 
-Für Live ausschließlich einen separaten eingeschränkten Schlüssel verwenden:
-Lesezugriff auf grundlegende Konto- und Geschäftskontaktdaten sowie Lese- und
-Schreibzugriff nur auf Produkte, Preise, Payment Links und das Kundenportal.
-Test- und Live-Schlüssel bleiben getrennt. Die private lokale Vorlage außerhalb
-von Git ausfüllen und anschließend die schreibgeschützte Vorprüfung starten:
+Für Live sollte ein separater eingeschränkter Schlüssel angelegt werden: mit
+Lesezugriff auf grundlegende Konto- und Kontaktinformationen sowie
+Schreibzugriff ausschließlich auf Produkte, Preise, Payment Links und das
+Kundenportal. Test- und Live-Schlüssel bleiben getrennt. Die private lokale
+Vorlage wird außerhalb von Git ausgefüllt und zunächst nur lesend geprüft:
 
 ```bash
 cp .env.stripe.live.example .env.stripe.live.local
 node scripts/setup_stripe_support.mjs --live
 ```
 
-Ohne `--apply` prüft der Live-Modus nur das Konto und die Freigaben und erstellt
-nichts. Auch `--live --apply` ist abgesichert und verweigert die Erstellung,
+Ohne `--apply` prüft der Live-Modus lediglich Konto und Freigaben und erstellt
+nichts. Auch `--live --apply` ist geschützt und verweigert Schreibvorgänge,
 solange ein Pflichtfeld oder eine Freigabe fehlt. Erzeugte Live-IDs und URLs
-bleiben ausschließlich in `.env.stripe.live.local`; das Skript verändert die
-öffentliche Website nicht.
+bleiben ausschließlich in `.env.stripe.live.local`; die öffentliche Website
+wird vom Skript nicht verändert.
 
-## Empfohlene Einrichtung eines Stripe-Kontos
+## Empfohlene Stripe-Kontoeinstellungen
 
-Nutzen Sie die Geschäftsidentität und Geschäftsauszahlung der Amturo UG (haftungsbeschränkt).
-Konto. Überprüfen Sie vor dem Erstellen von Live-Links Folgendes:
+Als Zahlungsempfänger dienen die Unternehmensidentität und das Auszahlungskonto
+der Amturo UG (haftungsbeschränkt). Vor der Erstellung von Live-Links sind zu
+prüfen:
 
-- Firmenname, Adresse, Register und wirtschaftliche Eigentümer;
-- Bankkonto und Steuerdaten für die Auszahlung;
-- öffentliche Support-E-Mail-Adressen und Website-Datenschutz-/Impressum-URLs;
-– Anweisungsdeskriptor, der Amturo oder Vorrio eindeutig identifiziert;
-- Branding mit dem Vorrio-Logo und `#176B35` Akzentfarbe;
-- automatische Belege, Rückerstattungsabwicklung und relevante Zahlungsmethoden;
-- Stripe-Datenverarbeitungsbedingungen und der interne Buchhaltungsworkflow.
+- rechtlicher Name, Anschrift, Register und wirtschaftlich Berechtigte;
+- Auszahlungskonto und Steuerdaten;
+- öffentliche Support-E-Mail sowie Datenschutz- und Impressums-URLs;
+- eine Zahlungsbeschreibung, die Amturo eindeutig ausweist;
+- kontoweites Amturo-Branding; Vorrio bleibt die Identität des jeweiligen
+  Produkts und Payment Links;
+- automatische Belege, Erstattungsablauf und relevante Zahlungsmethoden;
+- Stripe-Datenverarbeitungsbedingungen und interner Buchungsablauf.
 
-Die endgültige steuerliche und umsatzsteuerliche Behandlung gewerblicher Sponsoringeinnahmen muss vereinbart werden
-vor der Aktivierung mit dem Steuerberater von Amturo. Öffentliche Formulierungen verwenden „Unterstützung“ oder
-„Sponsoring“, keine Zusage einer steuerlich absetzbaren Spende oder Spendenquittung.
+Die endgültige steuerliche und umsatzsteuerliche Einordnung gewerblicher
+Unterstützung muss vor der Aktivierung mit der Steuerberatung von Amturo
+abgestimmt werden. Öffentlich wird von „Unterstützung“ oder „Sponsoring“
+gesprochen, nicht von einer steuerlich absetzbaren Spende oder einer
+Spendenbescheinigung.
 
-## Vorbereitete Zahlungslinks
+## Vorbereitete Payment Links
 
 ### 1. Einmalige Unterstützung
 
-- Typ: **Kunden entscheiden, was sie bezahlen möchten**.
+- Typ: **Kundinnen und Kunden wählen den Betrag**.
 - Titel: `Vorrio einmalig unterstützen`.
-- Empfohlener Betrag: 10 EUR.
-- Empfohlener Mindestbetrag: 3 EUR.
-- Aufruf zum Handeln: Zahlungs-/Unterstützungsformulierung, kein Versprechen einer wohltätigen Spende.
-- Sammeln Sie nur die Informationen, die für Zahlungen, Quittungen und Buchhaltung erforderlich sind.
+- Vorgeschlagener Betrag: 10 EUR.
+- Mindestbetrag: 2 EUR.
+- Handlungsaufforderung: Zahlung/Unterstützung, kein Versprechen einer
+  gemeinnützigen Spende.
+- Es werden nur Daten erfasst, die für Zahlung, Beleg und Buchhaltung nötig
+  sind.
 
-Dieses Stripe-Preismodell ist nur einmalig; Es können keine wiederkehrenden Zahlungen erstellt werden.
+Dieses Stripe-Preismodell ist ausschließlich einmalig und kann keine
+wiederkehrenden Zahlungen erzeugen.
 
-### 2. Optionaler monatlicher Support
+### 2. Optionale monatliche Unterstützung
 
 - Typ: **Produkt oder Abonnement**.
 - Produkt: `Vorrio monatlich unterstützen`.
-- Erster Festpreis: 5 EUR pro Monat.
-- Bereitstellung der Stornierungs- und Zahlungsmethodenverwaltung über Stripe
-  gehostetes Kundenportal oder die Stripe-Kunden-E-Mails.
-- Versprechen Sie keine Produktkontrollrechte, exklusive Sicherheitsupdates oder wesentliche Verbesserungen
-  selbstgehostete Funktionalität als Belohnung.
+- Feste Stufen: 5 EUR, 10 EUR und 25 EUR pro Monat.
+- Kündigung und Zahlungsmittelverwaltung erfolgen über das gehostete
+  Stripe-Kundenportal oder die Stripe-Kunden-E-Mails.
+- Es werden keine Mitbestimmungsrechte, exklusiven Sicherheitskorrekturen oder
+  wesentlichen Self-Hosting-Funktionen als Gegenleistung versprochen.
 
-Weitere monatliche Stufen können später hinzugefügt werden, wenn die tatsächliche Nachfrage dies rechtfertigt
-Kopier- und Buchhaltungskomplexität.
+Jede Stufe besitzt einen eigenen Payment Link und verwendet dasselbe gehostete
+Kundenportal.
 
-## Test- und Aktivierungssequenz
+## Test- und Aktivierungsreihenfolge
 
-1. Erstellen Sie beide Links im Stripe-Testmodus. **Vorbereitet.**
-2. Lassen Sie `website/support-config.js` während des Tests leer und von Vercel ausgeschlossen
-   die Links direkt. **Verifiziert.**
-3. Testen Sie erfolgreiche einmalige und monatliche Zahlungen, eine fehlgeschlagene Zahlung, PDF
-   Rechnungen, Zugang zum Kundenportal, wiederkehrende Stornierung und Rückerstattung.
-   **Im Stripe-Testmodus überprüft.**
-4. Vervollständigen Sie das öffentliche Stripe-Profil und das Vorrio-Branding.
-5. Bestätigen Sie den Datenschutztext, die Bedingungen, die steuerliche Behandlung und den Abrechnungsprozess.
-6. Führen Sie den geschützten Live-Preflight aus und führen Sie ihn dann explizit erneut mit aus
-   `--live --apply`, nachdem alle Genehmigungen bestanden wurden.
-7. Fügen Sie nur die beiden Live-URLs `https://buy.stripe.com/...` zusammen mit „guarded“ hinzu
-   öffentliche Kontrollen und die entsprechende deutsche und englische Datenschutzerklärung.
-8. Entfernen Sie `support-config.js` nur in der überprüften Änderung aus `.vercelignore`.
-9. Führen Sie `make website-check` aus und überprüfen Sie die deutschen und englischen Seiten.
-10. Testen Sie die öffentlichen Links vor dem Start in einem abgemeldeten Browser.
+1. Alle vier Links im Stripe-Testmodus erstellen. **Erledigt.**
+2. Testlinks von der öffentlichen Live-Konfiguration trennen. **Erledigt.**
+3. Erfolgreiche einmalige und monatliche Zahlungen, eine fehlgeschlagene
+   Zahlung, PDF-Rechnungen, Kundenportal, Abo-Kündigung und Erstattung testen.
+   **Im Stripe-Testmodus bestätigt.**
+4. Gemeinsames Amturo-Checkout-Branding prüfen. **Erledigt.**
+5. Deutsche und englische Datenschutzhinweise ergänzen. **Erledigt.**
+6. Live-Produkte, -Preise, Payment Links und Kundenportal anlegen. **Erledigt.**
+7. Nur öffentliche Live-URLs mit geschützten Schaltflächen veröffentlichen.
+   **Erledigt.**
+8. `support-config.js` aus `.vercelignore` entfernen. **Erledigt.**
+9. `make website-check` ausführen und die deutschen und englischen Seiten
+   prüfen.
+10. Vor dem Start alle öffentlichen Links in einem abgemeldeten Browser testen.
 
-Die öffentliche Website benötigt bewusst keine Stripe-API-Integration. Lokale API
-Die Automatisierung wird nur für die wiederholbare Einrichtung eines Stripe-Kontos verwendet. Besucher nutzen es immer noch
-Von Stripe gehostete Zahlungslinks. Wenn Vorrio schließlich bezahlte Leistungen gewährt oder benötigt
-Berechtigungsstatus, ersetzen Sie diesen Ansatz durch vom Server erstellte Checkout-Sitzungen
-plus signaturverifizierte Webhooks.
+Die öffentliche Website benötigt bewusst keine Stripe-API-Integration. Lokale
+API-Automatisierung dient nur der wiederholbaren Einrichtung des Stripe-Kontos;
+Besucher verwenden weiterhin von Stripe gehostete Payment Links. Wenn Vorrio
+später bezahlte Leistungen oder Berechtigungsstatus benötigt, muss dieser Ansatz
+durch serverseitig erzeugte Checkout Sessions und signaturgeprüfte Webhooks
+ersetzt werden.

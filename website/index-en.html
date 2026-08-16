@@ -373,7 +373,8 @@
             <h2>Developed openly.<br />Maintained together.</h2>
             <p>
               Vorrio is free software. Report bugs, share ideas, improve translations or
-              contribute directly to the code.
+              contribute directly to the code. If you would like to support its development
+              financially, you can choose a one-time amount from €2 or contribute €5, €10 or €25 monthly.
             </p>
           </div>
           <div class="support-actions reveal">
@@ -385,7 +386,22 @@
                 </svg>
                 Join on GitHub
               </a>
+              <a class="button button-primary" data-support-link="oneTime" href="#unterstuetzen">
+                One-time support
+              </a>
             </div>
+            <div class="support-tiers" aria-label="Monthly support">
+              <span>Monthly</span>
+              <a data-support-link="monthly5" href="#unterstuetzen"><strong>€5</strong><small>per month</small></a>
+              <a data-support-link="monthly10" href="#unterstuetzen"><strong>€10</strong><small>per month</small></a>
+              <a data-support-link="monthly25" href="#unterstuetzen"><strong>€25</strong><small>per month</small></a>
+            </div>
+            <p class="support-note">
+              Voluntary support paid to Amturo UG for its work on Vorrio – without membership,
+              exclusive features or a guaranteed claim to services. Processed by Stripe;
+              no tax-deductible donation receipt.
+              <a data-support-link="portal" href="#unterstuetzen">Manage monthly support</a>
+            </p>
           </div>
         </div>
       </section>
@@ -430,6 +446,8 @@
       </div>
     </footer>
 
+    <script src="support-config.js"></script>
+    <script src="support.js"></script>
     <script src="script.js"></script>
   </body>
 </html>

@@ -98,12 +98,13 @@ if (mode === 'live') {
 }
 
 async function findOrCreateProduct(definition) {
+  const productKey = definition.productKey ?? definition.key
   const products = await stripeRequest('GET', '/products', {
     active: true,
     limit: 100,
   })
   const existing = products.data.find(
-    (product) => product.metadata?.vorrio_support_key === definition.key,
+    (product) => product.metadata?.vorrio_support_key === productKey,
   )
   if (existing) return existing
 
@@ -113,7 +114,7 @@ async function findOrCreateProduct(definition) {
     {
       name: definition.name,
       description: definition.description,
-      'metadata[vorrio_support_key]': definition.key,
+      'metadata[vorrio_support_key]': productKey,
       'metadata[vorrio_project]': 'vorrio',
       'metadata[vorrio_environment]': mode,
     },
@@ -281,25 +282,49 @@ async function configureCustomerPortal() {
 
 const definitions = [
   {
-    key: 'one_time_v1',
+    key: 'one_time_v2',
+    productKey: 'one_time_v1',
     envPrefix: `STRIPE_${mode.toUpperCase()}_ONE_TIME`,
     name: 'Vorrio Support – einmalig / one-time',
     description:
       'Frei wählbare Unterstützung für das Open-Source-Projekt Vorrio. / Flexible support for the Vorrio open-source project.',
     nickname: 'Vorrio flexible Unterstützung / flexible support',
     customAmount: true,
-    minimum: 300,
+    minimum: 200,
     preset: 1000,
   },
   {
     key: 'monthly_v1',
-    envPrefix: `STRIPE_${mode.toUpperCase()}_MONTHLY`,
+    productKey: 'monthly_v1',
+    envPrefix: `STRIPE_${mode.toUpperCase()}_MONTHLY_5`,
     name: 'Vorrio Support – monatlich / monthly',
     description:
       'Monatliche Unterstützung für das Open-Source-Projekt Vorrio. / Monthly support for the Vorrio open-source project.',
     nickname: 'Vorrio monatliche Unterstützung / monthly support',
     customAmount: false,
     unitAmount: 500,
+  },
+  {
+    key: 'monthly_10_v1',
+    productKey: 'monthly_v1',
+    envPrefix: `STRIPE_${mode.toUpperCase()}_MONTHLY_10`,
+    name: 'Vorrio Support – monatlich / monthly',
+    description:
+      'Monatliche Unterstützung für das Open-Source-Projekt Vorrio. / Monthly support for the Vorrio open-source project.',
+    nickname: 'Vorrio monatliche Unterstützung 10 EUR / monthly support EUR 10',
+    customAmount: false,
+    unitAmount: 1000,
+  },
+  {
+    key: 'monthly_25_v1',
+    productKey: 'monthly_v1',
+    envPrefix: `STRIPE_${mode.toUpperCase()}_MONTHLY_25`,
+    name: 'Vorrio Support – monatlich / monthly',
+    description:
+      'Monatliche Unterstützung für das Open-Source-Projekt Vorrio. / Monthly support for the Vorrio open-source project.',
+    nickname: 'Vorrio monatliche Unterstützung 25 EUR / monthly support EUR 25',
+    customAmount: false,
+    unitAmount: 2500,
   },
 ]
 

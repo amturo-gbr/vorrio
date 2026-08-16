@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Activated Stripe-hosted support on the bilingual public website with a
+  customer-selected one-time amount from EUR 2, monthly EUR 5/10/25 tiers and
+  the hosted customer portal, without adding Stripe scripts, tracking or secret
+  keys to the static deployment.
+- Extended the German and English privacy notices for the user-initiated Stripe
+  hand-off and kept automatic tax disabled while no Stripe Tax registration is
+  active.
+- Expanded the guarded Stripe sandbox to one customer-selected payment with a
+  EUR 2 minimum and three monthly tiers at EUR 5, EUR 10 and EUR 25, while
+  preserving Amturo as the account-wide identity and keeping every payment
+  control out of the live website.
 - Re-audited Stripe support against API `2026-06-24.dahlia`, added guarded live
   preflight and approval gates plus unit and sandbox integration checks, and
   kept all payment controls hidden until the live profile, branding, tax and

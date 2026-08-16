@@ -144,8 +144,17 @@ def main() -> None:
                 failures.append(f"{pages[locale].name}: roadmap marker {marker!r} is missing")
         if "GitHub Sponsors" in page_text or "github.com/sponsors/" in page_text:
             failures.append(f"{pages[locale].name}: GitHub Sponsors must stay hidden")
-        if "data-stripe" in page_text or "support-config.js" in page_text:
-            failures.append(f"{pages[locale].name}: inactive payment integration must not ship")
+        for marker in (
+            'data-support-link="oneTime"',
+            'data-support-link="monthly5"',
+            'data-support-link="monthly10"',
+            'data-support-link="monthly25"',
+            'data-support-link="portal"',
+            'src="support-config.js"',
+            'src="support.js"',
+        ):
+            if marker not in page_text:
+                failures.append(f"{pages[locale].name}: live support marker {marker!r} is missing")
         expected_social_card = f"assets/vorrio-social-card-{locale}.png"
         seo_markers = (
             'name="robots" content="index, follow, max-image-preview:large"',
@@ -239,32 +248,36 @@ def main() -> None:
             failures.append("sitemap.xml: must contain exactly the two indexable language pages")
 
     support_config = (WEBSITE / "support-config.js").read_text(encoding="utf-8")
-    for key in ("oneTime", "monthly"):
+    expected_support_links = {
+        "oneTime": "https://buy.stripe.com/6oU28r3B368g7PTdjN7kc00",
+        "monthly5": "https://buy.stripe.com/cNi8wPb3veEM5HL2F97kc01",
+        "monthly10": "https://buy.stripe.com/cNiaEX3B3aow7PT5Rl7kc02",
+        "monthly25": "https://buy.stripe.com/9B614ngnPgMU5HL7Zt7kc03",
+        "portal": "https://billing.stripe.com/p/login/6oU28r3B368g7PTdjN7kc00",
+    }
+    for key, expected_value in expected_support_links.items():
         match = re.search(rf"{key}:\s*'([^']*)'", support_config)
         if not match:
-            failures.append(f"support-config.js: missing {key} Payment Link slot")
+            failures.append(f"support-config.js: missing {key} public URL")
             continue
         value = match.group(1)
-        if value:
-            parsed = urlsplit(value)
-            if (
-                parsed.scheme != "https"
-                or parsed.hostname != "buy.stripe.com"
-                or parsed.path.startswith("/test_")
-            ):
-                failures.append(
-                    f"support-config.js: {key} must be a live HTTPS buy.stripe.com Payment Link"
-                )
+        parsed = urlsplit(value)
+        if value != expected_value or parsed.scheme != "https" or parsed.path.startswith("/test_"):
+            failures.append(f"support-config.js: {key} must use the approved live Stripe URL")
     if re.search(r"\b(?:sk|pk|rk)_(?:test|live)_|\bwhsec_", support_config):
         failures.append("support-config.js: Stripe API and webhook keys are forbidden")
 
-    support_script = (WEBSITE / "script.js").read_text(encoding="utf-8")
-    if "stripe" in support_script.lower():
-        failures.append("script.js: inactive payment integration must not ship")
+    support_script = "\n".join(
+        (WEBSITE / filename).read_text(encoding="utf-8")
+        for filename in ("script.js", "support.js")
+    )
+    for marker in ("buy.stripe.com", "billing.stripe.com", "data-support-link"):
+        if marker not in support_script:
+            failures.append(f"support.js: live support guard {marker!r} is missing")
 
     vercel_ignore = (WEBSITE / ".vercelignore").read_text(encoding="utf-8").splitlines()
-    if "support-config.js" not in vercel_ignore:
-        failures.append(".vercelignore: local Stripe support config must not be deployed")
+    if "support-config.js" in vercel_ignore:
+        failures.append(".vercelignore: live Stripe support config must be deployed")
     if "social-card-source.html" not in vercel_ignore:
         failures.append(".vercelignore: social card source must not be deployed")
 
@@ -286,7 +299,6 @@ def main() -> None:
 
     public_copy = "\n".join(page.read_text(encoding="utf-8") for page in pages.values())
     internal_or_inactive_markers = (
-        "Stripe",
         "Wird vorbereitet:",
         "In preparation:",
         "vor der öffentlichen Ankündigung",

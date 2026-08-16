@@ -7,23 +7,24 @@ publishable API key is required in the browser.
 
 ## Public website boundary
 
-The public Vercel deployment contains no Stripe controls, Stripe copy or Stripe
-runtime code. `website/.vercelignore` excludes the local placeholder
-`website/support-config.js`, whose two empty URL slots are reserved for a later
-activation change:
+The public Vercel deployment contains five public Stripe destinations: four
+hosted Checkout pages and the hosted customer portal. The static site still
+loads no Stripe script. `website/support-config.js` contains only public URLs
+and is deployed with the website:
 
 ```js
 window.VORRIO_SUPPORT_LINKS = Object.freeze({
-  oneTime: '',
-  monthly: '',
+  oneTime: 'https://buy.stripe.com/...',
+  monthly5: 'https://buy.stripe.com/...',
+  monthly10: 'https://buy.stripe.com/...',
+  monthly25: 'https://buy.stripe.com/...',
+  portal: 'https://billing.stripe.com/p/login/...',
 })
 ```
 
-The placeholder is not referenced by public HTML or JavaScript. Activating
-payments requires one reviewed change that adds the live controls and strict
-`https://buy.stripe.com/` URL validation, removes the Vercel exclusion, updates
-the privacy policy and verifies both languages. Test links must never be copied
-into public website files.
+`support.js` accepts only HTTPS links on `buy.stripe.com` and
+`billing.stripe.com`; invalid targets are hidden. Test links must never be
+copied into public website files.
 
 Never put `sk_test_`, `sk_live_`, restricted keys or webhook secrets in this
 file, another file under `website/`, Git, screenshots or browser code.
@@ -33,19 +34,19 @@ file, another file under `website/`, Git, screenshots or browser code.
 Rechecked on 16 August 2026 against Stripe API `2026-06-24.dahlia`:
 
 - `scripts/setup_stripe_support.mjs` idempotently creates or reuses the
-  two test-mode Products, Prices and Payment Links through Stripe's API;
+  test-mode Products, four Prices and four Payment Links through Stripe's API;
 - the one-time test price accepts a customer-selected EUR amount with a
-  EUR 3 minimum and EUR 10 preset;
-- the recurring test price is fixed at EUR 5 per month;
-- both Stripe-hosted test links are active and return HTTP 200;
+  EUR 2 minimum and EUR 10 preset;
+- the three recurring test prices are fixed at EUR 5, EUR 10 and EUR 25 per
+  month;
+- all four Stripe-hosted test links are active and return HTTP 200;
 - the one-time link creates a paid Stripe invoice with a downloadable PDF;
 - the monthly link creates a subscription and first paid invoice;
 - the hosted customer portal exposes invoice history, billing details, payment-
   method updates and cancellation at the end of the billing period;
 - their test IDs and URLs are stored locally in `.env.stripe.local`, which is
   ignored by Git and must remain private;
-- `website/support-config.js` remains empty and is excluded from Vercel, so test
-  links and inactive payment wording cannot appear on the public website.
+- test links remain fully separate from the public live URLs.
 
 The setup script defaults to test mode and accepts only a restricted `rk_test_`
 key there. Re-running it returns the existing objects instead of creating
@@ -56,7 +57,8 @@ sandbox without exposing credentials:
 node scripts/check_stripe_test_support.mjs
 ```
 
-The complete sandbox rehearsal also passed on 13 August 2026:
+The complete sandbox rehearsal also passed on 13 August 2026 for the original
+EUR 3 one-time and EUR 5 monthly links:
 
 - a EUR 10 one-time card payment completed successfully;
 - a EUR 5 monthly card subscription completed successfully;
@@ -71,23 +73,28 @@ Checkout displayed Stripe's dynamic payment-method selection rather than a
 hard-coded list. The exact methods vary by supporter, browser, device, currency
 and Stripe account eligibility and must therefore be rechecked in live mode.
 
+On 16 August 2026, the revised hosted pages were checked again through the API
+and in desktop and mobile browsers. Stripe rejected EUR 1 with the expected
+EUR 2 minimum message, displayed the EUR 10 preset, and rendered each EUR 5,
+EUR 10 and EUR 25 monthly tier correctly. No real charge was made.
+
 ## Live account audit
 
 The receiving Stripe account was audited on 16 August 2026. Business details
 are submitted, charges and payouts are enabled, EUR is the default currency,
 there are no outstanding verification requirements, and the statement
-descriptor identifies Amturo. No live Product, Price, Payment Link or customer-
-portal configuration has been created yet.
+descriptor identifies Amturo. Two live Products, four live Prices, four Payment
+Links and the hosted customer portal have been created. Amturo branding, the
+support address, automatic payment receipts and daily payouts are configured
+account-wide.
 
-The live creation gate intentionally remains closed until all of the following
-are complete:
+The public support email, Amturo support URL, Amturo website and Amturo privacy
+URL are configured on the shared account.
 
-- add a public support email and support URL to the Stripe business profile;
-- upload the Vorrio logo or icon and set `#176B35` as the primary colour;
-- confirm the manual payout schedule with bookkeeping;
-- approve the public legal copy, tax/VAT handling and bookkeeping workflow;
-- confirm the intended tax registrations. The account currently contains no
-  active Stripe Tax registration, so `automatic_tax` remains disabled.
+The account currently contains no active Stripe Tax registration, so
+`automatic_tax` deliberately remains disabled. Stripe does not determine the
+tax and VAT classification; it must be handled correctly in Amturo UG's annual
+accounts.
 
 Create a separate restricted live key with read access to basic account and
 business-contact information and read/write access only to Products, Prices,
@@ -113,8 +120,9 @@ account. Before creating live links, verify:
 - legal name, address, register and beneficial owners;
 - payout bank account and tax details;
 - public support email and website privacy/imprint URLs;
-- statement descriptor that clearly identifies Amturo or Vorrio;
-- branding with the Vorrio logo and `#176B35` accent colour;
+- statement descriptor that clearly identifies Amturo;
+- account-wide branding that identifies Amturo; Vorrio remains the individual
+  Product and Payment Link identity;
 - automatic receipts, refund handling and relevant payment methods;
 - Stripe data-processing terms and the internal bookkeeping workflow.
 
@@ -129,7 +137,7 @@ with Amturo's tax adviser before activation. Public wording uses “support” o
 - Type: **Customers choose what to pay**.
 - Title: `Vorrio einmalig unterstützen`.
 - Suggested amount: EUR 10.
-- Suggested minimum: EUR 3.
+- Minimum: EUR 2.
 - Call to action: payment/support wording, not a charitable-donation promise.
 - Collect only the information required for payment, receipts and accounting.
 
@@ -139,30 +147,26 @@ This Stripe pricing model is one-time only; it cannot create recurring payments.
 
 - Type: **Product or subscription**.
 - Product: `Vorrio monatlich unterstützen`.
-- Initial fixed price: EUR 5 per month.
+- Fixed tiers: EUR 5, EUR 10 and EUR 25 per month.
 - Make cancellation and payment-method management available through Stripe's
   hosted customer portal or the Stripe customer emails.
 - Do not promise product-control rights, exclusive security fixes or essential
   self-hosted functionality as a reward.
 
-Additional monthly tiers can be added later if real demand justifies the extra
-copy and accounting complexity.
+Each tier has its own Payment Link and shares the same hosted customer portal.
 
 ## Test and activation sequence
 
-1. Create both links in Stripe test mode. **Prepared.**
-2. Keep `website/support-config.js` empty and excluded from Vercel while testing
-   the links directly. **Verified.**
+1. Create all four links in Stripe test mode. **Complete.**
+2. Keep test links separate from the public live configuration. **Complete.**
 3. Test successful one-time and monthly payments, a failed payment, PDF
    invoices, customer-portal access, recurring cancellation and a refund.
    **Verified in Stripe test mode.**
-4. Complete the Stripe public profile and Vorrio branding.
-5. Confirm the privacy text, terms, tax treatment and accounting process.
-6. Run the guarded live preflight, then explicitly run it again with
-   `--live --apply` after all approvals pass.
-7. Add only the two live `https://buy.stripe.com/...` URLs together with guarded
-   public controls and the corresponding German and English privacy disclosure.
-8. Remove `support-config.js` from `.vercelignore` only in that reviewed change.
+4. Verify the shared Amturo Checkout branding. **Complete.**
+5. Add German and English privacy disclosures. **Complete.**
+6. Create the live Products, Prices, Payment Links and portal. **Complete.**
+7. Publish only the public live URLs behind guarded controls. **Complete.**
+8. Remove `support-config.js` from `.vercelignore`. **Complete.**
 9. Run `make website-check` and inspect German and English pages.
 10. Test the public links in a signed-out browser before launch.
 

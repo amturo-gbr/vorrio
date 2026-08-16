@@ -120,6 +120,6 @@ secret-scan:
 	docker run --rm \
 		-v "$(CURDIR):/repository:ro" \
 		-w /repository \
-		$(GITLEAKS_IMAGE) git . --redact=100 --no-banner
+		$(GITLEAKS_IMAGE) git . --config=.gitleaks.toml --redact=100 --no-banner
 
 check: secret-scan backend-test acceptance-test external-path-test frontend-test frontend-build pwa-check docs-check docs-site-check backend-i18n-check language-pack-check website-check stripe-support-check release-package-check api-docs-check

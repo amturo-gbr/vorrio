@@ -35,11 +35,12 @@ canonical production origin is `https://vorrio.app`; `https://vorrio.de`
 permanently redirects to the same path on `.app`. Both domains are assigned to
 the Vercel project and verified. The canonical repository is
 `https://github.com/amturo-gbr/vorrio`; it remains private during release
-rehearsal. GitHub Sponsors is not shown. Stripe Payment Links are prepared as
-the first funding option, but the public HTML and JavaScript contain no payment
-controls or payment copy. The local `support-config.js` placeholder is excluded
-from Vercel deployments. See `docs/en/STRIPE-SUPPORT.md` for the future activation
-contract.
+rehearsal. GitHub Sponsors is not shown. Financial support uses public,
+Stripe-hosted Payment Links for one freely selected one-time amount from EUR 2
+and monthly tiers of EUR 5, EUR 10 or EUR 25. `support-config.js` contains only
+those public Checkout URLs and the public customer-portal URL; Stripe API keys
+must never be placed in `website/`. See `docs/en/STRIPE-SUPPORT.md` for the
+operational contract.
 
 IONOS keeps the authoritative nameservers. Configure these apex records and
 remove the existing IONOS parking `AAAA` records so IPv6 clients cannot bypass
@@ -57,9 +58,9 @@ redirect to `vorrio.app`.
 `impressum.html` / `imprint.html` and `datenschutz.html` / `privacy.html` provide
 the bilingual legal pages. The current static implementation uses no cookies,
 browser storage, analytics, remote fonts or embedded Stripe scripts, so no
-consent banner is present. Stripe is not referenced or described on the public
-website until payments are deliberately activated. The privacy pages identify
-Vercel as the selected host and document international-transfer safeguards.
+consent banner is present. A Stripe connection begins only after the visitor
+opens a payment or portal link. The privacy pages describe Vercel and Stripe and
+document international-transfer safeguards.
 
 ## Design references
 
