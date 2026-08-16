@@ -11,3 +11,9 @@ stopwords = ["YOUR_TOKEN"]
 [[allowlists]]
 description = "The documentation locale lock contains SHA-256 content digests, not credentials."
 paths = ['''^docs/i18n-source-lock\.json$''']
+
+[[allowlists]]
+description = "Stripe support tier identifier is a public configuration key, not a credential."
+targetRules = ["generic-api-key"]
+regexTarget = "secret"
+regexes = ['''^monthly_25_v1$''']

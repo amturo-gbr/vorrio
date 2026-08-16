@@ -6,7 +6,7 @@ on:
       image_tag:
         description: GHCR image tag to install and verify
         required: true
-        default: 0.8.24
+        default: 0.8.26
         type: string
 
 permissions:
