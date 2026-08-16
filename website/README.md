@@ -57,10 +57,10 @@ redirect to `vorrio.app`.
 
 `impressum.html` / `imprint.html` and `datenschutz.html` / `privacy.html` provide
 the bilingual legal pages. Usercentrics manages consent under Settings ID
-`efAFn9iH-1OtnG`. The checked-in loader deliberately uses `data-draft="true"`
-for local and staging acceptance only. Do not deploy this state: publishing the
-CMP and replacing the draft loader with the reviewed production loader must be
-part of the same release change.
+`efAFn9iH-1OtnG`. Usercentrics configuration version `2.0.17` was published
+after local acceptance, and the checked-in pages use the production loader.
+Future CMP changes must be tested with the draft loader locally and published
+before a matching production-loader release is deployed.
 
 Google Analytics 4 uses Measurement ID `G-C1E2XBE47T` with Basic Consent Mode
 v2. Consent defaults are set synchronously before the CMP loads. Both GA scripts
@@ -72,10 +72,10 @@ visitor can change or withdraw consent at any time.
 
 Fonts and website images remain local, and no Stripe script is embedded. A
 Stripe connection begins only after the visitor opens a payment or portal link.
-Before replacing the draft loader, repeat the fresh, reject, accept and withdraw
-flows, derive CSP hosts from the current observed requests, publish the approved
-Usercentrics configuration first, then switch the loader and rerun the release
-checks before deploying.
+For every future consent change, repeat the fresh, reject, accept and withdraw
+flows with `data-draft="true"` only in a local working copy, derive CSP hosts
+from the observed requests, publish the approved Usercentrics configuration,
+then remove the draft attribute and rerun the release checks before deploying.
 
 ## Design references
 

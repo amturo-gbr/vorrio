@@ -81,7 +81,6 @@ def main() -> None:
             'src="consent-default.js"',
             'id="usercentrics-cmp"',
             'src="https://web.cmp.usercentrics.eu/ui/loader.js"',
-            'data-draft="true"',
             'data-settings-id="efAFn9iH-1OtnG"',
             'type="text/plain"',
             'data-usercentrics="Google Analytics 4"',
@@ -92,6 +91,8 @@ def main() -> None:
         for marker in consent_markers:
             if marker not in page_source:
                 failures.append(f"{page.name}: consent marker {marker!r} is missing")
+        if "data-draft=" in page_source:
+            failures.append(f"{page.name}: production release must not use the CMP draft loader")
         if "gMclgpYl0oy_fV" in page_source:
             failures.append(f"{page.name}: Amturo Usercentrics Settings ID must not be reused")
         for target in parser.links:
