@@ -5,6 +5,9 @@
 - CI now rejects application and deployment changes whose changelog or paired
   English/German user documentation was not updated in the same pull request;
   the existing OpenAPI synchronization gate continues to reject API drift.
+- Extended that gate to require a paired German/English homepage update or an
+  explicit, newly added no-impact rationale for public application, deployment
+  and roadmap changes; localized website screenshots must now move in pairs.
 
 ## 0.8.27 – 2026-08-16
 

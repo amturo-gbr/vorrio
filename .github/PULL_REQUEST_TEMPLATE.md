@@ -12,6 +12,8 @@ the coordinating **New language** issue.
 - [ ] Desktop and mobile behavior was checked when the UI changed.
 - [ ] API/OpenAPI documentation is synchronized when the contract changed.
 - [ ] User documentation, architecture notes and `CHANGELOG.md` are updated.
+- [ ] Public website copy is updated in German and English, or `CHANGELOG.md`
+      contains `- Website impact: none — <concrete reason>`.
 - [ ] No credentials, receipts, addresses, LAN hosts or personal paths are included.
 - [ ] Database migration and rollback behavior are documented when applicable.
 

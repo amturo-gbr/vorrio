@@ -39,6 +39,14 @@ Deployment files specifically require installation, configuration or deployment
 profile documentation. A matching, stock, migration or connector change needs
 a regression test.
 
+Public application, deployment and roadmap changes must also make an explicit
+website decision. Update both `website/index.html` and `website/index-en.html`
+when the public product promise changes. If the homepage is genuinely unaffected,
+add a new changelog bullet in the exact form
+`- Website impact: none — <concrete reason>`. The reason must describe the
+unchanged public boundary; a bare "not applicable" is not sufficient. Localized
+website product screenshots are pairs and must be updated together.
+
 The public documentation has paired English and German sources in `docs/en/`
 and `docs/de/`. After changing an English page, update its German counterpart
 with `npm --prefix docs run translate:de:force -- --file=<PAGE>.md`, review the
