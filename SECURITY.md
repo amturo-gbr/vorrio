@@ -136,7 +136,7 @@ not fail the High/Critical release threshold. They remain visible in CI and
 must be reassessed on every base-image update; they are not hidden by this VEX
 statement.
 
-The 0.8.26 image scan reports one Medium CPython finding,
+The 0.8.27 image scan reports one Medium CPython finding,
 [`CVE-2025-15367`](https://github.com/python/cpython/issues/143923), in the
 standard-library `poplib` command API. Vorrio does not import or call `poplib`
 and exposes no POP3 feature. The only scanner-listed fix is currently a Python
@@ -144,17 +144,15 @@ and exposes no POP3 feature. The only scanner-listed fix is currently a Python
 runtime to a pre-release interpreter. Reassess when a stable patched base is
 available or if POP3 support is ever introduced.
 
-The same scan reports two Medium util-linux findings from the current Debian
-stable base: [`CVE-2026-27456`](https://security-tracker.debian.org/tracker/CVE-2026-27456)
+The 0.8.26 image reported two Medium util-linux findings from its Debian base:
+[`CVE-2026-27456`](https://security-tracker.debian.org/tracker/CVE-2026-27456)
 in SUID `mount` loop-device handling and
 [`CVE-2026-13595`](https://security-tracker.debian.org/tracker/CVE-2026-13595)
-in `libblkid` nested-partition probing. The supported container runs as the
-unprivileged `app` user, has no configured user/loop mount in `/etc/fstab`,
-contains neither udev nor udisks and receives no host block devices. Those
-preconditions are therefore absent from the supported deployment. The matches
-remain visible without a VEX suppression and must be removed by a stable Debian
-base update when one becomes available. Reassess immediately if Vorrio ever
-gains device probing, host block-device access or mount administration.
+in `libblkid` nested-partition probing. Although their preconditions were absent
+from the supported non-root container deployment, 0.8.27 installs Debian's
+exact stable security update `2.41.5-0+deb13u1`. The fixed findings are removed
+without a VEX suppression. Reassess immediately if Vorrio ever gains device
+probing, host block-device access or mount administration.
 
 Bandit found no Medium or High issue in the runtime application; its Low
 findings are confined to fixed-argument

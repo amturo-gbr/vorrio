@@ -11,7 +11,7 @@
 SQLite should stay on a local Docker volume. Avoid network filesystems that do
 not provide reliable file locking.
 
-## Docker Compose
+## Docker Compose (recommended)
 
 ```bash
 git clone https://github.com/amturo-gbr/vorrio.git
@@ -23,8 +23,9 @@ openssl rand -hex 32
 Place the generated value in `.env` as `APP_SECRET_KEY`, then start:
 
 ```bash
-docker compose up -d --build
-docker compose ps
+docker compose -f docker-compose.release.yml pull
+docker compose -f docker-compose.release.yml up -d
+docker compose -f docker-compose.release.yml ps
 ```
 
 Open `http://SERVER:9380`, name the first Owner and complete the password setup.
@@ -50,29 +51,21 @@ curl http://SERVER:9380/api/health
 curl http://SERVER:9380/api/readiness
 ```
 
-The GitHub URL becomes available with the first public release. Before that,
-use the source archive supplied by Amturo UG.
-
-### Published GHCR image
-
-After the first public tag exists, a normal household installation can pull
-the signed image without building it locally:
-
-```bash
-cp .env.example .env
-openssl rand -hex 32
-```
-
-Place the generated value in `.env` as `APP_SECRET_KEY`, then start:
-
-```bash
-docker compose -f docker-compose.release.yml pull
-docker compose -f docker-compose.release.yml up -d
-```
-
-`VORRIO_VERSION` selects the versioned tag. Pin an immutable digest for a
-long-lived production installation and verify its signature as described in
+The release Compose file pulls the signed, versioned image from
+`ghcr.io/amturo-gbr/vorrio`. `VORRIO_VERSION` selects its tag. Pin the immutable
+digest shown on the GitHub release page for a long-lived production
+installation and verify its signature as described in
 [Release and upgrade policy](RELEASES.md).
+
+### Build from source
+
+Developers who deliberately want to build the checked-out source instead of
+using the published image can run:
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
 
 ## Portainer
 
@@ -149,6 +142,10 @@ confirmation after reconnection.
 
 Schema migrations run idempotently at startup. Never downgrade against the only
 copy of a migrated database; restore the matching backup instead.
+
+Version 0.8.27 changes no household schema or stored data. It applies Debian's
+stable `util-linux` security update to the runtime image. Recreate the container
+after pulling the new tag; no PWA reinstall or application migration is needed.
 
 Vorrio does not silently replace its own container. Choose a pinned version or
 digest, back up `/data`, pull the new image and recreate the container. When the

@@ -4,7 +4,7 @@
 
 | Variable | Required | Default | Purpose |
 |---|---:|---|---|
-| `VORRIO_VERSION` | release Compose only | `0.8.26` | Versioned GHCR tag selected by `docker-compose.release.yml`. |
+| `VORRIO_VERSION` | release Compose only | `0.8.27` | Versioned GHCR tag selected by `docker-compose.release.yml`. |
 | `APP_SECRET_KEY` | yes | development fallback | Encrypts provider/connector, TOTP, VAPID and push-subscription secrets and signs the cookie carrying a random server-session token. |
 | `APP_PASSWORD` | no | empty | Optional preconfigured household password; empty enables first-run setup. |
 | `DEPLOYMENT_PROFILE` | no | `lan` | Selects `lan`, `private_https` or the guarded `public_https` policy. |
@@ -14,7 +14,8 @@
 | `FORWARDED_ALLOW_IPS` | behind proxy | `127.0.0.1` | Comma-separated proxy IPs/networks allowed to supply `X-Forwarded-*`. Never use `*` on an exposed service. |
 | `SESSION_HTTPS_ONLY` | HTTPS profiles | `false` | Adds the Secure flag to session cookies. |
 | `PUBLIC_EXPOSURE_ACKNOWLEDGED` | public HTTPS | `false` | Explicit final acknowledgement; public application traffic remains HTTP 503 until every other security condition also passes. |
-| `PUBLISHED_ADDRESS` | no | `0.0.0.0` | Host address used for Compose port `9380`; use `127.0.0.1` with a host proxy or a private Docker network without a published app port. |
+| `PUBLISHED_ADDRESS` | no | `0.0.0.0` | Host address used for the Compose port; use `127.0.0.1` with a host proxy or a private Docker network without a published app port. |
+| `VORRIO_PORT` | no | `9380` | Host port used by Docker Compose. Change it when port `9380` is already occupied. |
 | `VORRIO_DATA_VOLUME` | release Compose/Portainer | `vorrio_data` | Named Docker volume used for persistent application data. |
 | `MAX_UPLOAD_MB` | no | `12` | Maximum receipt image or PDF size. |
 | `MAX_REQUEST_MB` | no | `13` | Maximum complete HTTP request including multipart overhead. |

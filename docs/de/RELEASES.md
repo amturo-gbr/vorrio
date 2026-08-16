@@ -50,33 +50,31 @@ Einstellungen und GHCR-Sichtbarkeit werden im beibehalten
   vor dem Anmelden und Veröffentlichen, sodass sich ein Tag nicht nur auf einen vorherigen verlassen kann
   Zweiglauf.
 
-Die private 0.8.23-Probe produzierte ein signiertes Multi-Architektur-Image, SBOM,
-Release-Assets und ein unabhängiger Neuinstallationsnachweis. Keiner davon ist öffentlich
-bis ein autorisierter Amturo-Betreuer die Repository- und Paketsichtbarkeit ändert
-separat nach Passieren des Starttors. Version 0.8.26 ist der nächste Kandidat
-und muss ein eigenes Tag, Bild, SBOM, Signatur und einen Neuinstallationsnachweis erhalten;
-die unveränderlichen 0.8.23 Vermögenswerte werden nicht ersetzt.
+Die private Probe mit Version 0.8.23 erzeugte erstmals ein signiertes
+Multi-Architektur-Image, eine SBOM und einen unabhängigen
+Neuinstallationsnachweis. Öffentliche Releases gibt es seit Version 0.8.26.
+Version 0.8.27 ist der aktuelle Sicherheits- und Wartungskandidat und erhält ein
+eigenes Tag, Image, eine eigene SBOM, Signatur und Neuinstallationsprüfung.
+Unveränderliche ältere Artefakte werden niemals ersetzt.
 
-## Private Veröffentlichungsprobe
+## Veröffentlichungsprobe
 
-Das erste Repository und das GHCR-Paket bleiben privat. CI läuft mit dem gleichen
-Der für das öffentliche Projekt verwendete Workflow wird von einem authentifizierten Betreuer abgerufen
-versioniertes Image auf einen zweiten Computer mit einem neuen Volume. Erst nach dem
-Quellprüfung, Neuinstallation, Upgrade-/Wiederherstellungsprüfungen und signiertes Image
-Bei der Überprüfung werden Repository- und Paketsichtbarkeit separat geändert
-öffentlich. Private Haushaltsdaten und die bereitgestellte Haushaltsdatenbank sind niemals vorhanden
-Teil dieser Probe.
+Jeder Kandidat durchläuft denselben öffentlichen CI-Workflow. Ein Betreuer
+installiert das versionierte Image mit einem frischen Volume und wiederholt
+Quellcode-, Neuinstallations-, Upgrade-/Wiederherstellungs- und
+Signaturprüfungen vor der Ankündigung. Private Haushaltsdaten und die produktive
+Haushaltsdatenbank sind niemals Teil dieser Probe.
 
-## Überprüfen Sie ein zukünftiges öffentliches Bild
+## Ein veröffentlichtes Image prüfen
 
-Ersetzen Sie den Beispielbesitzer/das Repository und die Version durch die veröffentlichten Werte:
+Verwende den veröffentlichten Eigentümer, das Repository und die Version:
 
 ```bash
-docker pull ghcr.io/amturo-gbr/vorrio:0.8.26
+docker pull ghcr.io/amturo-gbr/vorrio:0.8.27
 cosign verify \
   --certificate-identity-regexp '^https://github.com/amturo-gbr/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo-gbr/vorrio:0.8.26
+  ghcr.io/amturo-gbr/vorrio:0.8.27
 ```
 
 Heften Sie Produktionsbereitstellungen einer Version oder einem Digest zu. `latest` ist praktisch für

@@ -274,7 +274,7 @@ app = FastAPI(
         "The versioned API used by the Vorrio PWA and external household tools. "
         "All stock-changing operations require an authenticated household session."
     ),
-    version="0.8.26",
+    version="0.8.27",
     lifespan=lifespan,
     contact={"name": "Amturo UG"},
     license_info={
@@ -412,23 +412,23 @@ API_TOKEN_SCOPES = {
 
 CURRENT_RELEASE = {
     "de": {
-        "version": "0.8.26",
-        "title": "Scan-Aktionen verständlich erklärt",
-        "summary": "Eine kompakte Hilfe erklärt jetzt alle fünf Scan-Aktionen, ohne die schnelle Bedienung zu stören.",
+        "version": "0.8.27",
+        "title": "Sicherheitsupdate für das Container-Image",
+        "summary": "Vorrio aktualisiert seine Debian-Laufzeit, ohne Haushaltsdaten oder Bedienabläufe zu verändern.",
         "highlights": [
-            "Alle fünf Aktionen sind gemeinsam und in einfacher Sprache erklärt",
-            "Auf dem Handy öffnet sich eine übersichtliche Hilfe von unten",
-            "Die ausgewählte Aktion und der Bestätigungsablauf bleiben unverändert",
+            "Debians stabiles util-linux-Sicherheitsupdate ist enthalten",
+            "Haushalt, Katalog, Vorrat und Anmeldungen bleiben unverändert",
+            "Keine Datenmigration und keine Neuinstallation der PWA erforderlich",
         ],
     },
     "en": {
-        "version": "0.8.26",
-        "title": "Scan actions explained clearly",
-        "summary": "Compact help now explains all five scan actions without interrupting the fast workflow.",
+        "version": "0.8.27",
+        "title": "Container image security update",
+        "summary": "Vorrio updates its Debian runtime without changing household data or everyday workflows.",
         "highlights": [
-            "All five actions are explained together in plain language",
-            "Phones show the overview in a clear bottom sheet",
-            "The selected action and confirmation flow remain unchanged",
+            "Includes Debian's stable util-linux security update",
+            "Household, catalog, stock and sign-in data remain unchanged",
+            "No data migration or PWA reinstall is required",
         ],
     },
 }

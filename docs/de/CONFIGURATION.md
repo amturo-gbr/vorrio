@@ -4,7 +4,7 @@
 
 | Variable | Erforderlich | Standard | Zweck |
 |---|---:|---|---|
-| `VORRIO_VERSION` | nur Verfassen freigeben | `0.8.26` | Versioniertes GHCR-Tag, ausgewählt von `docker-compose.release.yml`. |
+| `VORRIO_VERSION` | nur Verfassen freigeben | `0.8.27` | Versioniertes GHCR-Tag, ausgewählt von `docker-compose.release.yml`. |
 | `APP_SECRET_KEY` | ja | Entwicklungs-Fallback | Verschlüsselt Anbieter-/Connector-, TOTP-, VAPID- und Push-Abonnement-Geheimnisse und signiert das Cookie mit einem zufälligen Serversitzungstoken. |
 | `APP_PASSWORD` | nein | leer | Optional vorkonfiguriertes Haushaltspasswort; empty ermöglicht die erstmalige Einrichtung. |
 | `DEPLOYMENT_PROFILE` | nein | `lan` | Wählt `lan`, `private_https` oder die geschützte `public_https`-Richtlinie aus. |
@@ -14,7 +14,8 @@
 | `FORWARDED_ALLOW_IPS` | hinter Proxy | `127.0.0.1` | Durch Kommas getrennte Proxy-IPs/Netzwerke dürfen `X-Forwarded-*` bereitstellen. Verwenden Sie `*` niemals für einen exponierten Dienst. |
 | `SESSION_HTTPS_ONLY` | HTTPS-Profile | `false` | Fügt Sitzungscookies das Secure-Flag hinzu. |
 | `PUBLIC_EXPOSURE_ACKNOWLEDGED` | öffentliches HTTPS | `false` | Ausdrückliche abschließende Anerkennung; Der öffentliche Anwendungsverkehr bleibt HTTP 503, bis auch alle anderen Sicherheitsbedingungen erfüllt sind. |
-| `PUBLISHED_ADDRESS` | nein | `0.0.0.0` | Für den Compose-Port verwendete Hostadresse `9380`; Verwenden Sie `127.0.0.1` mit einem Host-Proxy oder einem privaten Docker-Netzwerk ohne veröffentlichten App-Port. |
+| `PUBLISHED_ADDRESS` | nein | `0.0.0.0` | Für den Compose-Port verwendete Hostadresse; nutze `127.0.0.1` mit einem Host-Proxy oder einem privaten Docker-Netzwerk ohne veröffentlichten App-Port. |
+| `VORRIO_PORT` | nein | `9380` | Von Docker Compose verwendeter Host-Port. Ändere ihn, wenn Port `9380` bereits belegt ist. |
 | `VORRIO_DATA_VOLUME` | Veröffentlichung Compose/Portainer | `vorrio_data` | Benanntes Docker-Volume, das für persistente Anwendungsdaten verwendet wird. |
 | `MAX_UPLOAD_MB` | nein | `12` | Maximale Quittungsbild- oder PDF-Größe. |
 | `MAX_REQUEST_MB` | nein | `13` | Maximal vollständige HTTP-Anfrage inklusive mehrteiligem Overhead. |
