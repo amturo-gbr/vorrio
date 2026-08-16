@@ -74,13 +74,12 @@ necessary but does not by itself publish a repository or container.
 ## 4. First GHCR publication
 
 - [ ] Push `main` and wait for the CI workflow to pass.
-- [ ] Create and push the versioned release tag `v0.8.26` only after CI passes and
+- [ ] Create and push the versioned release tag `v0.8.27` only after CI passes and
   the private release rehearsal is ready for its immutable candidate.
 - [ ] Confirm that the release workflow builds `linux/amd64` and `linux/arm64`,
   publishes provenance/SBOM attestations and signs the immutable digest.
-- [ ] Keep the first GHCR package private for the second-machine rehearsal;
-  then change its visibility to public and link it to the public
-  repository if GitHub did not inherit those settings automatically.
+- [ ] Confirm that the GHCR package is public, linked to the public repository
+  and anonymously pullable after the isolated rehearsal passes.
 - [ ] Pull the versioned image on a second machine and complete first setup with
   a fresh volume.
 - [ ] Verify the signature and health/readiness endpoints using the commands in

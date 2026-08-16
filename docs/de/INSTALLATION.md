@@ -6,12 +6,13 @@
 - Docker Compose v2;
 - 1 CPU-Kern und 512 MB RAM für die Anwendung;
 - persistenter lokaler Speicher für `/data`;
-- ein Analyseanbieter, es sei denn, es wird ein lokales Ollama-kompatibles Modell verwendet.
+- ein Analyseanbieter für die automatische Bonerkennung oder alternativ ein
+  lokales Ollama-kompatibles Modell.
 
-SQLite sollte auf einem lokalen Docker-Volume bleiben. Vermeiden Sie Netzwerkdateisysteme, die dies tun
-bietet keine zuverlässige Dateisperre.
+SQLite sollte auf einem lokalen Docker-Volume bleiben. Vermeide
+Netzwerkdateisysteme ohne zuverlässige Dateisperren.
 
-## Docker Compose
+## Docker Compose (empfohlen)
 
 ```bash
 git clone https://github.com/amturo-gbr/vorrio.git
@@ -20,20 +21,20 @@ cp .env.example .env
 openssl rand -hex 32
 ```
 
-Platzieren Sie den generierten Wert in `.env` als `APP_SECRET_KEY` und starten Sie dann:
+Trage den generierten Wert in `.env` als `APP_SECRET_KEY` ein und starte Vorrio:
 
 ```bash
-docker compose up -d --build
-docker compose ps
+docker compose -f docker-compose.release.yml pull
+docker compose -f docker-compose.release.yml up -d
+docker compose -f docker-compose.release.yml ps
 ```
 
-Öffnen Sie `http://SERVER:9380`, benennen Sie den ersten Besitzer und schließen Sie die Passworteinrichtung ab.
-Der Setup-Bildschirm folgt den deutschen oder englischen Browsereinstellungen und speichert die
-ausgewählte Schnittstellensprache für diesen Besitzer. Es kann später pro Benutzer geändert werden
-ohne den Container umzubauen.
+Öffne `http://SERVER:9380`, benenne den ersten Eigentümer und lege das
+Haushaltspasswort fest. Die Einrichtung folgt zunächst der Browsersprache. Jeder
+Benutzer kann seine Sprache später ändern, ohne den Container neu zu bauen.
 
-Ersetzen Sie bei einer LAN-Installation den Platzhalter durch die genauen verwendeten Namen oder IPs
-von Browsern, wann immer möglich:
+Ersetze bei einer LAN-Installation den Platzhalter möglichst durch die genauen
+Hostnamen oder IP-Adressen, über die Vorrio geöffnet wird:
 
 ```env
 DEPLOYMENT_PROFILE=lan
@@ -42,37 +43,29 @@ FORWARDED_ALLOW_IPS=127.0.0.1
 SESSION_HTTPS_ONLY=false
 ```
 
-Die Dokumentationsadresse ist reserviert und muss durch die echte lokale ersetzt werden
-Adresse. Überprüfen Sie sowohl die Lebendigkeit als auch die Bereitstellungsbereitschaft:
+Die Beispieladresse ist reserviert und muss durch deine tatsächliche lokale
+Adresse ersetzt werden. Prüfe danach Erreichbarkeit und Betriebsbereitschaft:
 
 ```bash
 curl http://SERVER:9380/api/health
 curl http://SERVER:9380/api/readiness
 ```
 
-Die GitHub-URL wird mit der ersten öffentlichen Veröffentlichung verfügbar. Vorher,
-Nutzen Sie das von der Amturo UG bereitgestellte Quellarchiv.
+Die Release-Compose-Datei lädt das signierte, versionierte Image von
+`ghcr.io/amturo-gbr/vorrio`. Über `VORRIO_VERSION` wählst du den Tag aus. Für
+eine langfristige Installation kannst du zusätzlich den unveränderlichen
+Digest der GitHub-Veröffentlichung fest eintragen und die Signatur wie unter
+[Veröffentlichungen und Updates](RELEASES.md) beschrieben prüfen.
 
-### Veröffentlichtes GHCR-Bild
+### Aus dem Quellcode bauen
 
-Nachdem das erste öffentliche Tag existiert, kann eine normale Haushaltsinstallation ziehen
-das signierte Bild, ohne es lokal zu erstellen:
-
-```bash
-cp .env.example .env
-openssl rand -hex 32
-```
-
-Platzieren Sie den generierten Wert in `.env` als `APP_SECRET_KEY` und starten Sie dann:
+Entwickler, die bewusst den ausgecheckten Quellcode statt des veröffentlichten
+Images bauen möchten, verwenden:
 
 ```bash
-docker compose -f docker-compose.release.yml pull
-docker compose -f docker-compose.release.yml up -d
+docker compose up -d --build
+docker compose ps
 ```
-
-`VORRIO_VERSION` wählt das versionierte Tag aus. Pinne einen unveränderlichen Digest für a
-langlebige Produktionsinstallation und überprüfen Sie deren Signatur wie in beschrieben
-[Veröffentlichungs- und Upgrade-Richtlinie](RELEASES.md).
 
 ## Portainer
 
@@ -149,6 +142,11 @@ Bestätigung nach erneuter Verbindung.
 
 Schemamigrationen werden beim Start idempotent ausgeführt. Niemals gegen den einzigen herabstufen
 Kopie einer migrierten Datenbank; Stellen Sie stattdessen das passende Backup wieder her.
+
+Version 0.8.27 ändert weder das Haushaltsschema noch gespeicherte Daten. Sie
+installiert Debians stabiles `util-linux`-Sicherheitsupdate im Runtime-Image.
+Nach dem Pull muss nur der Container neu erstellt werden; eine PWA-Neuinstallation
+oder Anwendungsmigration ist nicht erforderlich.
 
 Vorrio ersetzt nicht stillschweigend seinen eigenen Container. Wählen Sie eine angeheftete Version oder
 Digest, sichern Sie `/data`, ziehen Sie das neue Image und erstellen Sie den Container neu. Wenn die

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.8.27 – 2026-08-16
+
+- Updated the digest-pinned Python runtime base and installed Debian's exact
+  `util-linux` security update `2.41.5-0+deb13u1`, removing the fixed Medium
+  container findings without suppressing them through VEX.
+- Repeated the complete public-source security suite and a clean installation
+  from the anonymous GHCR image before publishing the maintenance release.
 - Restored the full-history CI secret scan after the public Stripe support-tier
   identifier triggered the generic API-key detector, using an exact-value
   allowlist that cannot conceal real Stripe credentials.

@@ -799,17 +799,17 @@ class AppFlowTests(unittest.TestCase):
             self.assertFalse(completed.json()["release_notes_pending"])
             self.assertEqual(completed.json()["last_acknowledged_version"], app.version)
 
-            with patch.object(app, "version", "0.8.27"):
+            with patch.object(app, "version", "0.8.28"):
                 upgraded = client.get("/api/v1/experience")
                 self.assertTrue(upgraded.json()["release_notes_pending"])
-                self.assertEqual(upgraded.json()["release"]["version"], "0.8.27")
+                self.assertEqual(upgraded.json()["release"]["version"], "0.8.28")
                 acknowledged = client.put(
                     "/api/v1/experience",
                     json={"acknowledge_current_version": True},
                 )
                 self.assertFalse(acknowledged.json()["release_notes_pending"])
                 self.assertEqual(
-                    acknowledged.json()["last_acknowledged_version"], "0.8.27"
+                    acknowledged.json()["last_acknowledged_version"], "0.8.28"
                 )
 
             with database.connect() as conn:
@@ -817,7 +817,7 @@ class AppFlowTests(unittest.TestCase):
                     "SELECT onboarding_completed_at, last_acknowledged_version FROM user_experience"
                 ).fetchone()
                 self.assertIsNotNone(exported_experience["onboarding_completed_at"])
-                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.27")
+                self.assertEqual(exported_experience["last_acknowledged_version"], "0.8.28")
                 actions = {
                     row[0]
                     for row in conn.execute(
@@ -854,7 +854,7 @@ class AppFlowTests(unittest.TestCase):
             )
             self.assertEqual(
                 client.get("/api/v1/experience").json()["release"]["title"],
-                "Scan actions explained clearly",
+                "Container image security update",
             )
             scopes = client.get("/api/v1/auth/api-token-scopes")
             self.assertEqual(scopes.status_code, 200)
@@ -875,7 +875,7 @@ class AppFlowTests(unittest.TestCase):
             )
             self.assertEqual(
                 client.get("/api/v1/experience").json()["release"]["title"],
-                "Scan-Aktionen verständlich erklärt",
+                "Sicherheitsupdate für das Container-Image",
             )
             self.assertEqual(
                 client.patch(
@@ -1984,7 +1984,7 @@ class AppFlowTests(unittest.TestCase):
     def test_openapi_contract_is_versioned_and_scoped_token_authenticated(self) -> None:
         schema = app.openapi()
         self.assertEqual(schema["openapi"], "3.1.0")
-        self.assertEqual(schema["info"]["version"], "0.8.26")
+        self.assertEqual(schema["info"]["version"], "0.8.27")
         self.assertIn("/api/v1/privacy/export", schema["paths"])
         self.assertIn("/api/v1/operations/overview", schema["paths"])
         self.assertIn("/api/v1/catalog/products", schema["paths"])

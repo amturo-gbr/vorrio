@@ -9,7 +9,7 @@ optional migration and export adapter, but Vorrio remains the source of truth.
 The project is maintained by **Amturo UG** and licensed under
 `AGPL-3.0-or-later`.
 
-## What works in 0.8.26
+## What works in 0.8.27
 
 - installable React PWA with a compact phone layout and a wide desktop
   workspace with persistent sidebar navigation;
@@ -107,6 +107,8 @@ creates a missing location, unit or group invisibly.
 Requirements: Docker Engine with Compose v2.
 
 ```bash
+git clone https://github.com/amturo-gbr/vorrio.git
+cd vorrio
 cp .env.example .env
 openssl rand -hex 32
 ```
@@ -114,7 +116,9 @@ openssl rand -hex 32
 Store the generated value as `APP_SECRET_KEY` in `.env`, then start Vorrio:
 
 ```bash
-docker compose up -d --build
+docker compose -f docker-compose.release.yml pull
+docker compose -f docker-compose.release.yml up -d
+docker compose -f docker-compose.release.yml ps
 ```
 
 Open `http://localhost:9380`, name the first Owner, create the household password, configure an
@@ -129,9 +133,11 @@ Vorrio opens a short product guide after each account's first login. After a
 container upgrade, each user sees the installed release highlights once; both
 surfaces remain available under **Einstellungen → Hilfe & Version**.
 
-After the first signed public image exists, `docker-compose.release.yml` pulls
-`ghcr.io/amturo-gbr/vorrio` instead of building locally. Portainer users can paste
-`stack.yml`; both release templates keep data in a named Docker volume.
+`docker-compose.release.yml` pulls the signed, versioned
+`ghcr.io/amturo-gbr/vorrio` image instead of compiling the application locally.
+Developers who deliberately want a source build can use
+`docker compose up -d --build`. Portainer users can paste `stack.yml`; both
+release templates keep data in a named Docker volume.
 
 Never commit `.env`. The Compose templates stop with a clear error while
 `APP_SECRET_KEY` is empty, and the readiness check rejects documented example

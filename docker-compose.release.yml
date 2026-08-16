@@ -2,8 +2,7 @@ name: vorrio
 
 services:
   app:
-    image: ghcr.io/amturo-gbr/vorrio:${VORRIO_VERSION:-0.8.26}
-    container_name: vorrio
+    image: ghcr.io/amturo-gbr/vorrio:${VORRIO_VERSION:-0.8.27}
     environment:
       APP_PASSWORD: ${APP_PASSWORD:-}
       APP_SECRET_KEY: ${APP_SECRET_KEY:?Set APP_SECRET_KEY to the output of openssl rand -hex 32}
@@ -26,7 +25,7 @@ services:
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
-      - "${PUBLISHED_ADDRESS:-0.0.0.0}:9380:8080"
+      - "${PUBLISHED_ADDRESS:-0.0.0.0}:${VORRIO_PORT:-9380}:8080"
     volumes:
       - vorrio_data:/data
     restart: unless-stopped

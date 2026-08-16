@@ -74,13 +74,12 @@ erforderlich, veröffentlicht jedoch selbst kein Repository oder Container.
 ## 4. Erste GHCR-Veröffentlichung
 
 - [ ] Drücken Sie `main` und warten Sie, bis der CI-Workflow abgeschlossen ist.
-- [ ] Erstellen und pushen Sie das versionierte Release-Tag `v0.8.26` erst, nachdem CI bestanden hat und
+- [ ] Erstellen und pushen Sie das versionierte Release-Tag `v0.8.27` erst, nachdem CI bestanden hat und
   Die private Veröffentlichungsprobe ist bereit für ihren unveränderlichen Kandidaten.
 - [ ] Bestätigen Sie, dass der Release-Workflow `linux/amd64` und `linux/arm64` erstellt.
   veröffentlicht Provenienz-/SBOM-Bescheinigungen und unterzeichnet den unveränderlichen Digest.
-- [ ] Halten Sie das erste GHCR-Paket für die zweite Maschinenprobe privat;
-  Ändern Sie dann die Sichtbarkeit auf „Öffentlich“ und verknüpfen Sie es mit der Öffentlichkeit
-  Repository, wenn GitHub diese Einstellungen nicht automatisch geerbt hat.
+- [ ] Bestätige nach bestandener isolierter Probe, dass das GHCR-Paket
+  öffentlich, mit dem Repository verknüpft und anonym abrufbar ist.
 - [ ] Ziehen Sie das versionierte Image auf einen zweiten Computer und schließen Sie die erste Einrichtung mit ab
   ein frisches Volumen.
 - [ ] Überprüfen Sie die Signatur und die Integritäts-/Bereitschaftsendpunkte mit den Befehlen in

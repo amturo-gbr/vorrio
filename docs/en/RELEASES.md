@@ -50,33 +50,29 @@ settings and GHCR visibility, is maintained in the
   before logging in and publishing, so a tag cannot rely only on a previous
   branch run.
 
-The private 0.8.23 rehearsal produced a signed multi-architecture image, SBOM,
-release assets and an independent fresh-install proof. None of them are public
-until an authorized Amturo maintainer changes repository and package visibility
-separately after the launch gate passes. Version 0.8.26 is the next candidate
-and must receive its own tag, image, SBOM, signature and fresh-install proof;
-the immutable 0.8.23 assets are not replaced.
+The private 0.8.23 rehearsal produced the first signed multi-architecture image,
+SBOM and independent fresh-install proof. Public releases started with 0.8.26.
+Version 0.8.27 is the current security-maintenance candidate and receives its
+own tag, image, SBOM, signature and fresh-install proof; immutable earlier
+assets are never replaced.
 
-## Private release rehearsal
+## Release rehearsal
 
-The first repository and GHCR package stay private. CI runs with the same
-workflow used for the public project, and an authenticated maintainer pulls the
-versioned image onto a second machine with a fresh volume. Only after the
-source audit, clean installation, upgrade/recovery checks and signed-image
-verification pass are repository and package visibility changed separately to
-public. Private household data and the deployed household database are never
-part of this rehearsal.
+Every candidate runs through the same public CI workflow. A maintainer installs
+the versioned image with a fresh volume, then repeats source, clean-install,
+upgrade/recovery and signature checks before announcing it. Private household
+data and the deployed household database are never part of this rehearsal.
 
-## Verify a future public image
+## Verify a published image
 
-Replace the example owner/repository and version with the published values:
+Use the published owner, repository and version:
 
 ```bash
-docker pull ghcr.io/amturo-gbr/vorrio:0.8.26
+docker pull ghcr.io/amturo-gbr/vorrio:0.8.27
 cosign verify \
   --certificate-identity-regexp '^https://github.com/amturo-gbr/vorrio/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  ghcr.io/amturo-gbr/vorrio:0.8.26
+  ghcr.io/amturo-gbr/vorrio:0.8.27
 ```
 
 Pin production deployments to a version or digest. `latest` is convenient for
