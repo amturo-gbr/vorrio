@@ -19,9 +19,11 @@ support policy is published.
 The 0.8.22 pre-publication review covered every reachable Git commit, all
 tracked and unignored release files, the built runtime image, the attached
 CycloneDX SBOM and immutable-digest asset. It found no credential, private
-installation path or household data. The two scanner matches were the literal
-`YOUR_TOKEN` examples in the automation guide; only that exact documentation
-placeholder is allowlisted.
+installation path or household data. The original two scanner matches were the
+literal `YOUR_TOKEN` examples in the automation guide. The current scanner also
+recognizes `monthly_25_v1` as the exact public Stripe support-tier identifier,
+not as a credential. Both exceptions are narrowly scoped; neither can suppress
+a real provider key.
 
 `make check` now scans the complete Git history with a digest-pinned Gitleaks
 CLI image. The release-package contract independently blocks environment files,
@@ -32,8 +34,9 @@ frontend repository metadata and OpenAPI contact. GitHub Actions checkouts use
 full history so a secret in an earlier commit cannot be hidden by a shallow
 clone.
 
-The 0.8.26 pre-publication audit on 15 August 2026 repeated the full-history
-and exact working-tree scans and reviewed all 256 publishable files. It found no
+The final 0.8.26 pre-publication audit on 16 August 2026 repeated the
+full-history and exact working-tree scans and reviewed all 324 publishable
+files. It found no
 household LAN address, private installation hostname, personal workstation
 path, database, receipt, cookie or provider credential. The explicitly checked
 Cloudflare, R2 and Uptime credential forms were absent from every reachable
@@ -139,8 +142,22 @@ standard-library `poplib` command API. Vorrio does not import or call `poplib`
 and exposes no POP3 feature. The only scanner-listed fix is currently a Python
 3.15 alpha build, so the finding remains visible rather than moving the stable
 runtime to a pre-release interpreter. Reassess when a stable patched base is
-available or if POP3 support is ever introduced. Bandit found no Medium or High
-issue in the runtime application; its Low findings are confined to fixed-argument
+available or if POP3 support is ever introduced.
+
+The same scan reports two Medium util-linux findings from the current Debian
+stable base: [`CVE-2026-27456`](https://security-tracker.debian.org/tracker/CVE-2026-27456)
+in SUID `mount` loop-device handling and
+[`CVE-2026-13595`](https://security-tracker.debian.org/tracker/CVE-2026-13595)
+in `libblkid` nested-partition probing. The supported container runs as the
+unprivileged `app` user, has no configured user/loop mount in `/etc/fstab`,
+contains neither udev nor udisks and receives no host block devices. Those
+preconditions are therefore absent from the supported deployment. The matches
+remain visible without a VEX suppression and must be removed by a stable Debian
+base update when one becomes available. Reassess immediately if Vorrio ever
+gains device probing, host block-device access or mount administration.
+
+Bandit found no Medium or High issue in the runtime application; its Low
+findings are confined to fixed-argument
 release tooling, test assertions and explicitly synthetic smoke-test passwords.
 The production npm audit reports zero findings. `npm ci` does emit an upstream
 deprecation notice because the current `vite-plugin-pwa`/`workbox-build` chain

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Restored the full-history CI secret scan after the public Stripe support-tier
+  identifier triggered the generic API-key detector, using an exact-value
+  allowlist that cannot conceal real Stripe credentials.
 - Passed the website CSP nonce to Usercentrics so the production consent banner
   renders its Shadow DOM styles without allowing unrestricted inline CSS.
 - Added consent-controlled GA4 to the bilingual public website with the
