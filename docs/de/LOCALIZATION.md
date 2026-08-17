@@ -31,7 +31,7 @@ Nicht verfügbar für Automatisierungs-Bearer-Token.
   nicht gefundene Nachrichten;
 - Zahlen, Daten und EUR-Anzeige über das aktive Browser-Gebietsschema;
 - API-Token-Bereichsbeschreibungen und vom Server generierte Web-Push-Benachrichtigungen;
-- Deutsche und englische PWA-Manifeste und die unabhängige statische Projektwebsite.
+- Deutsche und englische PWA-Manifeste.
 
 Produktnamen, Marken, Quittungs-/OCR-Text, Geschäftsnamen und vom Benutzer eingegebene Stammdaten
 Die Daten sind Haushaltsinhalte und werden niemals übersetzt. Vorrio auch nicht
@@ -127,7 +127,7 @@ Datei. Ein Beitrag muss zusammen aktualisiert werden:
 1. Frontend- und Backend-Typen `SupportedLocale` plus Gebietsschemaerkennung;
 2. ein vollständig überprüftes Manifest und ein Übersetzungskatalog;
 3. länderspezifische Serverkopie für Versionshinweise, Token-Bereiche und Push;
-4. ein lokalisiertes PWA-Manifest und ein öffentlicher Website-Einstiegspunkt;
+4. ein lokalisiertes PWA-Manifest;
 5. Einrichtungs-, Einladungs-, Präferenz-, Formatierungs- und Benachrichtigungstests;
 6. der Sprachpaket-Validator, dieses Dokument, OpenAPI, Änderungsprotokoll und Release
    Notizen.

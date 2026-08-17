@@ -17,15 +17,24 @@ class ReleasePackageSecurityTests(unittest.TestCase):
             "data/app.sqlite3",
             ".playwright-cli/page.png",
             "frontend/dist/index.html",
-            "website/.vercel/output/config.json",
+            "website/index.html",
         ):
             with self.subTest(value=value):
                 self.assertIsNotNone(forbidden_path_reason(Path(value)))
 
         self.assertIsNone(forbidden_path_reason(Path("docs/en/INSTALLATION.md")))
-        self.assertIsNone(forbidden_path_reason(Path("website/assets/vorrio-icon.png")))
+        self.assertIsNotNone(forbidden_path_reason(Path("website/assets/vorrio-icon.png")))
         self.assertIsNone(forbidden_path_reason(Path(".env.example")))
-        self.assertIsNone(forbidden_path_reason(Path(".env.stripe.live.example")))
+        self.assertIsNotNone(forbidden_path_reason(Path(".env.stripe.live.example")))
+
+    def test_private_operations_files_are_rejected(self) -> None:
+        for name in (
+            "docs/en/STRIPE-SUPPORT.md",
+            "docs/design/website-hero-concept.png",
+            "scripts/setup_stripe_support.mjs",
+        ):
+            with self.subTest(name=name):
+                self.assertIsNotNone(forbidden_path_reason(Path(name)))
 
     def test_private_network_and_cloudflare_account_endpoints_are_rejected(self) -> None:
         private_address = ".".join(("192", "168", "1", "209"))

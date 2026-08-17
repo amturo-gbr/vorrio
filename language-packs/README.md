@@ -72,7 +72,7 @@ selectable.
 1. Add `frontend/src/locales/<locale>/manifest.json` and `translation.json`.
 2. Register the lazy catalog import in `frontend/src/locales/registry.ts`.
 3. Extend backend locale types and every locale-aware server message.
-4. Add a localized PWA manifest and website entry point.
+4. Add a localized PWA manifest.
 5. Run `python3 scripts/validate_language_pack.py`, `npm test --prefix frontend`
    and `make check`.
 6. Obtain a fluent review of onboarding, authentication, security, deletion,

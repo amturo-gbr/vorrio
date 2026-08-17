@@ -26,7 +26,6 @@ ALLOWED_CAPABILITIES = {
     "backend",
     "notifications",
     "pwa_manifest",
-    "website",
 }
 REQUIRED_MANIFEST_FIELDS = {
     "$schema",

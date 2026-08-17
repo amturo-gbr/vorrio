@@ -43,7 +43,7 @@
       "uniqueItems": true,
       "minItems": 1,
       "items": {
-        "enum": ["frontend", "backend", "notifications", "pwa_manifest", "website"]
+        "enum": ["frontend", "backend", "notifications", "pwa_manifest"]
       }
     }
   }

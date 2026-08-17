@@ -8,8 +8,6 @@ Required before completion:
 - update user documentation, architecture notes and the changelog;
 - update request/response models, endpoint summaries and examples in the
   versioned REST API;
-- update both public website languages when the product promise changes, or add
-  `- Website impact: none — <concrete reason>` to the changelog;
 - regenerate `docs/api/openapi.json` and `docs/en/API.md`;
 - run `make check`, including the documentation synchronization check;
 - never expose private installation data, credentials, local addresses or

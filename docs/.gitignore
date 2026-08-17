@@ -4,5 +4,5 @@ node_modules/
 public/openapi.json
 public/brand/
 public/vorrio-icon.png
-public/vorrio-social-card-en.png
+public/vorrio-social-card.png
 .vercel

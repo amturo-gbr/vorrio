@@ -251,7 +251,7 @@ public release.
 - personal persisted language selection across setup, invitations and devices;
 - localized number/date/EUR formatting plus explicit preservation of household
   product, receipt, currency and timezone data;
-- German and English manifests and project website entry points;
+- German and English manifests;
 - automated translation coverage, suspicious-copy and localized backend tests.
 - full-history secret scanning in CI and tag releases with a digest-pinned
   scanner plus a narrowly scoped documentation-placeholder allowlist;

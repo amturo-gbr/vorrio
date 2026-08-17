@@ -58,18 +58,11 @@ erforderlich, veröffentlicht jedoch selbst kein Repository oder Container.
 - [ ] Übersetzungs-Workflow-Labels (`language:requested`, `language:in-progress`,
   `language:needs-review`, `language:verified`, `language:official`) existieren und
   Der Community-Leitfaden ist über die README-Datei und die Beitragsdokumentation verlinkt.
-- [ ] Die statische Projektwebsite wird auf dem Desktop mit 1440 Pixeln und auf Mobilgeräten mit 390 Pixeln gerendert.
-  Alle veröffentlichten Links funktionieren anonym und jeder Screenshot verwendet synthetische Daten.
 - [ ] Deutsch und Englisch vervollständigen das gleiche Abmelden, Onboarding, Empfang,
   Scanner, Katalog, Einkaufen, Einstellungen, Fehler und mobile Layout-Reise; die
   Der automatisierte i18n-Vertrag meldet keine fehlende oder umgangene Kopie.
 - [ ] Offizielle Sprachmanifeste und der Nur-Daten-Paketvalidierungspass; NEIN
   Die Laufzeit-Community-Paketquelle wird vor der Signaturüberprüfung aktiviert.
-- [ ] Das gesetzlich genehmigte Impressum und die Datenschutzerklärung von Amturo sind vorhanden
-  über den eingesetzten Ursprung vor der öffentlichen Ankündigung.
-- [ ] `vorrio.app` wird als kanonische Vercel-Domäne verifiziert, `vorrio.de`
-  gibt eine permanente Umleitung mit demselben Pfad zu `.app` und beiden HTTPS-Zertifikaten zurück
-  gelten auch nach der IONOS DNS-Änderung.
 
 ## 4. Erste GHCR-Veröffentlichung
 
@@ -103,9 +96,6 @@ erforderlich, veröffentlicht jedoch selbst kein Repository oder Container.
 - [ ] Erfassen Sie den freigegebenen Digest, den CI-Lauf und das SBOM-Artefakt in den Versionshinweisen.
 - [ ] Ankündigung erst nach der Installation, Signaturprüfung und Erstanmeldung
   Die Genesung ist alle vorbei.
-- [ ] Aktivieren Sie die Stripe-Zahlungslinks der Website erst nach dem Amturo-Geschäft
-  Konto, Live-Links, Datenschutzbestimmungen, Mehrwertsteuerbehandlung und Buchhaltungsprozess
-  sind genehmigt; Halten Sie GitHub-Sponsoren verborgen.
 
 Der Betreuer überprüft jedes Kästchen anhand öffentlicher oder synthetischer Daten. Ein Privatmann
 Die Haushaltsinstallation dient niemals als Freigabebeweis und bedarf keiner solchen

@@ -31,7 +31,7 @@ not available to automation bearer tokens.
   not-found messages;
 - numbers, dates and EUR display through the active browser locale;
 - API-token scope descriptions and server-generated Web Push notifications;
-- German and English PWA manifests and the independent static project website.
+- German and English PWA manifests.
 
 Product names, brands, receipt/OCR text, store names and user-entered master
 data are household content and are never translated. Vorrio also does not
@@ -127,7 +127,7 @@ file. A contribution must update, together:
 1. frontend and backend `SupportedLocale` types plus locale detection;
 2. a complete reviewed manifest and translation catalog;
 3. locale-aware server copy for release notes, token scopes and Push;
-4. a localized PWA manifest and public website entry point;
+4. a localized PWA manifest;
 5. setup, invitation, preference, formatting and notification tests;
 6. the language-pack validator, this document, OpenAPI, changelog and release
    notes.

@@ -225,7 +225,6 @@
 - store language per account and apply it to release notes, scope descriptions
   and Web Push notifications;
 - localize formatting and install metadata without rewriting household data;
-- ship a bilingual project website and enforce translation completeness in CI.
 
 ## 0.8.23 – modular language foundation
 
