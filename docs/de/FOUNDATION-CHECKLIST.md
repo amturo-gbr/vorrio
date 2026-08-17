@@ -251,7 +251,7 @@ Diese Checkliste erfasst Plattformarbeiten, die erst nach einem entdeckt werden 
 - Persönliche, beibehaltene Sprachauswahl für Setup, Einladungen und Geräte;
 - Lokalisierte Zahlen-/Datums-/EUR-Formatierung sowie explizite Beibehaltung des Haushalts
   Produkt-, Beleg-, Währungs- und Zeitzonendaten;
-- Deutsche und englische Manifeste und Einstiegspunkte für die Projektwebsite;
+- Deutsche und englische Manifeste;
 - Automatische Übersetzungsabdeckung, verdächtige Kopien und lokalisierte Backend-Tests.
 - Vollständiger geheimer Scan-Verlauf in CI und Tag-Releases mit angeheftetem Digest
   Scanner plus eine eng begrenzte Zulassungsliste für Dokumentationsplatzhalter;

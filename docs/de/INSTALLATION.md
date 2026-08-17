@@ -178,11 +178,6 @@ Produkte oder Lagerbestandshistorie. Es stärkt den Kamerakonsens und die Barcod
 Vorhandene ungelöste Entwürfe bleiben so lange sichtbar, bis ein Haushalt bewusst ist
 verwirft sie oder ordnet sie zu.
 
-Version 0.8.24 ändert kein Haushaltsschema, Authentifizierungsstatus oder Speicher
-Produktdaten. Es bringt die öffentliche Projektwebsite, die rechtlichen Seiten und die Community in Einklang
-Routen mit der überprüften Bereitstellung wurden bereits unter `vorrio.app` bereitgestellt. Die
-Das Container-Upgrade aktualisiert nur die gemeldete Version und die Versionshinweise.
-
 Version 0.8.21 ändert nur die gepflegte HTTP-Client-Abhängigkeit, die von verwendet wird
 Tests und ausgehende Konnektoren. Es fügt keine Schemamigration hinzu, schreibt keine um
 Haushaltsdaten und lässt den versionierten REST-Vertrag unverändert. Danach

@@ -6,18 +6,6 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WEBSITE_PAGES = {"website/index.html", "website/index-en.html"}
-WEBSITE_IMAGE_PAIRS = (
-    ("website/assets/scanner-desktop.png", "website/assets/scanner-desktop-en.png"),
-    ("website/assets/receipt-review-mobile.jpg", "website/assets/receipt-review-mobile-en.png"),
-    ("website/assets/scanner-entry-mobile.jpg", "website/assets/scanner-entry-mobile-en.png"),
-    ("website/assets/stock-count-desktop.png", "website/assets/stock-count-desktop-en.png"),
-    ("website/assets/shopping-list-desktop.jpg", "website/assets/shopping-list-desktop-en.png"),
-    ("website/assets/catalog-editor-mobile.png", "website/assets/catalog-editor-mobile-en.png"),
-)
-WEBSITE_NO_IMPACT_PREFIX = "- Website impact: none — "
-
-
 def changed_files(base: str) -> set[str]:
     result = subprocess.run(
         ["git", "diff", "--name-only", base, "--"],
@@ -44,14 +32,6 @@ def added_lines(base: str, path: str) -> list[str]:
     ]
 
 
-def has_website_no_impact_reason(changelog_added_lines: list[str]) -> bool:
-    return any(
-        line.startswith(WEBSITE_NO_IMPACT_PREFIX)
-        and len(line.removeprefix(WEBSITE_NO_IMPACT_PREFIX).strip()) >= 12
-        for line in changelog_added_lines
-    )
-
-
 def documentation_failures(
     changed: set[str], changelog_added_lines: list[str] | None = None
 ) -> list[str]:
@@ -74,7 +54,6 @@ def documentation_failures(
     docs_en = {path.removeprefix("docs/en/") for path in changed if path.startswith("docs/en/")}
     docs_de = {path.removeprefix("docs/de/") for path in changed if path.startswith("docs/de/")}
     roadmap_changed = bool(changed & {"docs/en/ROADMAP.md", "docs/de/ROADMAP.md"})
-    website_pages_changed = changed & WEBSITE_PAGES
 
     if behavior_changed or deployment_changed:
         if "CHANGELOG.md" not in changed:
@@ -88,27 +67,6 @@ def documentation_failures(
         failures.append(f"docs/en/{page} changed without docs/de/{page}")
     for page in sorted(docs_de - docs_en):
         failures.append(f"docs/de/{page} changed without docs/en/{page}")
-
-    if website_pages_changed and website_pages_changed != WEBSITE_PAGES:
-        missing = next(iter(WEBSITE_PAGES - website_pages_changed))
-        failures.append(f"public website copy changed without {missing}")
-
-    public_surface_changed = behavior_changed or deployment_changed or roadmap_changed
-    if (
-        public_surface_changed
-        and website_pages_changed != WEBSITE_PAGES
-        and not has_website_no_impact_reason(changelog_added_lines)
-    ):
-        failures.append(
-            "public product changes require both website/index.html and "
-            "website/index-en.html, or a newly added CHANGELOG.md line starting "
-            f"{WEBSITE_NO_IMPACT_PREFIX!r} followed by a concrete reason"
-        )
-
-    for german_image, english_image in WEBSITE_IMAGE_PAIRS:
-        if (german_image in changed) != (english_image in changed):
-            missing = english_image if german_image in changed else german_image
-            failures.append(f"localized website screenshot changed without {missing}")
 
     if deployment_changed:
         deployment_pages = {"INSTALLATION.md", "CONFIGURATION.md", "DEPLOYMENT-PROFILES.md"}

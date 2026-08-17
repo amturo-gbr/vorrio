@@ -225,7 +225,6 @@
 - Speichern Sie die Sprache pro Konto und wenden Sie sie auf Versionshinweise und Umfangsbeschreibungen an
   und Web-Push-Benachrichtigungen;
 - Formatierung lokalisieren und Metadaten installieren, ohne Haushaltsdaten neu zu schreiben;
-- Versenden Sie eine zweisprachige Projektwebsite und erzwingen Sie die Vollständigkeit der Übersetzung in CI.
 
 ## 0.8.23 – modulare Sprachgrundlage
 

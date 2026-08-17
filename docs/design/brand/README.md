@@ -2,7 +2,7 @@
 
 The selected Vorrio mark combines three organized inventory modules with a
 negative-space `V`. It replaces the earlier receipt-sheet symbol throughout the
-PWA and public website.
+PWA and public documentation.
 
 ## Production assets
 

@@ -12,7 +12,6 @@ REQUIRED_FILES = {
     ".github/ISSUE_TEMPLATE/language_request.yml",
     ".github/PULL_REQUEST_TEMPLATE/language_pack.md",
     ".env.example",
-    ".env.stripe.live.example",
     "AUTHORS.md",
     "CHANGELOG.md",
     "CODE_OF_CONDUCT.md",
@@ -27,7 +26,6 @@ REQUIRED_FILES = {
     "docs/en/API.md",
     "docs/en/INSTALLATION.md",
     "docs/en/PUBLIC-LAUNCH-CHECKLIST.md",
-    "docs/en/STRIPE-SUPPORT.md",
     "docs/en/TRANSLATION-COMMUNITY.md",
     "docs/api/openapi.json",
     "docs/api/openapi.de.json",
@@ -38,20 +36,7 @@ REQUIRED_FILES = {
     "language-packs/README.md",
     "language-packs/schema-v1.json",
     "scripts/create_language_pack.py",
-    "scripts/check_stripe_test_support.mjs",
     "scripts/check_translation_community.py",
-    "scripts/setup_stripe_support.mjs",
-    "scripts/stripe_support_contract.mjs",
-    "scripts/test_stripe_support.mjs",
-    "website/datenschutz.html",
-    "website/.vercelignore",
-    "website/impressum.html",
-    "website/imprint.html",
-    "website/index-en.html",
-    "website/index.html",
-    "website/privacy.html",
-    "website/support-config.js",
-    "website/vercel.json",
 }
 FORBIDDEN_NAMES = {".env", ".DS_Store", "cookie.jar", "cookies.txt"}
 FORBIDDEN_PREFIXES = (".env.",)
@@ -63,7 +48,24 @@ FORBIDDEN_PATH_PARTS = {
     "dist",
     "node_modules",
     "output",
+    "website",
 }
+FORBIDDEN_PUBLIC_FILES = {
+    ".env.stripe.live.example",
+    "docs/de/FUNDING.md",
+    "docs/de/STRIPE-SUPPORT.md",
+    "docs/en/FUNDING.md",
+    "docs/en/STRIPE-SUPPORT.md",
+}
+FORBIDDEN_PUBLIC_PREFIXES = (
+    "docs/design/audits/website-",
+    "docs/design/website-",
+    "scripts/check_stripe_",
+    "scripts/create_stripe_",
+    "scripts/setup_stripe_",
+    "scripts/stripe_",
+    "scripts/test_stripe_",
+)
 FORBIDDEN_SUFFIXES = {
     ".cookies",
     ".db",
@@ -152,7 +154,10 @@ ALLOWED_TEXT_MATCHES = {
 
 
 def forbidden_path_reason(path: Path) -> str | None:
-    allowed_env_examples = {".env.example", ".env.stripe.live.example"}
+    rel = path.as_posix()
+    if rel in FORBIDDEN_PUBLIC_FILES or rel.startswith(FORBIDDEN_PUBLIC_PREFIXES):
+        return "website/payment operations belong in the private operations repository"
+    allowed_env_examples = {".env.example"}
     if path.name in FORBIDDEN_NAMES or (
         path.name not in allowed_env_examples and path.name.startswith(FORBIDDEN_PREFIXES)
     ):

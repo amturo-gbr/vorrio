@@ -20,10 +20,8 @@ The 0.8.22 pre-publication review covered every reachable Git commit, all
 tracked and unignored release files, the built runtime image, the attached
 CycloneDX SBOM and immutable-digest asset. It found no credential, private
 installation path or household data. The original two scanner matches were the
-literal `YOUR_TOKEN` examples in the automation guide. The current scanner also
-recognizes `monthly_25_v1` as the exact public Stripe support-tier identifier,
-not as a credential. Both exceptions are narrowly scoped; neither can suppress
-a real provider key.
+literal `YOUR_TOKEN` examples in the automation guide. Those exceptions are
+narrowly scoped and cannot suppress a real provider key.
 
 `make check` now scans the complete Git history with a digest-pinned Gitleaks
 CLI image. The release-package contract independently blocks environment files,
@@ -49,12 +47,6 @@ directories, build output, private IPv4 addresses and Cloudflare account/R2
 endpoints. It also rejects source/history attribution to interactive development
 assistants while allowing ordinary documentation of Vorrio's configurable AI
 providers. These checks are regression-tested and are independent of Gitleaks.
-
-The website source intentionally contains Amturo UG's legal company identity,
-managing directors, registered office, register details, public phone number
-and `info@amturo.de` in the German and English imprint/privacy pages. Those are
-deliberate public legal disclosures, not household application data. They must
-be reviewed by Amturo immediately before repository and website publication.
 
 ## Security boundaries
 

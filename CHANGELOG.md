@@ -5,9 +5,9 @@
 - CI now rejects application and deployment changes whose changelog or paired
   English/German user documentation was not updated in the same pull request;
   the existing OpenAPI synchronization gate continues to reject API drift.
-- Extended that gate to require a paired German/English homepage update or an
-  explicit, newly added no-impact rationale for public application, deployment
-  and roadmap changes; localized website screenshots must now move in pairs.
+- Separated project-site and payment operations from the public application
+  repository. The release gate now rejects those private operational files if
+  they are added again.
 
 ## 0.8.27 – 2026-08-16
 
@@ -16,30 +16,6 @@
   container findings without suppressing them through VEX.
 - Repeated the complete public-source security suite and a clean installation
   from the anonymous GHCR image before publishing the maintenance release.
-- Restored the full-history CI secret scan after the public Stripe support-tier
-  identifier triggered the generic API-key detector, using an exact-value
-  allowlist that cannot conceal real Stripe credentials.
-- Passed the website CSP nonce to Usercentrics so the production consent banner
-  renders its Shadow DOM styles without allowing unrestricted inline CSS.
-- Added consent-controlled GA4 to the bilingual public website with the
-  published dedicated Usercentrics configuration, Basic Consent Mode v2,
-  manually blocked analytics tags, persistent privacy-settings controls,
-  updated privacy notices and a narrowly scoped cross-origin logo exception.
-- Activated Stripe-hosted support on the bilingual public website with a
-  customer-selected one-time amount from EUR 2, monthly EUR 5/10/25 tiers and
-  the hosted customer portal, without adding Stripe scripts, tracking or secret
-  keys to the static deployment.
-- Extended the German and English privacy notices for the user-initiated Stripe
-  hand-off and kept automatic tax disabled while no Stripe Tax registration is
-  active.
-- Expanded the guarded Stripe sandbox to one customer-selected payment with a
-  EUR 2 minimum and three monthly tiers at EUR 5, EUR 10 and EUR 25, while
-  preserving Amturo as the account-wide identity and keeping every payment
-  control out of the live website.
-- Re-audited Stripe support against API `2026-06-24.dahlia`, added guarded live
-  preflight and approval gates plus unit and sandbox integration checks, and
-  kept all payment controls hidden until the live profile, branding, tax and
-  bookkeeping requirements are approved.
 - Published the complete documentation in German and English under `/de/` and
   `/en/`, with first-visit language detection, a remembered language choice,
   localized navigation, local search and API explanations, plus canonical and
@@ -47,17 +23,9 @@
 - Added build gates that reject missing, stale or structurally divergent
   translations while keeping API methods, paths, operation IDs, schemas and the
   canonical OpenAPI contract language-independent.
-- Reframed every German and English website product capture with complete,
-  consistently scaled laptop and phone devices; removed the decorative receipt
-  fold and the intentional mobile crops that made the screenshots look broken,
-  then replaced the heavy phone bezels with slim proportional device frames.
 - Added `docs.vorrio.app` as a standalone static documentation build with local
   search, the maintained operator guides and a read-only API reference rendered
   directly from `docs/api/openapi.json`.
-- Replaced public website links to raw GitHub Markdown with the new documentation
-  routes while keeping GitHub as the source and contribution surface.
-- Replaced the completed public-launch website milestone with the actual path
-  toward a stable 1.0 and removed the unplanned Home Assistant roadmap entry.
 - Added localized Open Graph and Twitter sharing cards, crawler directives,
   a multilingual sitemap, structured software metadata and complete SEO
   regression checks while keeping legal pages and local card sources out of
@@ -92,14 +60,6 @@
 - Kept all five scanner actions in one equal-width desktop row while preserving
   the compact three-plus-two mobile layout.
 
-## 0.8.24 – 2026-08-13
-
-- Removed inactive Stripe controls, future-service disclosures and internal
-  launch-review notes from every public website page; contribution copy now
-  routes exclusively to the active GitHub workflow until payments launch.
-- Synchronized the bilingual navigation, roadmap, legal pages and public
-  deployment contract with the website already served at `vorrio.app`.
-
 ## 0.8.23 – 2026-08-13
 
 - Kept the compact German safety fallback embedded and split other official
@@ -119,20 +79,6 @@
   translator, fluent-reviewer and maintainer responsibilities.
 - Added a non-destructive community-pack generator and CI coverage that rejects
   inaccurate community completion metadata as well as unsafe package content.
-- Prepared dependency-free Stripe-hosted Payment Links for optional one-time
-  and monthly project support while keeping all payment controls hidden until
-  reviewed live links are explicitly configured.
-- Added repeatable test-mode setup for PDF invoices and the hosted customer
-  portal, then verified successful, declined, subscription-cancellation and
-  refund flows without exposing Stripe credentials or test links publicly.
-- Prepared the static website for Vercel with hardened response headers,
-  canonical multilingual URLs, updated hosting privacy disclosures and the
-  `vorrio.app` / `vorrio.de` production-domain contract.
-- Added a bilingual public website roadmap that clearly separates today's
-  installable PWA from the planned native iOS and Android clients and sends
-  prioritization feedback to the canonical GitHub workflow.
-- Enforced the website's standard `hidden` state at author level so prepared
-  Stripe support controls cannot be revealed by the shared button styling.
 
 ## 0.8.22 – 2026-08-12
 
@@ -150,18 +96,13 @@
 - Added separate German and English install manifests plus an automated source
   audit that fails for missing translations, missing plural forms or likely
   untranslated UI copy.
-- Published both German and English variants of the static project website.
 - Split scanner, catalog, shopping, launch-readiness and passkey code from the
   initial JavaScript path, reducing the entry bundle from about 531 kB to
   431 kB before gzip. A release contract now prevents it from exceeding 500
   KiB unnoticed.
 - Switched all repository, support, installation, signing and container
   references to the canonical `amturo-gbr/vorrio` project identity.
-- Completed the English synthetic screenshot set, prevented the English
-  project page from silently reusing German product views and preserved full
-  screenshots without edge cropping across desktop, tablet and mobile.
-- Kept all five scanner actions aligned at narrow desktop widths and added
-  responsive website QA evidence for the final English launch surface.
+- Kept all five scanner actions aligned at narrow desktop widths.
 - Replaced the network-sensitive Grype and Syft Action installers with official
   digest-pinned scanner containers, while retaining a fail-closed High/Critical
   gate and an uploaded CycloneDX CI artifact.
@@ -175,16 +116,6 @@
 - Replaced the receipt-shaped product mark with the final Vorrio identity in
   the PWA header, desktop navigation and first-run guide, including transparent
   light/dark assets plus the new maskable app icon and browser favicon.
-- Added a dependency-free, responsive bilingual project website under `website/`
-  with real synthetic Vorrio product views, installation guidance, open-source
-  contribution routes and an explicit pre-launch GitHub Sponsors state.
-- Added coordinated desktop and mobile website concepts that extend the PWA's
-  white, green and folded-receipt design system without exposing private
-  installation data.
-- Kept the marketing surface completely separate from the authenticated PWA
-  and documented the legal, repository and receiving-account gates that remain
-  before a public website or funding link goes live.
-
 ## 0.8.21 – 2026-08-12
 
 - Made `make check` install locked frontend dependencies with `npm ci`, so CI
@@ -616,7 +547,7 @@
   schemas, cookie authentication declaration, Swagger UI, ReDoc and generated
   contract drift checks.
 - Added public installation, configuration, migration, backup, data model,
-  governance, funding and roadmap documentation with Amturo UG as maintainer.
+  governance and roadmap documentation with Amturo UG as maintainer.
 - Preserved pre-0.6 API paths and the existing Docker volume as compatibility
   layers during migration.
 

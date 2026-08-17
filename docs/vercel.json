@@ -17,7 +17,6 @@
     { "source": "/DEPLOYMENT-PROFILES", "destination": "/en/DEPLOYMENT-PROFILES", "permanent": true },
     { "source": "/EXTERNAL-ACCESS-SECURITY-REVIEW", "destination": "/en/EXTERNAL-ACCESS-SECURITY-REVIEW", "permanent": true },
     { "source": "/FOUNDATION-CHECKLIST", "destination": "/en/FOUNDATION-CHECKLIST", "permanent": true },
-    { "source": "/FUNDING", "destination": "/en/FUNDING", "permanent": true },
     { "source": "/GETTING-STARTED", "destination": "/en/GETTING-STARTED", "permanent": true },
     { "source": "/GOVERNANCE", "destination": "/en/GOVERNANCE", "permanent": true },
     { "source": "/IDENTITY-SECURITY", "destination": "/en/IDENTITY-SECURITY", "permanent": true },
@@ -29,7 +28,6 @@
     { "source": "/PUBLIC-LAUNCH-CHECKLIST", "destination": "/en/PUBLIC-LAUNCH-CHECKLIST", "permanent": true },
     { "source": "/RELEASES", "destination": "/en/RELEASES", "permanent": true },
     { "source": "/ROADMAP", "destination": "/en/ROADMAP", "permanent": true },
-    { "source": "/STRIPE-SUPPORT", "destination": "/en/STRIPE-SUPPORT", "permanent": true },
     { "source": "/TRANSLATION-COMMUNITY", "destination": "/en/TRANSLATION-COMMUNITY", "permanent": true },
     { "source": "/WORKFLOW", "destination": "/en/WORKFLOW", "permanent": true },
     { "source": "/api-reference", "destination": "/en/api-reference", "permanent": true }
